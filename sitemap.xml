@@ -1,9 +1,0 @@
-<urlset
-    xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-    xmlns:xhtml="http://www.w3.org/1999/xhtml"
-    ><url>
-            <loc>https://blog.thinkbox.dev/posts/first_post/</loc><lastmod>2020-03-22T15:37:47-04:00</lastmod></url><url>
-            <loc>https://blog.thinkbox.dev/posts/</loc><lastmod>2020-03-22T15:37:47-04:00</lastmod></url><url>
-            <loc>https://blog.thinkbox.dev/</loc><lastmod>2020-03-22T15:37:47-04:00</lastmod></url><url>
-            <loc>https://blog.thinkbox.dev/categories/</loc></url><url>
-            <loc>https://blog.thinkbox.dev/tags/</loc></url></urlset>
