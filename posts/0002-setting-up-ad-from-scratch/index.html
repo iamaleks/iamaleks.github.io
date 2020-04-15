@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <title>Setting Up Active Directory Network From Scratch | ThinkBox</title>
+        <meta name="Description" content=""><meta property="og:title" content="Setting Up Active Directory Network From Scratch" />
+<meta property="og:description" content="Introduction This blog post will show step by step how to setup a basic Active Directory network. The network will consist of four computers, two servers and two clients. There will be a Domain Controller, a DHCP server, a central management station, and of course a desktop for the clients. This can all be seen in the diagram below.
+The purpose of the central management desktop for the administrator to easily manage multiple servers at once." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://blog.thinkbox.dev/posts/0002-setting-up-ad-from-scratch/" />
+<meta property="article:published_time" content="2019-07-17T23:48:26-04:00" />
+<meta property="article:modified_time" content="2019-07-17T23:48:26-04:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Setting Up Active Directory Network From Scratch"/>
+<meta name="twitter:description" content="Introduction This blog post will show step by step how to setup a basic Active Directory network. The network will consist of four computers, two servers and two clients. There will be a Domain Controller, a DHCP server, a central management station, and of course a desktop for the clients. This can all be seen in the diagram below.
+The purpose of the central management desktop for the administrator to easily manage multiple servers at once."/>
+<meta name="theme-color" content="#ffffff">
+<meta name="msapplication-TileColor" content="#da532c">
+<link rel="canonical" href="https://blog.thinkbox.dev/posts/0002-setting-up-ad-from-scratch/" />
+<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="prev" href="https://blog.thinkbox.dev/posts/0001-openvpn-ldap-auth/" /><link rel="next" href="https://blog.thinkbox.dev/posts/first_post/" /><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="/lib/animate/animate.min.css"><link rel="stylesheet" href="/css/style.min.css"><meta name="google-site-verification" content="UA-161605270-1" /><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Setting Up Active Directory Network From Scratch",
+        "inLanguage": "en",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/blog.thinkbox.dev\/posts\/0002-setting-up-ad-from-scratch\/"
+        },"genre": "posts","keywords": "windows, active directory","wordcount":  1102 ,
+        "url": "https:\/\/blog.thinkbox.dev\/posts\/0002-setting-up-ad-from-scratch\/","datePublished": "2019-07-17","dateModified": "2019-07-17","author": {
+                "@type": "Person",
+                "name": "Aleks"
+            },"description": ""
+    }
+    </script></head>
+    <body><script>
+            if (!window.localStorage || !window.localStorage.getItem('theme')) {window.isDark = 'dark' === 'dark';} else {
+                window.isDark = (window.localStorage && window.localStorage.getItem('theme')) === 'dark';
+            }
+            window.isDark && document.body.classList.add('dark-theme');
+        </script><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/">ThinkBox</a>
+        </div>
+        <div class="menu"><a class="menu-item" href="/posts/" rel="noopener noreffer">Posts</a><a class="menu-item" href="/tags/" rel="noopener noreffer">Tags</a><a class="menu-item" href="/categories/" rel="noopener noreffer">Categories</a><span class="menu-item">|</span>
+            <a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-wrapper">
+        <div class="header-container">
+            <div class="header-title">
+                <a href="/">ThinkBox</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><a class="menu-item" href="/posts/" title="" rel="noopener noreffer">Posts</a><a class="menu-item" href="/tags/" title="" rel="noopener noreffer">Tags</a><a class="menu-item" href="/categories/" title="" rel="noopener noreffer">Categories</a><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header>
+
+<script>
+    window.desktopHeaderMode = "fixed";
+    window.mobileHeaderMode = "auto";
+</script>
+<main class="main">
+                <div class="container"><article class="page single"><h1 class="single-title animated flipInX">Setting Up Active Directory Network From Scratch</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel="noopener noreffer author" class="author"><i class="fas fa-user-circle fa-fw"></i>Aleks</a>
+</span>&nbsp;
+                    <span class="post-category">included in<a href="/categories/misc-infrastructure">
+                                <i class="far fa-folder fa-fw"></i>Misc infrastructure
+                            </a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i><time datetime=2019-07-17>2019-07-17</time>&nbsp;
+                <i class="fas fa-pencil-alt fa-fw"></i>about 1102 words&nbsp;
+                <i class="far fa-clock fa-fw"></i>6 min&nbsp;</div>
+        </div><div class="toc" id="toc-auto">
+                <h2 class="toc-title">Contents</h2>
+                <div class="toc-content" id="toc-content-auto"></div>
+            </div>
+            <div class="toc" id="toc-static">
+                <details>
+                    <summary>
+                        <div class="toc-title">
+                            <span>Contents</span>
+                            <span><i class="details icon fas fa-angle-down"></i></span>
+                        </div>
+                    </summary>
+                    <div class="toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#creating-a-domain-controller">Creating a Domain Controller</a>
+      <ul>
+        <li><a href="#rename-server">Rename Server</a></li>
+        <li><a href="#set-static-ip-address">Set Static IP Address</a></li>
+        <li><a href="#install-active-directory-domain-services-feature">Install Active Directory Domain Services Feature</a></li>
+        <li><a href="#create-forest">Create Forest</a></li>
+      </ul>
+    </li>
+    <li><a href="#setting-up-management-station">Setting up Management Station</a>
+      <ul>
+        <li><a href="#setting-up-machine">Setting up Machine</a></li>
+        <li><a href="#joining-domain">Joining Domain</a></li>
+        <li><a href="#installing-remote-system-administration-tools">Installing Remote System Administration Tools</a></li>
+        <li><a href="#managing-remotely">Managing Remotely</a></li>
+      </ul>
+    </li>
+    <li><a href="#creating-a-dhcp-server">Creating a DHCP Server</a>
+      <ul>
+        <li><a href="#setting-up-machine-1">Setting up Machine</a></li>
+        <li><a href="#joining-domain-1">Joining Domain</a></li>
+        <li><a href="#install-dhcp-feature">Install DHCP Feature</a></li>
+        <li><a href="#creating-dhcp-scope">Creating DHCP Scope</a></li>
+      </ul>
+    </li>
+    <li><a href="#connecting-a-client">Connecting a Client</a>
+      <ul>
+        <li><a href="#check-ip-configuration">Check IP Configuration</a></li>
+        <li><a href="#join-domain">Join Domain</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+                </details>
+            </div><div class="content" id="content" style="text-align: justify;"><h2 id="introduction">Introduction</h2>
+<p>This blog post will show step by step how to setup a basic Active Directory network. The network will consist of four computers, two servers and two clients. There will be a Domain Controller, a DHCP server, a central management station, and of course a desktop for the clients. This can all be seen in the diagram below.</p>
+<p>The purpose of the central management desktop for the administrator to easily manage multiple servers at once. The servers in this network will all be Core installs without a desktop. It will be possible to manage these servers in Server Manager remotely. Remote Powershell sessions can also be established to remote servers.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0002-setting-up-AD-from-scratch/ADNetworkMap.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>The chosen operating system for the servers (dc and dhcp) will be Windows Server 2019 Core, it can be either Standard or Datacenter. For the client side (manage and client) Windows 10 Enterprise LTSC will be used. Below can be seen a chart that shows the networking configuration of each computer. Please note that the default gateway is not listed in this chart, but will have the IP address of 10.0.0.1 /24.</p>
+<table>
+<thead>
+<tr>
+<th align="center">Computer</th>
+<th align="center">IP Address</th>
+<th align="center">Default Gateway</th>
+<th align="center">DNS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">dc.contoso.net</td>
+<td align="center">10.0.0.10/24</td>
+<td align="center">10.0.0.1</td>
+<td align="center">127.0.0.1</td>
+</tr>
+<tr>
+<td align="center">dhcp.contoso.net</td>
+<td align="center">10.0.0.11/24</td>
+<td align="center">10.0.0.1</td>
+<td align="center">10.0.0.10</td>
+</tr>
+<tr>
+<td align="center">manage.contoso.net</td>
+<td align="center">10.0.0.12/24</td>
+<td align="center">10.0.0.1</td>
+<td align="center">10.0.0.10</td>
+</tr>
+<tr>
+<td align="center">client.contoso.net</td>
+<td align="center">10.0.0.101/24</td>
+<td align="center">10.0.0.1</td>
+<td align="center">10.0.0.10</td>
+</tr>
+</tbody>
+</table>
+<p>This blog post will be split into the following sections:</p>
+<ul>
+<li><a href="#creating-a-domain-controller" rel="noopener noreffer">Creating a Domain Controller</a>
+</li>
+<li><a href="#setting-up-management-station" rel="noopener noreffer">Setting up Management Station</a>
+</li>
+<li><a href="#creating-a-dhcp-server" rel="noopener noreffer">Creating a DHCP Server</a>
+</li>
+<li><a href="#connecting-a-client" rel="noopener noreffer">Connecting a Client</a>
+</li>
+</ul>
+<h2 id="creating-a-domain-controller">Creating a Domain Controller</h2>
+<p>First the Domain Controller will be configured, then the Domain Services role will be installed on this server. The Domain Services role is what provides directory service functionality.</p>
+<h3 id="rename-server">Rename Server</h3>
+<p>Begin by renaming a server to what the role will be. We will use the Powershell command <code>Rename-Computer</code> to set the hostname to <code>dc</code>. Don&rsquo;t forget to restart the server in order to it to take effect.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0002-setting-up-AD-from-scratch/dcsetup/1dc-rename.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h3 id="set-static-ip-address">Set Static IP Address</h3>
+<p>Next we will need to set a static IP address on the server. Use the command <code>Get-NetAdapter</code> to list all network interfaces. The most important information here is the Name and interface index, either of these can be used to reference a network interface in other commands.</p>
+<p>Set a static IP address of 10.0.0.10 using the <code>New-NetIPAddress</code> command.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0002-setting-up-AD-from-scratch/dcsetup/2dc-1static.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" />
+[comment]:  <img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0002-setting-up-AD-from-scratch/dcsetup/2dc-2static.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>A DNS server will also have to be set using the <code>Set-DnsClientServerAddress</code> command. Set this to your favorite DNS server. When a domain will be created on the Domain Controller this DNS server will be used as the forwarder in the DNS.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0002-setting-up-AD-from-scratch/dcsetup/2dc-3static.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" />
+[comment]: <img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0002-setting-up-AD-from-scratch/dcsetup/2dc-4static.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h3 id="install-active-directory-domain-services-feature">Install Active Directory Domain Services Feature</h3>
+<p>Now the Domain Services feature must be installed along with DNS.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0002-setting-up-AD-from-scratch/dcsetup/3dc-installfeature.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h3 id="create-forest">Create Forest</h3>
+<p>After the installation a new forest will need to be created, use the <code>Install-ADDSForest</code> in order to create one. Please note that the current password you are using for the local Administrator account on the server will be used for the domain Administrator account.</p>
+<p>In other words, when you login as CONTOSO\Administrator the password you must use is the one you typed in when installing the current server. This can of course be changed later on.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0002-setting-up-AD-from-scratch/dcsetup/4dc-installad.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>This may take a bit of time to complete, after it is finished it will restart the server. At that point everythig is configured and ready to go.</p>
+<h2 id="setting-up-management-station">Setting up Management Station</h2>
+<p>In this section we will setup a central management desktop that will be used to manage the servers.</p>
+<h3 id="setting-up-machine">Setting up Machine</h3>
+<p>Just like with the Domain Controller begin by renaming the hostname of this computer to <code>manage</code>.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0002-setting-up-AD-from-scratch/managesetup/1manage-setstatic1.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>Next set a static IP address to 10.0.0.12.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0002-setting-up-AD-from-scratch/managesetup/1manage-setstatic2.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>After configure the DNS so that it points to the Domain Controller.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0002-setting-up-AD-from-scratch/managesetup/1manage-setstatic3.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h3 id="joining-domain">Joining Domain</h3>
+<p>Before joining the domain check that the machine can resolve the domain name, you can do this by pinging contoso.net. The result should be the IP address of the Domain Controller.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0002-setting-up-AD-from-scratch/managesetup/2manage-join1.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>Next use the <code>Add-Computer</code> Powershell command to add this computer to the domain.
+<img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0002-setting-up-AD-from-scratch/managesetup/2manage-join2.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>After this computer restarts logon using the Administrator domain account. Please note, when using the Administrator username the computer will assume you want to login locally. In order to logon as a domain account append the domain, CONTOSO, in front of the username.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0002-setting-up-AD-from-scratch/managesetup/2manage-join3.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h3 id="installing-remote-system-administration-tools">Installing Remote System Administration Tools</h3>
+<p>Once logged in the Remote System Administration Tools must be installed. There are many different ones, everything from managing DNS to virtual machines on Hyper-V. You can run <code>Get-WindowsCapability -Name RSAT* -Online</code> to view a list.</p>
+<p>However, to make things simple I will install all of them. You can go through the list and pick what you need, or run the command below to install everything.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0002-setting-up-AD-from-scratch/managesetup/3manage-tools.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h3 id="managing-remotely">Managing Remotely</h3>
+<p>Inside Server Manager you can add a server that you wish to manage remotely.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0002-setting-up-AD-from-scratch/managesetup/4manage-howto.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>Any server you add will show up on the main page.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0002-setting-up-AD-from-scratch/managesetup/4manage-howto2.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>Remote Powershell sessions can also be created using the <code>Enter-PSSession</code> command.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0002-setting-up-AD-from-scratch/managesetup/4manage-howto3.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h2 id="creating-a-dhcp-server">Creating a DHCP Server</h2>
+<p>Now a DHCP server will be created in order to provide a client desktop with an IP address.</p>
+<h3 id="setting-up-machine-1">Setting up Machine</h3>
+<p>Just like the last two times, rename the computer to <code>dhcp</code>.
+<img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0002-setting-up-AD-from-scratch/dhcpsetup/1serversetup-rename.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>Set a static IP address of 10.0.0.11.
+<img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0002-setting-up-AD-from-scratch/dhcpsetup/2serversetup-staticip.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>Set the DNS server to point to the Domain Controller.
+<img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0002-setting-up-AD-from-scratch/dhcpsetup/3serversetup-dns.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h3 id="joining-domain-1">Joining Domain</h3>
+<p>Once again, join the server to the domain.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0002-setting-up-AD-from-scratch/dhcpsetup/3serversetup-joiningdomain.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>On your remote management desktop you can also see the list of computers in the Active Directory Users and Computers tool (dsa.msc).
+<img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0002-setting-up-AD-from-scratch/dhcpsetup/4serverlist.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h3 id="install-dhcp-feature">Install DHCP Feature</h3>
+<p>Install the DHCP feature on the server. Note the commands in this subsection are being run from manage.contoso.net, the central management station.
+<img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0002-setting-up-AD-from-scratch/dhcpsetup/5installdhcpfeature.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>In order for a DHCP server to function in Active Directory it must be authorized. In order to do this use the <code>Add-DhcpServerInDC</code> command.
+<img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0002-setting-up-AD-from-scratch/dhcpsetup/6authdhcpserver.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>The <code>Get-DhcpServerInDc</code> command can be used to view all the authorized DHCP servers.
+<img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0002-setting-up-AD-from-scratch/dhcpsetup/7checkauthdhcp.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>Another option is to click the notification that shows up in Server Manager and perform the authorization there.
+<img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0002-setting-up-AD-from-scratch/dhcpsetup/8guioption.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p align="justify">
+If you used the Powershell command to authorize the DHCP server this notification in Server Manager will not disappear, you will have to enter it and choose the skip option.
+</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0002-setting-up-AD-from-scratch/dhcpsetup/9removeguiprompt.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h3 id="creating-dhcp-scope">Creating DHCP Scope</h3>
+<p align="justify">
+Now in order to provide DHCP services to the network a scope must be creatd. This can be done using the DHCP GUI managemnt tool, however, I will use Powershell. 
+</p>
+<p>The following will use the <code>Add-DhcpServer4Scope</code> command to create a scope, and the <code>Set-DhcpServer4OptionValue</code> command will be used to set options on the scope.
+<img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0002-setting-up-AD-from-scratch/dhcpsetup/10setupdhcpscope.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h2 id="connecting-a-client">Connecting a Client</h2>
+<p>This section will show a client being joined to the Domain. The actons performed will be the same as in the previous sections.</p>
+<h3 id="check-ip-configuration">Check IP Configuration</h3>
+<p>Once the client is in the network it should receive an IP from the DHCP server.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0002-setting-up-AD-from-scratch/clientsetup/1ipfromdhcp.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>Confirm that the domain name can resolve.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0002-setting-up-AD-from-scratch/clientsetup/2pingcheck.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h3 id="join-domain">Join Domain</h3>
+<p>Now add the computer to the domain.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0002-setting-up-AD-from-scratch/clientsetup/3jin.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+</div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>The article was updated on 2019-07-17</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span><a href="javascript:void(0);" title="Share on Twitter" data-sharer="twitter" data-url="https://blog.thinkbox.dev/posts/0002-setting-up-ad-from-scratch/" data-title="Setting Up Active Directory Network From Scratch" data-hashtags="windows,active directory"><i class="fab fa-twitter fa-fw"></i></a><a href="javascript:void(0);" title="Share on Facebook" data-sharer="facebook" data-url="https://blog.thinkbox.dev/posts/0002-setting-up-ad-from-scratch/" data-hashtag="windows"><i class="fab fa-facebook-square fa-fw"></i></a><a href="javascript:void(0);" title="Share on Linkedin" data-sharer="linkedin" data-url="https://blog.thinkbox.dev/posts/0002-setting-up-ad-from-scratch/"><i class="fab fa-linkedin fa-fw"></i></a><a href="javascript:void(0);" title="Share on WhatsApp" data-sharer="whatsapp" data-url="https://blog.thinkbox.dev/posts/0002-setting-up-ad-from-scratch/" data-title="Setting Up Active Directory Network From Scratch" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="javascript:void(0);" title="Share on Hacker News" data-sharer="hackernews" data-url="https://blog.thinkbox.dev/posts/0002-setting-up-ad-from-scratch/" data-title="Setting Up Active Directory Network From Scratch"><i class="fab fa-hacker-news fa-fw"></i></a><a href="javascript:void(0);" title="Share on Reddit" data-sharer="reddit" data-url="https://blog.thinkbox.dev/posts/0002-setting-up-ad-from-scratch/"><i class="fab fa-reddit fa-fw"></i></a><a href="javascript:void(0);" title="Share on VK" data-sharer="vk" data-url="https://blog.thinkbox.dev/posts/0002-setting-up-ad-from-scratch/" data-title="Setting Up Active Directory Network From Scratch"><i class="fab fa-vk fa-fw"></i></a><a href="javascript:void(0);" title="Share on 微博" data-sharer="weibo" data-url="https://blog.thinkbox.dev/posts/0002-setting-up-ad-from-scratch/" data-title="Setting Up Active Directory Network From Scratch"><i class="fab fa-weibo fa-fw"></i></a><a href="javascript:void(0);" title="Share on 百度" data-sharer="baidu" data-url="https://blog.thinkbox.dev/posts/0002-setting-up-ad-from-scratch/" data-title="Setting Up Active Directory Network From Scratch"><i class="loveit it-baidu-fill"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/windows">windows</a>,&nbsp;<a href="/tags/active-directory">active directory</a></section>
+        <section>
+            <span><a href="javascript:window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/">Home</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/0001-openvpn-ldap-auth/" class="prev" rel="prev" title="OpenVPN with LDAP &#43; 2-Factor Authentication and Network Access Polices"><i class="fas fa-angle-left fa-fw"></i>OpenVPN with LDAP &#43; 2-Factor Authentication and Network Access Polices</a>
+            <a href="/posts/first_post/" class="next" rel="next" title="First_post">First_post<i class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div class="comment"><div id="disqus_thread"></div><noscript>
+            Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript></div>
+    </article></div>
+            </main><footer class="footer">
+    <div class="copyright"><div class="copyright-line">Powered by <a href="https://gohugo.io/" target="_blank" rel="external nofollow noopener noreffer">Hugo</a> | Theme - <a href="https://github.com/dillonzq/LoveIt" target="_blank" rel="external nofollow noopener noreffer"><i class="far fa-heart fa-fw"></i> LoveIt</a>
+        </div>
+
+        <div class="copyright-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2019 - 2020</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank">Aleks</a></span></div>
+    </div>
+</footer>
+</div><a href="#" class="dynamic-to-top animated faster" id="dynamic-to-top">
+            <i class="fas fa-chevron-up fa-fw"></i>
+        </a><link rel="stylesheet" href="/lib/iconfont/iconfont.min.css"><script defer src="https://blog-thinkbox-dev.disqus.com/embed.js"></script><script src="/lib/smooth-scroll/smooth-scroll.polyfills.min.js"></script><script src="/lib/sharer/sharer.min.js"></script><script src="/lib/lazysizes/lazysizes.min.js"></script><script src="/js/theme.min.js"></script>
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-161605270-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>windows on ThinkBox</title>
+    <link>https://blog.thinkbox.dev/tags/windows/</link>
+    <description>Recent content in windows on ThinkBox</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Wed, 17 Jul 2019 23:48:26 -0400</lastBuildDate>
+    
+	<atom:link href="https://blog.thinkbox.dev/tags/windows/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Setting Up Active Directory Network From Scratch</title>
+      <link>https://blog.thinkbox.dev/posts/0002-setting-up-ad-from-scratch/</link>
+      <pubDate>Wed, 17 Jul 2019 23:48:26 -0400</pubDate>
+      
+      <guid>https://blog.thinkbox.dev/posts/0002-setting-up-ad-from-scratch/</guid>
+      <description>Introduction This blog post will show step by step how to setup a basic Active Directory network. The network will consist of four computers, two servers and two clients. There will be a Domain Controller, a DHCP server, a central management station, and of course a desktop for the clients. This can all be seen in the diagram below.
+The purpose of the central management desktop for the administrator to easily manage multiple servers at once.</description>
+    </item>
+    
+  </channel>
+</rss>

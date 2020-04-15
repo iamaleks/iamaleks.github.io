@@ -6,10 +6,28 @@
     <description>Recent content in Tags on ThinkBox</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Fri, 12 Jul 2019 17:27:32 -0400</lastBuildDate>
+    <lastBuildDate>Wed, 17 Jul 2019 23:48:26 -0400</lastBuildDate>
     
 	<atom:link href="https://blog.thinkbox.dev/tags/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>active directory</title>
+      <link>https://blog.thinkbox.dev/tags/active-directory/</link>
+      <pubDate>Wed, 17 Jul 2019 23:48:26 -0400</pubDate>
+      
+      <guid>https://blog.thinkbox.dev/tags/active-directory/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>windows</title>
+      <link>https://blog.thinkbox.dev/tags/windows/</link>
+      <pubDate>Wed, 17 Jul 2019 23:48:26 -0400</pubDate>
+      
+      <guid>https://blog.thinkbox.dev/tags/windows/</guid>
+      <description></description>
+    </item>
     
     <item>
       <title>Linux</title>
