@@ -13,10 +13,10 @@
     
     <item>
       <title>OpenVPN with LDAP &#43; 2-Factor Authentication and Network Access Polices</title>
-      <link>https://blog.thinkbox.dev/posts/01-openvpn-ldap-auth/</link>
+      <link>https://blog.thinkbox.dev/posts/0001-openvpn-ldap-auth/</link>
       <pubDate>Fri, 12 Jul 2019 17:27:32 -0400</pubDate>
       
-      <guid>https://blog.thinkbox.dev/posts/01-openvpn-ldap-auth/</guid>
+      <guid>https://blog.thinkbox.dev/posts/0001-openvpn-ldap-auth/</guid>
       <description>Introduction This blog post will explain the steps taken to configure OpenVPN to authenticate users using LDAP authentication and 2-Factor authentication. LDAP authentication will be performed against Active Directory, and 2-Factor authentication will be performed with a Time-based One-Time password (TOTP). Furthermore, the network access of users will be restricted to only what the administrator wants them to access.
 This post is split up into 5 sections:
  VPN Server Initial Configuration  Base OpenVPN Configuration  Configuring LDAP Authentication  2-Factor Authentication with TOTP  User Based Network Access Polices   The first section will configure the server on which the VPN server will be setup on.</description>
