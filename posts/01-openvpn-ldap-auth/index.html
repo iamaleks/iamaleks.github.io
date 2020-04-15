@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <title>OpenVPN with LDAP &#43; 2-Factor Authentication and Network Access Polices | ThinkBox</title>
+        <meta name="Description" content=""><meta property="og:title" content="OpenVPN with LDAP &#43; 2-Factor Authentication and Network Access Polices" />
+<meta property="og:description" content="Introduction This blog post will explain the steps taken to configure OpenVPN to authenticate users using LDAP authentication and 2-Factor authentication. LDAP authentication will be performed against Active Directory, and 2-Factor authentication will be performed with a Time-based One-Time password (TOTP). Furthermore, the network access of users will be restricted to only what the administrator wants them to access.
+This post is split up into 5 sections:
+ VPN Server Initial Configuration  Base OpenVPN Configuration  Configuring LDAP Authentication  2-Factor Authentication with TOTP  User Based Network Access Polices   The first section will configure the server on which the VPN server will be setup on." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://blog.thinkbox.dev/posts/01-openvpn-ldap-auth/" />
+<meta property="article:published_time" content="2019-07-12T17:27:32-04:00" />
+<meta property="article:modified_time" content="2019-07-12T17:27:32-04:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="OpenVPN with LDAP &#43; 2-Factor Authentication and Network Access Polices"/>
+<meta name="twitter:description" content="Introduction This blog post will explain the steps taken to configure OpenVPN to authenticate users using LDAP authentication and 2-Factor authentication. LDAP authentication will be performed against Active Directory, and 2-Factor authentication will be performed with a Time-based One-Time password (TOTP). Furthermore, the network access of users will be restricted to only what the administrator wants them to access.
+This post is split up into 5 sections:
+ VPN Server Initial Configuration  Base OpenVPN Configuration  Configuring LDAP Authentication  2-Factor Authentication with TOTP  User Based Network Access Polices   The first section will configure the server on which the VPN server will be setup on."/>
+<meta name="theme-color" content="#ffffff">
+<meta name="msapplication-TileColor" content="#da532c">
+<link rel="canonical" href="https://blog.thinkbox.dev/posts/01-openvpn-ldap-auth/" />
+<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="next" href="https://blog.thinkbox.dev/posts/first_post/" /><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="/lib/animate/animate.min.css"><link rel="stylesheet" href="/css/style.min.css"><meta name="google-site-verification" content="UA-161605270-1" /><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "OpenVPN with LDAP \x2b 2-Factor Authentication and Network Access Polices",
+        "inLanguage": "en",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/blog.thinkbox.dev\/posts\/01-openvpn-ldap-auth\/"
+        },"genre": "posts","keywords": "OpenVPN, Linux","wordcount":  2148 ,
+        "url": "https:\/\/blog.thinkbox.dev\/posts\/01-openvpn-ldap-auth\/","datePublished": "2019-07-12","dateModified": "2019-07-12","author": {
+                "@type": "Person",
+                "name": "Aleks"
+            },"description": ""
+    }
+    </script></head>
+    <body><script>
+            if (!window.localStorage || !window.localStorage.getItem('theme')) {window.isDark = 'dark' === 'dark';} else {
+                window.isDark = (window.localStorage && window.localStorage.getItem('theme')) === 'dark';
+            }
+            window.isDark && document.body.classList.add('dark-theme');
+        </script><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/">ThinkBox</a>
+        </div>
+        <div class="menu"><a class="menu-item" href="/posts/" rel="noopener noreffer">Posts</a><a class="menu-item" href="/tags/" rel="noopener noreffer">Tags</a><a class="menu-item" href="/categories/" rel="noopener noreffer">Categories</a><span class="menu-item">|</span>
+            <a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-wrapper">
+        <div class="header-container">
+            <div class="header-title">
+                <a href="/">ThinkBox</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><a class="menu-item" href="/posts/" title="" rel="noopener noreffer">Posts</a><a class="menu-item" href="/tags/" title="" rel="noopener noreffer">Tags</a><a class="menu-item" href="/categories/" title="" rel="noopener noreffer">Categories</a><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header>
+
+<script>
+    window.desktopHeaderMode = "fixed";
+    window.mobileHeaderMode = "auto";
+</script>
+<main class="main">
+                <div class="container"><article class="page single"><h1 class="single-title animated flipInX">OpenVPN with LDAP &#43; 2-Factor Authentication and Network Access Polices</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel="noopener noreffer author" class="author"><i class="fas fa-user-circle fa-fw"></i>Aleks</a>
+</span>&nbsp;
+                    <span class="post-category">included in<a href="/categories/misc-infrastructure">
+                                <i class="far fa-folder fa-fw"></i>Misc infrastructure
+                            </a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i><time datetime=2019-07-12>2019-07-12</time>&nbsp;
+                <i class="fas fa-pencil-alt fa-fw"></i>about 2148 words&nbsp;
+                <i class="far fa-clock fa-fw"></i>11 min&nbsp;</div>
+        </div><div class="toc" id="toc-auto">
+                <h2 class="toc-title">Contents</h2>
+                <div class="toc-content" id="toc-content-auto"></div>
+            </div>
+            <div class="toc" id="toc-static">
+                <details>
+                    <summary>
+                        <div class="toc-title">
+                            <span>Contents</span>
+                            <span><i class="details icon fas fa-angle-down"></i></span>
+                        </div>
+                    </summary>
+                    <div class="toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#vpn-server-initial-configuration">VPN Server Initial Configuration</a></li>
+    <li><a href="#base-openvpn-configuration">Base OpenVPN Configuration</a>
+      <ul>
+        <li><a href="#setting-up-certificate-and-ca-for-vpn-server">Setting up Certificate and CA for VPN Server</a></li>
+        <li><a href="#creating-openvpn-config">Creating OpenVPN config</a>
+          <ul>
+            <li>
+              <ul>
+                <li><a href="#selinux-issues">SELinux Issues</a></li>
+              </ul>
+            </li>
+            <li><a href="#setting-up-pam">Setting up PAM</a></li>
+            <li><a href="#starting-openvpn">Starting OpenVPN</a></li>
+            <li><a href="#testing-client-connection">Testing Client Connection</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#configuring-ldap-authentication">Configuring LDAP Authentication</a>
+      <ul>
+        <li><a href="#active-directory-setup">Active Directory Setup</a></li>
+        <li><a href="#ldap-service-setup">LDAP Service Setup</a></li>
+        <li><a href="#configure-pam-that-is-used-by-openvpn">Configure PAM that is used by OpenVPN</a></li>
+        <li><a href="#testing-ldap-authentication-with-openvpn">Testing LDAP Authentication with OpenVPN</a></li>
+      </ul>
+    </li>
+    <li><a href="#2-factor-authentication-with-totp">2-Factor Authentication with TOTP</a>
+      <ul>
+        <li>
+          <ul>
+            <li>
+              <ul>
+                <li><a href="#selinux-issues-1">SELinux Issues</a></li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+        <li><a href="#testing-two-factor--auth">Testing Two Factor  Auth</a></li>
+      </ul>
+    </li>
+    <li><a href="#configuring-network-access">Configuring Network Access</a></li>
+    <li><a href="#user-based-network-access-polices">User Based Network Access Polices</a>
+      <ul>
+        <li><a href="#assigning-static-ip-address">Assigning Static IP address</a></li>
+        <li><a href="#firewall-polices">Firewall Polices</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+                </details>
+            </div><div class="content" id="content" style="text-align: justify;"><h2 id="introduction">Introduction</h2>
+<p>This blog post will explain the steps taken to configure OpenVPN to authenticate users using LDAP authentication and 2-Factor authentication. LDAP authentication will be performed against Active Directory, and 2-Factor authentication will be performed with a Time-based One-Time password (TOTP). Furthermore, the network access of users will be restricted to only what the administrator wants them to access.</p>
+<p>This post is split up into 5 sections:</p>
+<ul>
+<li><a href="#vpn-server-initial-configuration" rel="noopener noreffer">VPN Server Initial Configuration</a>
+</li>
+<li><a href="#base-openvpn-configuration" rel="noopener noreffer">Base OpenVPN Configuration</a>
+</li>
+<li><a href="#configuring-ldap-authentication" rel="noopener noreffer">Configuring LDAP Authentication</a>
+</li>
+<li><a href="#2-factor-authentication-with-totp" rel="noopener noreffer">2-Factor Authentication with TOTP</a>
+</li>
+<li><a href="#user-based-network-access-polices" rel="noopener noreffer">User Based Network Access Polices</a>
+</li>
+</ul>
+<p>The first section will configure the server on which the VPN server will be setup on. Next, OpenVPN itself will be setup without any authentication. After LDAP authentication will be configured against Active Directory. Then 2-Factor authentication will be added. Lastly, network access polices will be configured for each user.</p>
+<p>The first two sections are required in order to have a functioning OpenVPN server, the third section is required in order to have authentication on the OpenVPN server. The fourth section will add additional authentication. And the last section will be used to authorize users to specific services on a network. If you want, you can only work up to the third section if you do not need 2-Factor authentication or network based access polices.</p>
+<p>The following picture shows the flow of the whole process.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/01-openvpn-ldap-auth/Flow.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h2 id="vpn-server-initial-configuration">VPN Server Initial Configuration</h2>
+<p>In this section the prerequisite server configurations will be performed on the server that will host OpenVPN.</p>
+<p>The following versions of software:</p>
+<ul>
+<li>CentOS 7.6.1810</li>
+<li>OpenVPN 2.4.7</li>
+<li>EasyRSA 3.0.6</li>
+</ul>
+<p>Begin by updating the server.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>user@vpnserver<span class="o">]</span>$ yum update -y
+</code></pre></td></tr></table>
+</div>
+</div><p>Next disable firewalld. Instead iptables will be used.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>user@vpnserver<span class="o">]</span>$ systemctl stop firewalld<span class="p">;</span> systemctl disable firewalld<span class="p">;</span> systemctl mask firewalld
+</code></pre></td></tr></table>
+</div>
+</div><p>Install the iptables service in order to keep iptables rules on boot.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>user@vpnserver<span class="o">]</span>$ yum install iptables-services -y<span class="p">;</span> systemctl start iptables <span class="p">;</span> systemctl <span class="nb">enable</span> iptables 
+</code></pre></td></tr></table>
+</div>
+</div><p>There are some default iptables rules, clear everything and save them. Configuration of firewall will be done at a later time.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>user@vpnserver<span class="o">]</span>$ iptables -F <span class="p">;</span> iptables-save &gt; /etc/sysconfig/iptables
+</code></pre></td></tr></table>
+</div>
+</div><p>Install the Fedora extended repository which contains OpenVPN.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>user@vpnserver<span class="o">]</span>$ yum install epel-release -y
+</code></pre></td></tr></table>
+</div>
+</div><p>Install OpenVPN.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>user@vpnserver<span class="o">]</span>$ yum install openvpn -y
+</code></pre></td></tr></table>
+</div>
+</div><p>Install wget for later</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>user@vpnserver<span class="o">]</span>$ yum install -y wget
+</code></pre></td></tr></table>
+</div>
+</div><p>Install your favorite text editor, it does not have to be Vim.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>user@vpnserver<span class="o">]</span>$ yum install -y vim
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="base-openvpn-configuration">Base OpenVPN Configuration</h2>
+<p>In this section OpenVPN will be configured with a CA and certificate. It will be setup to accept any username and password combination in order to confirm that it is running and operating as it should.</p>
+<h3 id="setting-up-certificate-and-ca-for-vpn-server">Setting up Certificate and CA for VPN Server</h3>
+<p>Begin by downloading <a href="https://github.com/OpenVPN/easy-rsa/releases" target="_blank" rel="noopener noreffer">EasyRSA</a>
+. This software will be used to create a CA along with key and certificate for the OpenVPN server.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>user@vpnserver<span class="o">]</span>$ <span class="nb">cd</span> /etc/openvpn/
+<span class="o">[</span>user@vpnserver<span class="o">]</span>$ wget https://github.com/OpenVPN/easy-rsa/releases/download/v3.0.6/EasyRSA-unix-v3.0.6.tgz
+<span class="o">[</span>user@vpnserver<span class="o">]</span>$ tar -xf EasyRSA-unix-v3.0.6.tgz <span class="p">;</span> rm EasyRSA-unix-v3.0.6.tgz
+</code></pre></td></tr></table>
+</div>
+</div><p>Enter the extracted EasyRSA folder.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>user@vpnserver<span class="o">]</span>$ <span class="nb">cd</span> /etc/openvpn/EasyRSA-v3.0.6/
+</code></pre></td></tr></table>
+</div>
+</div><p>Copy the EasyRSA configuration file, and enter it using vim (or another editor).</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>user@vpnserver<span class="o">]</span>$ cp vars.example vars <span class="p">;</span> vim vars
+</code></pre></td></tr></table>
+</div>
+</div><p>Uncomment following lines which will enable the use of RSA with 2048 bits. There is also an option to use elliptic curves.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="c1">#set_var EASYRSA_DN             &#34;cn_only&#34;</span>
+<span class="c1">#set_var EASYRSA_KEY_SIZE       2048</span>
+<span class="c1">#set_var EASYRSA_ALGO           rsa</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Create the CA, VPN key, certificate, and Diffie Hellman parameters.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>user@vpnserver<span class="o">]</span>$ <span class="nb">cd</span> /etc/openvpn/EasyRSA-v3.0.6
+
+<span class="o">[</span>user@vpnserver<span class="o">]</span>$ ./easyrsa init-pki
+<span class="o">[</span>user@vpnserver<span class="o">]</span>$ ./easyrsa build-ca
+<span class="o">[</span>user@vpnserver<span class="o">]</span>$ ./easyrsa build-server-full vpnserver nopass
+<span class="o">[</span>user@vpnserver<span class="o">]</span>$ ./easyrsa gen-dh
+</code></pre></td></tr></table>
+</div>
+</div><p>Copy needed files to root of OpenVPN configuration directory. The files being copied are the CA certificate, Diffie Hellman parameters, VPN server certificate, and VPN server key.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>user@vpnserver<span class="o">]</span>$ <span class="nb">cd</span> /etc/openvpn
+<span class="o">[</span>user@vpnserver<span class="o">]</span>$ cp EasyRSA-v3.0.6/pki/<span class="o">{</span>dh.pem,ca.crt<span class="o">}</span> EasyRSA-v3.0.6/pki<span class="o">{</span>/issued/vpnserver.crt,/private/vpnserver.key<span class="o">}</span> .
+</code></pre></td></tr></table>
+</div>
+</div><p>The following shows all the files that where copied.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>user@vpnserver<span class="o">]</span>$ ls -l *.crt *.key *.pem
+-rw-------. <span class="m">1</span> root root  <span class="m">818</span> Jul <span class="m">10</span> 22:46 ca.crt
+-rw-------. <span class="m">1</span> root root  <span class="m">245</span> Jul <span class="m">10</span> 22:46 dh.pem
+-rw-------. <span class="m">1</span> root root <span class="m">3181</span> Jul <span class="m">10</span> 22:46 vpnserver.crt
+-rw-------. <span class="m">1</span> root root  <span class="m">916</span> Jul <span class="m">10</span> 22:46 vpnserver.key
+<span class="o">[</span>user@vpnserver<span class="o">]</span>$
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="creating-openvpn-config">Creating OpenVPN config</h3>
+<p>Create file located at <code>/etc/openvpn/server.conf</code> and add the following configurations.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">port 1194
+proto tcp
+dev tun
+ca ca.crt
+cert vpnserver.crt
+key vpnserver.key
+dh dh.pem
+server 10.8.0.0 255.255.255.0
+ifconfig-pool-persist ipp.txt
+keepalive 10 120
+#tls-auth ta.key 0
+cipher AES-256-CBC
+comp-lzo
+user nobody
+group nobody
+persist-key
+persist-tun
+status openvpn-status.log
+log-append  openvpn.log
+verb 4
+remote-cert-eku &#34;TLS Web Client Authentication&#34;
+tls-version-min 1.2
+tls-cipher TLS-ECDHE-RSA-WITH-AES-256-GCM-SHA384
+auth SHA512
+reneg-sec 60
+plugin /usr/lib64/openvpn/plugins/openvpn-plugin-auth-pam.so openvpn
+client-cert-not-required
+#client-config-dir /etc/openvpn/ccd
+username-as-common-name
+
+## Redirect all traffic to VPN server ##
+#push &#34;redirect-gateway def1 bypass-dhcp&#34;
+#push &#34;dhcp-option DNS 1.1.1.1&#34;
+
+## Push a specfic route to redirct to VPN server ##
+push &#34;route 10.0.0.0 255.255.255.0&#34;
+</code></pre></td></tr></table>
+</div>
+</div><hr>
+<h5 id="selinux-issues">SELinux Issues</h5>
+<p><strong><em>NOTE:</em></strong>  If you are using SELinux and wish to run OpenVPN on a nonstandard port, it will not let you. If you do not have SELinux, than this section does not apply to you. If you do wish to run on a nonstandard port, please follow the following.</p>
+<p>Install policycoreutils-python package and use semanage to see what ports are allowed.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>user@vpnserver<span class="o">]</span>$ yum install policycoreutils-python -y
+<span class="o">[</span>user@vpnserver<span class="o">]</span>$ semanage port -l <span class="p">|</span> grep openvpn_port_t
+</code></pre></td></tr></table>
+</div>
+</div><p>You can add another port using the following command:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>user@vpnserver<span class="o">]</span>$ semanage port -a -t openvpn_port_t -p tcp <span class="m">1195</span>
+</code></pre></td></tr></table>
+</div>
+</div><hr>
+<h4 id="setting-up-pam">Setting up PAM</h4>
+<p>This section will setup PAM authentication that OpenVPN will use, however, we will not have any actual users or LDAP authentication. This will be to make sure that the VPN server is capable of starting up properly and that the client side can connect.</p>
+<p>Create a file <code>/etc/pam.d/openvpn</code> and add the following to it. This allows anyone to authenticate with any credentials.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">auth required pam_permit.so
+account sufficient pam_permit.so
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="starting-openvpn">Starting OpenVPN</h4>
+<p>Start OpenVPN</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>user@vpnserver<span class="o">]</span>$ systemctl start openvpn@server.service
+</code></pre></td></tr></table>
+</div>
+</div><p>If you encounter any errors, consult <code>/etc/openvpn/openvpn.log</code>.</p>
+<h4 id="testing-client-connection">Testing Client Connection</h4>
+<p>The following is the client configuration needed to connect to OpenVPN. Create this file on a different computer from the server. Do not forget to replace X.X.X.X with the IP address of your VPN server.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">client
+dev tun
+proto tcp
+remote X.X.X.X 1194
+resolv-retry infinite
+nobind
+user nobody
+group nobody
+persist-key
+persist-tun
+ca ca.crt
+remote-cert-tls server
+#tls-auth ta.key 1
+cipher AES-256-CBC
+comp-lzo
+verb 3
+auth SHA512
+auth-user-pass
+</code></pre></td></tr></table>
+</div>
+</div><p>Another component that is needed is the CA certificate located at <code>/etc/openvpn/ca.crt</code>. Copy this file to  the client computer in the same directory as the client configuration.</p>
+<p>When the OpenVPN client asks you for a username and password, type anything. Any credentials will be accepted, we are doing this to make sure that the OpenVPN server is properly working and that we can connect to it.</p>
+<p>If the client can successfully connect to the server then everything is working.</p>
+<h2 id="configuring-ldap-authentication">Configuring LDAP Authentication</h2>
+<p>In this section LDAP authentication will be setup. This authentication will be performed against Active Directory, only users that are apart of a security group named vpngroup will be allowed to authenticate.</p>
+<h3 id="active-directory-setup">Active Directory Setup</h3>
+<p>As can be seen below there is an OU named MyUsers. Inside we have two users named tim and vpnbind, and a security group named vpngroup.</p>
+<p>The vpnbind user account will  be used to access LDAP from the VPN server.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/01-openvpn-ldap-auth/1.png,  1.5x,  2x"
+        data-src=""
+        alt="1"
+        title="1" /></p>
+<p>The tim user account will be our VPN user, this user is apart of the vpngroup security group in order to have vpn access.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/01-openvpn-ldap-auth/2.png,  1.5x,  2x"
+        data-src=""
+        alt="2"
+        title="2" /></p>
+<h3 id="ldap-service-setup">LDAP Service Setup</h3>
+<p>Install the LDAP PAM module.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>user@vpnserver<span class="o">]</span>$ yum install nss-pam-ldapd -y
+</code></pre></td></tr></table>
+</div>
+</div><p>Paste the following into <code>/etc/nslcd.conf</code>. This is a deamon that will run in the background, its job is to perform LDAP queries on behalf of another process.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">uid nslcd
+gid ldap
+uri ldap://10.0.0.10/
+base <span class="nv">dc</span><span class="o">=</span>test,dc<span class="o">=</span>net
+binddn <span class="nv">cn</span><span class="o">=</span>vpnbind,ou<span class="o">=</span>MyUsers,dc<span class="o">=</span>test,dc<span class="o">=</span>net
+bindpw password123!@#
+scope sub
+
+
+base   group  <span class="nv">ou</span><span class="o">=</span>MyUsers,dc<span class="o">=</span>test,dc<span class="o">=</span>net
+base   passwd <span class="nv">ou</span><span class="o">=</span>MyUsers,dc<span class="o">=</span>test,dc<span class="o">=</span>net
+base   shadow <span class="nv">ou</span><span class="o">=</span>MyUsers,dc<span class="o">=</span>test,dc<span class="o">=</span>net
+
+bind_timelimit <span class="m">30</span>
+timelimit <span class="m">30</span>
+
+filter passwd <span class="o">(</span><span class="p">&amp;</span><span class="o">(</span><span class="nv">objectClass</span><span class="o">=</span>user<span class="o">)(</span><span class="nv">memberOf</span><span class="o">=</span><span class="nv">cn</span><span class="o">=</span>vpngroup,ou<span class="o">=</span>MyUsers,dc<span class="o">=</span>test,dc<span class="o">=</span>net<span class="o">))</span>
+map    passwd uid              sAMAccountName
+
+filter shadow <span class="o">(</span><span class="p">&amp;</span><span class="o">(</span><span class="nv">objectClass</span><span class="o">=</span>user<span class="o">)(</span><span class="nv">memberOf</span><span class="o">=</span><span class="nv">cn</span><span class="o">=</span>vpngroup,ou<span class="o">=</span>MyUsers,dc<span class="o">=</span>test,dc<span class="o">=</span>net<span class="o">))</span>
+map    shadow uid              sAMAccountName
+
+
+tls_reqcert never
+</code></pre></td></tr></table>
+</div>
+</div><p>Start the nslcd service.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>user@vpnserver<span class="o">]</span>$ systemctl start nslcd
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="configure-pam-that-is-used-by-openvpn">Configure PAM that is used by OpenVPN</h3>
+<p>Paste following into <code>/etc/pam.d/openvpn</code>. Only the first line is changed from what was before.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">auth required pam_ldap.so
+account sufficient pam_permit.so
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="testing-ldap-authentication-with-openvpn">Testing LDAP Authentication with OpenVPN</h3>
+<p>Restart OpenVPN server.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>user@vpnserver<span class="o">]</span>$ systemctl restart openvpn@server.service
+</code></pre></td></tr></table>
+</div>
+</div><p>Now use the same client configuration from last time to connect as a domain user. If you are not planning on adding 2-Factor authentication or network access polices, skip <a href="#configuring-network-access" rel="noopener noreffer">here</a>
+ in order to configure VPN network connectivity.</p>
+<h2 id="2-factor-authentication-with-totp">2-Factor Authentication with TOTP</h2>
+<p>This section will configure TOTP based 2-Factor authentication using Google Authenticator. The Google Authenticator or andOTP mobile application can be used to view the codes.</p>
+<p>Begin by installing Google Authenticator.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>user@vpnserver<span class="o">]</span>$ yum install google-authenticator
+</code></pre></td></tr></table>
+</div>
+</div><p>Create a new folder in the root of OpenVPN configuration which will store the shared secret between the server and user.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>user@vpnserver<span class="o">]</span>$ <span class="nb">cd</span> /etc/openvpn
+<span class="o">[</span>user@vpnserver<span class="o">]</span>$ mkdir otp
+</code></pre></td></tr></table>
+</div>
+</div><p>Alter the PAM configuration for OpenVPN in <code>/etc/pam.d/openvpn</code> to include Google Authenticator.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">auth required pam_google_authenticator.so secret=/etc/openvpn/otp/${USER}.google_authenticator user=root forward_pass
+auth required pam_ldap.so use_first_pass
+
+account sufficient pam_permit.so
+</code></pre></td></tr></table>
+</div>
+</div><p>Create a OTP setting for a user.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>user@vpnserver<span class="o">]</span>$ google-authenticator --time-based --disallow-reuse --force --rate-limit<span class="o">=</span><span class="m">3</span> --rate-time<span class="o">=</span><span class="m">30</span> --window-size<span class="o">=</span><span class="m">3</span> -l <span class="s2">&#34;tim@test.net&#34;</span> -s /etc/openvpn/otp/tim.g
+oogle_authenticator
+</code></pre></td></tr></table>
+</div>
+</div><p>After running this command scan QR code with app.</p>
+<p>Please note that as the OTP expires the renegotiation time must be set to 0 so the user does not get disconnected, of course this can also be used as a mechanism to timeout the users connection if one wishes.</p>
+<p>In order to disable renegotiation set the following in <code>/etc/openvpn/server.conf</code> and user config.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">reneg-sec 0
+</code></pre></td></tr></table>
+</div>
+</div><hr>
+<h5 id="selinux-issues-1">SELinux Issues</h5>
+<blockquote>
+<p><strong><em>NOTE:</em></strong>  If using SELinux you will have to change the file context of the files in <code>/etc/openvpn/otp</code>. In this example run the following command.</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>user@vpnserver<span class="o">]</span>$ <span class="nb">cd</span> /etc/openvpn/otp
+<span class="o">[</span>user@vpnserver<span class="o">]</span>$ chcon -u system_u -t openvpn_etc_rw_t tim.google_authenticator
+</code></pre></td></tr></table>
+</div>
+</div><hr>
+<h3 id="testing-two-factor--auth">Testing Two Factor  Auth</h3>
+<p>Restart OpenVPN server</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>user@vpnserver<span class="o">]</span>$ systemctl restart openvpn@server.service
+</code></pre></td></tr></table>
+</div>
+</div><p>Connect as the client once again. If your domain password is <code>mypassword</code> and your OTP code is <code>123 456</code> enter the password as <code>mypassword123456</code>.</p>
+<h2 id="configuring-network-access">Configuring Network Access</h2>
+<p>Now that the user can successful authenticate and connect to OpenVPN we will configure forwarding and firewall polices so the users can access either the internal network or internet.</p>
+<p>Turn on forwarding</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>user@vpnserver<span class="o">]</span>$ <span class="nb">echo</span> <span class="s1">&#39;net.ipv4.ip_forward=1&#39;</span>  &gt;&gt; /etc/sysctl.conf
+<span class="o">[</span>user@vpnserver<span class="o">]</span>$ sysctl net.ipv4.ip_forward<span class="o">=</span><span class="m">1</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Set up outgoing NAT. Be sure to change the source subnet to what was set in the OpenVPN server configuration.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>user@vpnserver<span class="o">]</span>$ iptables -t nat -A POSTROUTING -s 10.8.0.0/24 -o eth0 -j MASQUERADE
+</code></pre></td></tr></table>
+</div>
+</div><p>At this point any user that connects will be able to connect to the local LAN network that the VPN server is on. A small configration change must be made in order to redirect all the traffic of the client through the VPN server.</p>
+<p>Don&rsquo;t forget to save the iptables rules:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>user@vpnserver<span class="o">]</span>$ iptables-save &gt; /etc/sysconfig/iptables
+</code></pre></td></tr></table>
+</div>
+</div><p>In <code>/etc/openvpn/server.conf</code> comment out the following:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">push &#34;route 10.0.0.0 255.255.255.0&#34;
+</code></pre></td></tr></table>
+</div>
+</div><p>And uncomment the following:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">#push &#34;redirect-gateway def1 bypass-dhcp&#34;
+#push &#34;dhcp-option DNS 1.1.1.1&#34;
+</code></pre></td></tr></table>
+</div>
+</div><p>Now restart the VPN Server</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>user@vpnserver<span class="o">]</span>$ systemctl restart openvpn@server.service
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="user-based-network-access-polices">User Based Network Access Polices</h2>
+<p>In order to regulate the network activity of each user iptables will be used. The issue is that we cannot predict which IP address a user will receive. In order to combat this a static IP address will be given to each user.</p>
+<p>As our tunnel network we are using 10.8.0.0/24, we will split this into two subnets. One subnet will be for Administrators and the other for users.</p>
+<table>
+<thead>
+<tr>
+<th align="center">User Type</th>
+<th align="center">Subnet</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">Admins</td>
+<td align="center">10.8.0.0/25</td>
+</tr>
+<tr>
+<td align="center">Users</td>
+<td align="center">10.8.0.128/25</td>
+</tr>
+</tbody>
+</table>
+<p>Furthermore, in this example we will have the following users.</p>
+<table>
+<thead>
+<tr>
+<th align="center">Username</th>
+<th align="center">Static IP</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">Tim</td>
+<td align="center">10.8.0.100/25</td>
+</tr>
+<tr>
+<td align="center">Bob</td>
+<td align="center">10.8.0.200/25</td>
+</tr>
+</tbody>
+</table>
+<h3 id="assigning-static-ip-address">Assigning Static IP address</h3>
+<p>Create the client configuration directory</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">[user@vpnserver]$ cd /etc/openvpn
+[user@vpnserver]$ mkdir ccd
+</code></pre></td></tr></table>
+</div>
+</div><p>Now we will create two files in <code>/etc/openvpn/ccd</code></p>
+<p>Add the following into the file <code>/etc/openvpn/ccd/tim</code>.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">ifconfig-push 10.8.0.100 10.8.0.1
+</code></pre></td></tr></table>
+</div>
+</div><p>Add the following into the file <code>/etc/openvpn/ccd/bob</code>.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">ifconfig-push 10.8.0.200 10.8.0.1
+</code></pre></td></tr></table>
+</div>
+</div><p>Also make sure to uncomment or add the following line in <code>/etc/openvpn/server.conf</code>.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">client-config-dir /etc/openvpn/ccd
+</code></pre></td></tr></table>
+</div>
+</div><p>Now restart the VPN and each user should be getting a static ip on connect</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>user@vpnserver<span class="o">]</span>$ systemctl restart openvpn@server.service
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="firewall-polices">Firewall Polices</h3>
+<p>The following iptables configuration will create two chains, ADMINS and USERS. When an IP address falls into a specific subnet it will be sent to the corresponding chain. Any rules you wish to enforce on the users can be added into the chains.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">iptables -N ADMINS
+iptables -N USERS
+iptables -P FORWARD DROP
+iptables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+iptables -A FORWARD -i tun+ -s 10.8.0.0/25 -j ADMINS
+iptables -A FORWARD -i tun+ -s 10.8.0.128/25 -j USERS
+</code></pre></td></tr></table>
+</div>
+</div></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>The article was updated on 2019-07-12</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span><a href="javascript:void(0);" title="Share on Twitter" data-sharer="twitter" data-url="https://blog.thinkbox.dev/posts/01-openvpn-ldap-auth/" data-title="OpenVPN with LDAP &#43; 2-Factor Authentication and Network Access Polices" data-hashtags="OpenVPN,Linux"><i class="fab fa-twitter fa-fw"></i></a><a href="javascript:void(0);" title="Share on Facebook" data-sharer="facebook" data-url="https://blog.thinkbox.dev/posts/01-openvpn-ldap-auth/" data-hashtag="OpenVPN"><i class="fab fa-facebook-square fa-fw"></i></a><a href="javascript:void(0);" title="Share on Linkedin" data-sharer="linkedin" data-url="https://blog.thinkbox.dev/posts/01-openvpn-ldap-auth/"><i class="fab fa-linkedin fa-fw"></i></a><a href="javascript:void(0);" title="Share on WhatsApp" data-sharer="whatsapp" data-url="https://blog.thinkbox.dev/posts/01-openvpn-ldap-auth/" data-title="OpenVPN with LDAP &#43; 2-Factor Authentication and Network Access Polices" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="javascript:void(0);" title="Share on Hacker News" data-sharer="hackernews" data-url="https://blog.thinkbox.dev/posts/01-openvpn-ldap-auth/" data-title="OpenVPN with LDAP &#43; 2-Factor Authentication and Network Access Polices"><i class="fab fa-hacker-news fa-fw"></i></a><a href="javascript:void(0);" title="Share on Reddit" data-sharer="reddit" data-url="https://blog.thinkbox.dev/posts/01-openvpn-ldap-auth/"><i class="fab fa-reddit fa-fw"></i></a><a href="javascript:void(0);" title="Share on VK" data-sharer="vk" data-url="https://blog.thinkbox.dev/posts/01-openvpn-ldap-auth/" data-title="OpenVPN with LDAP &#43; 2-Factor Authentication and Network Access Polices"><i class="fab fa-vk fa-fw"></i></a><a href="javascript:void(0);" title="Share on 微博" data-sharer="weibo" data-url="https://blog.thinkbox.dev/posts/01-openvpn-ldap-auth/" data-title="OpenVPN with LDAP &#43; 2-Factor Authentication and Network Access Polices"><i class="fab fa-weibo fa-fw"></i></a><a href="javascript:void(0);" title="Share on 百度" data-sharer="baidu" data-url="https://blog.thinkbox.dev/posts/01-openvpn-ldap-auth/" data-title="OpenVPN with LDAP &#43; 2-Factor Authentication and Network Access Polices"><i class="loveit it-baidu-fill"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/openvpn">OpenVPN</a>,&nbsp;<a href="/tags/linux">Linux</a></section>
+        <section>
+            <span><a href="javascript:window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/">Home</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav">
+            <a href="/posts/first_post/" class="next" rel="next" title="First_post">First_post<i class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div class="comment"><div id="disqus_thread"></div><noscript>
+            Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript></div>
+    </article></div>
+            </main><footer class="footer">
+    <div class="copyright"><div class="copyright-line">Powered by <a href="https://gohugo.io/" target="_blank" rel="external nofollow noopener noreffer">Hugo</a> | Theme - <a href="https://github.com/dillonzq/LoveIt" target="_blank" rel="external nofollow noopener noreffer"><i class="far fa-heart fa-fw"></i> LoveIt</a>
+        </div>
+
+        <div class="copyright-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2019 - 2020</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank">Aleks</a></span></div>
+    </div>
+</footer>
+</div><a href="#" class="dynamic-to-top animated faster" id="dynamic-to-top">
+            <i class="fas fa-chevron-up fa-fw"></i>
+        </a><link rel="stylesheet" href="/lib/iconfont/iconfont.min.css"><script defer src="https://blog-thinkbox-dev.disqus.com/embed.js"></script><script src="/lib/smooth-scroll/smooth-scroll.polyfills.min.js"></script><script src="/lib/sharer/sharer.min.js"></script><script src="/lib/lazysizes/lazysizes.min.js"></script><script src="/js/theme.min.js"></script>
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-161605270-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+</body>
+</html>
