@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <title>Creating a Reverse Proxy with Docker | ThinkBox</title>
+        <meta name="Description" content=""><meta property="og:title" content="Creating a Reverse Proxy with Docker" />
+<meta property="og:description" content="Introduction This blog post will explain the concept of a reverse proxy, and will demonstrate the steps that need to be taken in order to create a Nginx reverse proxy inside of Docker.
+The concept of a reverse proxy is very simple, a client computer will connect to a central point that will pass their connection on to the desired destination. For example, lets take a look at the diagram below." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://blog.thinkbox.dev/posts/0003-create-reverse-proxy-with-docker/" />
+<meta property="article:published_time" content="2019-07-18T17:15:47-04:00" />
+<meta property="article:modified_time" content="2019-07-18T17:15:47-04:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Creating a Reverse Proxy with Docker"/>
+<meta name="twitter:description" content="Introduction This blog post will explain the concept of a reverse proxy, and will demonstrate the steps that need to be taken in order to create a Nginx reverse proxy inside of Docker.
+The concept of a reverse proxy is very simple, a client computer will connect to a central point that will pass their connection on to the desired destination. For example, lets take a look at the diagram below."/>
+<meta name="theme-color" content="#ffffff">
+<meta name="msapplication-TileColor" content="#da532c">
+<link rel="canonical" href="https://blog.thinkbox.dev/posts/0003-create-reverse-proxy-with-docker/" />
+<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="prev" href="https://blog.thinkbox.dev/posts/0002-setting-up-ad-from-scratch/" /><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="/lib/animate/animate.min.css"><link rel="stylesheet" href="/css/style.min.css"><meta name="google-site-verification" content="UA-161605270-1" /><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Creating a Reverse Proxy with Docker",
+        "inLanguage": "en",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/blog.thinkbox.dev\/posts\/0003-create-reverse-proxy-with-docker\/"
+        },"genre": "posts","keywords": "Linux, Docker","wordcount":  1651 ,
+        "url": "https:\/\/blog.thinkbox.dev\/posts\/0003-create-reverse-proxy-with-docker\/","datePublished": "2019-07-18","dateModified": "2019-07-18","author": {
+                "@type": "Person",
+                "name": "Aleks"
+            },"description": ""
+    }
+    </script></head>
+    <body><script>
+            if (!window.localStorage || !window.localStorage.getItem('theme')) {window.isDark = 'dark' === 'dark';} else {
+                window.isDark = (window.localStorage && window.localStorage.getItem('theme')) === 'dark';
+            }
+            window.isDark && document.body.classList.add('dark-theme');
+        </script><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/">ThinkBox</a>
+        </div>
+        <div class="menu"><a class="menu-item" href="/posts/" rel="noopener noreffer">Posts</a><a class="menu-item" href="/tags/" rel="noopener noreffer">Tags</a><a class="menu-item" href="/categories/" rel="noopener noreffer">Categories</a><span class="menu-item">|</span>
+            <a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-wrapper">
+        <div class="header-container">
+            <div class="header-title">
+                <a href="/">ThinkBox</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><a class="menu-item" href="/posts/" title="" rel="noopener noreffer">Posts</a><a class="menu-item" href="/tags/" title="" rel="noopener noreffer">Tags</a><a class="menu-item" href="/categories/" title="" rel="noopener noreffer">Categories</a><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header>
+
+<script>
+    window.desktopHeaderMode = "fixed";
+    window.mobileHeaderMode = "auto";
+</script>
+<main class="main">
+                <div class="container"><article class="page single"><h1 class="single-title animated flipInX">Creating a Reverse Proxy with Docker</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel="noopener noreffer author" class="author"><i class="fas fa-user-circle fa-fw"></i>Aleks</a>
+</span>&nbsp;
+                    <span class="post-category">included in<a href="/categories/misc-infrastructure">
+                                <i class="far fa-folder fa-fw"></i>Misc infrastructure
+                            </a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i><time datetime=2019-07-18>2019-07-18</time>&nbsp;
+                <i class="fas fa-pencil-alt fa-fw"></i>about 1651 words&nbsp;
+                <i class="far fa-clock fa-fw"></i>8 min&nbsp;</div>
+        </div><div class="toc" id="toc-auto">
+                <h2 class="toc-title">Contents</h2>
+                <div class="toc-content" id="toc-content-auto"></div>
+            </div>
+            <div class="toc" id="toc-static">
+                <details>
+                    <summary>
+                        <div class="toc-title">
+                            <span>Contents</span>
+                            <span><i class="details icon fas fa-angle-down"></i></span>
+                        </div>
+                    </summary>
+                    <div class="toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#installing-docker-and-docker-compose">Installing Docker and Docker Compose</a>
+      <ul>
+        <li><a href="#giving-a-user-access-to-docker">Giving a User Access to Docker</a>
+          <ul>
+            <li>
+              <ul>
+                <li><a href="#docker-root-access-issue">Docker Root Access Issue</a></li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#creating-reverse-proxy">Creating Reverse Proxy</a>
+      <ul>
+        <li><a href="#configure-dns">Configure DNS</a></li>
+        <li><a href="#creating-a-docker-compose-configuration-file">Creating a Docker Compose Configuration File</a></li>
+        <li><a href="#nginx-reverse-proxy-configuration">Nginx Reverse Proxy Configuration</a></li>
+        <li><a href="#creating-a-self-singed-certificate">Creating a Self Singed Certificate</a></li>
+        <li><a href="#creating-content-for-end-points">Creating Content for End Points</a></li>
+      </ul>
+    </li>
+    <li><a href="#testing-reverse-proxy">Testing Reverse Proxy</a></li>
+  </ul>
+</nav></div>
+                </details>
+            </div><div class="content" id="content" style="text-align: justify;"><h2 id="introduction">Introduction</h2>
+<p>This blog post will explain the concept of a reverse proxy, and will demonstrate the steps that need to be taken in order to create a Nginx reverse proxy inside of Docker.</p>
+<p>The concept of a reverse proxy is very simple, a client computer will connect to a central point that will pass their connection on to the desired destination. For example, lets take a look at the diagram below. The client can connect to two domains, <code>web1.test.net</code> and <code>web2.test.net</code>. Regardless of which domain the user wants to connect to the connection will always be sent to the front facing reverse proxy. The reason for this is that the dns record for <code>web1.test.net</code> and <code>web2.test.net</code> point to the same location.</p>
+<p>The question arises as to how the reverse proxy will figure out where forward the connections it receives. Notice that between the Client Computer and the Reverse Proxy the connection is using HTTPS, however, from the Reverse Proxy to the destination it is HTTP. This means that the Reverse Proxy is capable of viewing the plain text HTTP. Through this the Reverse Proxy can learn which domain the user wants to connect to.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0003-create-reverse-proxy-with-docker/DockerReverseProxyDiagram.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h2 id="installing-docker-and-docker-compose">Installing Docker and Docker Compose</h2>
+<p>This section will show how to install Docker and Docker Compose on CentOS 7. You can use your own favorite distribution, you will have the choice of getting Docker from the distributions repositories or the official Docker repository. The following installs Docker from the official repository on CentOS 7.</p>
+<p>Run this one liner to add the official Docker repository, install Docker, start it, and enable it so it will start on boot.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@DockerServer<span class="o">]</span>$ sudo yum install -y yum-utils device-mapper-persistent-data lvm2 <span class="p">;</span> sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo<span class="p">;</span> sudo yum install docker-ce -y <span class="p">;</span> sudo systemctl start docker <span class="p">;</span> sudo systemctl <span class="nb">enable</span> docker 
+</code></pre></td></tr></table>
+</div>
+</div><p>Run this one liner to install Docker compose from the official Docker Github.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@DockerServer<span class="o">]</span>$ sudo curl -L <span class="s2">&#34;https://github.com/docker/compose/releases/download/1.22.0/docker-compose-</span><span class="k">$(</span>uname -s<span class="k">)</span><span class="s2">-</span><span class="k">$(</span>uname -m<span class="k">)</span><span class="s2">&#34;</span> -o /usr/local/bin/docker-compose <span class="p">;</span> sudo chmod +x /usr/local/bin/docker-compose
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="giving-a-user-access-to-docker">Giving a User Access to Docker</h3>
+<p>You will notice that you need to use sudo to run any docker commands as a regular user. You can either use the root account to make life easy, or you can add your current user into the <code>docker</code> group which will give user access.</p>
+<p>Run the following to add a user named <code>user</code> to a group named <code>docker</code>. Restart the system and you will have access to Docker without sudo.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">[user@DockerServer]$ sudo gpasswd -a user docker
+</code></pre></td></tr></table>
+</div>
+</div><hr>
+<h5 id="docker-root-access-issue">Docker Root Access Issue</h5>
+<p><strong><em>NOTE:</em></strong>  If you have given a regular user access to use Docker, this user is essentials root on the system. This issue stems from the fact that Docker itself is run as root. Run the following as a demonstration, and make a decision for yourself whether or not this is acceptable.</p>
+<p>Enter a new container and bind the <code>/</code> of the host to <code>/root</code> of your container.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>user@DockerServer<span class="o">]</span>$ docker run -it --rm -v /:/root ubuntu /bin/bash
+</code></pre></td></tr></table>
+</div>
+</div><p>chroot into the host system. This will give you access to the host system running the Docker container as root.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">root@61d888424b44:/# chroot /root 
+sh-4.2# docker ps
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+61d888424b44        ubuntu              <span class="s2">&#34;/bin/bash&#34;</span>         <span class="m">3</span> minutes ago       Up <span class="m">3</span> minutes                            dreamy_yonath
+sh-4.2# 
+</code></pre></td></tr></table>
+</div>
+</div><p>As you can see we are able to access the host system and list the container itself being run.</p>
+<hr>
+<h2 id="creating-reverse-proxy">Creating Reverse Proxy</h2>
+<h3 id="configure-dns">Configure DNS</h3>
+<p>The first step is to setup a DNS server that will point to the server with all the Docker containers on it. The IP address of my server is 10.0.0.200, this is also the IP address that the front facing server will be exposed under.</p>
+<p>In order to make things simple make a A record that points to the server itself, I named mine <code>reverseproxy.test.net</code> and gave it the IP address of 10.0.0.200. In order to not type the IP address over again create a CNAME record that points to the A record created.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0003-create-reverse-proxy-with-docker/DNSRecords.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>In order to confirm that everything is working ping the domains <code>web1.test.net</code> and <code>web2.test.net</code> from a client machine, make sure that the DNS resolves the IP address and that the server is reachable.</p>
+<h3 id="creating-a-docker-compose-configuration-file">Creating a Docker Compose Configuration File</h3>
+<p>Create a directory in which all the files will be stored.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>user@DockerServer<span class="o">]</span>$ <span class="nb">cd</span> ~
+<span class="o">[</span>user@DockerServer<span class="o">]</span>$ mkdir reverseproxy
+<span class="o">[</span>user@DockerServer<span class="o">]</span>$ <span class="nb">cd</span> reverseproxy/
+</code></pre></td></tr></table>
+</div>
+</div><p>Create a file located at <code>~/reverseproxy/docker-compose.yml</code> which has the following contents:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-yaml" data-lang="yaml"><span class="k">version</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;3&#34;</span><span class="w">
+</span><span class="w"></span><span class="k">services</span><span class="p">:</span><span class="w">
+</span><span class="w">  </span><span class="k">web1.test.net</span><span class="p">:</span><span class="w">
+</span><span class="w">    </span><span class="k">image</span><span class="p">:</span><span class="w"> </span>httpd<span class="w">
+</span><span class="w">    </span><span class="k">restart</span><span class="p">:</span><span class="w"> </span>always<span class="w">
+</span><span class="w">    </span><span class="k">volumes</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span>- ./files/web1<span class="p">:</span>/usr/local/apache2/htdocs<span class="p">:</span>ro<span class="w">
+</span><span class="w">  </span><span class="k">web2.test.net</span><span class="p">:</span><span class="w">
+</span><span class="w">    </span><span class="k">image</span><span class="p">:</span><span class="w"> </span>httpd<span class="w">
+</span><span class="w">    </span><span class="k">restart</span><span class="p">:</span><span class="w"> </span>always<span class="w">
+</span><span class="w">    </span><span class="k">volumes</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span>- ./files/web2<span class="p">:</span>/usr/local/apache2/htdocs<span class="p">:</span>ro<span class="w">
+</span><span class="w">  </span><span class="k">reverseproxy</span><span class="p">:</span><span class="w">
+</span><span class="w">    </span><span class="k">image</span><span class="p">:</span><span class="w"> </span>nginx<span class="w">
+</span><span class="w">    </span><span class="k">volumes</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span>- ./files/reverseproxy/nginx.conf<span class="p">:</span>/etc/nginx/nginx.conf<span class="p">:</span>ro<span class="w">
+</span><span class="w">      </span>- ./files/reverseproxy/ssl<span class="p">:</span>/ssl<span class="p">:</span>ro<span class="w">
+</span><span class="w">    </span><span class="k">ports</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span>- <span class="s2">&#34;80:80&#34;</span><span class="w">
+</span><span class="w">      </span>- <span class="s2">&#34;443:443&#34;</span><span class="w">
+</span><span class="w">    </span><span class="k">restart</span><span class="p">:</span><span class="w"> </span>always<span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><p>This file describes the containers and will be created, and the parameters to be given to each container.</p>
+<p>The <code>reverseproxy</code> container is the reverse proxy itself, as can be seen it exposes ports 80 and 443 for web traffic. There are also a file and folder binded to it. <code>./files/reverseproxy/nginx.conf</code> is the configuration for Nginx, and <code>./files/reverseproxy/ssl</code> is a folder that will contain the certificate for TLS.</p>
+<p>Next we see two other containers, <code>web1.test.net</code> and <code>web2.test.net</code>. These are our back end services that we will connect to through the reverse proxy, they are not exposed directly to the network. You can see through the <code>image</code> parameter that they are using the Apache webserver. These containers also bind a volume that will contain the <code>index.html</code> file.</p>
+<p>Lastly, it is best to point out that when we create these containers with Docker Compose a network will be created. This is a internal network for the Docker containers, inside this network there is also a built in DNS server that Docker provides. We will not be accessing the <code>reverseproxy</code> container so we do not need any domain for it. However, <code>web1.test.net</code> and <code>web2.test.net</code> will resolve to the containers IP address inside of the Docker network, through this method the reverse proxy will be able to locate the container.</p>
+<h3 id="nginx-reverse-proxy-configuration">Nginx Reverse Proxy Configuration</h3>
+<p>Now we will create the configration for the Nginx reverse proxy. Begin by creating the folder that this will be located in:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@DockerServer<span class="o">]</span>$ <span class="nb">cd</span> ~
+<span class="o">[</span>user@DockerServer<span class="o">]</span>$ <span class="nb">cd</span> reverseproxy/
+<span class="o">[</span>user@DockerServer<span class="o">]</span>$ mkdir files
+<span class="o">[</span>user@DockerServer<span class="o">]</span>$ <span class="nb">cd</span> files/
+<span class="o">[</span>user@DockerServer<span class="o">]</span>$ mkdir reverseproxy
+</code></pre></td></tr></table>
+</div>
+</div><p>Create the following file in the location <code>~/reverseproxy/files/reverseproxy/nginx.conf</code>:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-nginx" data-lang="nginx"><span class="k">user</span>  <span class="s">nginx</span><span class="p">;</span>
+<span class="k">worker_processes</span>  <span class="mi">1</span><span class="p">;</span>
+
+<span class="k">error_log</span>  <span class="s">/var/log/nginx/error.log</span> <span class="s">warn</span><span class="p">;</span>
+<span class="k">pid</span>        <span class="s">/var/run/nginx.pid</span><span class="p">;</span>
+
+<span class="k">events</span> <span class="p">{</span>
+    <span class="kn">worker_connections</span>  <span class="mi">1024</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">http</span> <span class="p">{</span>
+    <span class="kn">log_format</span>  <span class="s">main</span>  <span class="s">&#39;</span><span class="nv">$remote_addr</span> <span class="s">-</span> <span class="nv">$remote_user</span> <span class="s">[</span><span class="nv">$time_local]</span> <span class="s">&#34;</span><span class="nv">$request&#34;</span> <span class="s">&#39;</span>
+                      <span class="s">&#39;</span><span class="nv">$status</span> <span class="nv">$body_bytes_sent</span> <span class="s">&#34;</span><span class="nv">$http_referer&#34;</span> <span class="s">&#39;</span>
+                      <span class="s">&#39;&#34;</span><span class="nv">$http_user_agent&#34;</span> <span class="s">&#34;</span><span class="nv">$http_x_forwarded_for&#34;</span> <span class="s">-</span> <span class="s">&#34;</span><span class="nv">$http_host&#34;&#39;</span><span class="p">;</span>
+    <span class="kn">access_log</span>  <span class="s">/var/log/nginx/access.log</span>  <span class="s">main</span><span class="p">;</span>
+    <span class="kn">sendfile</span>            <span class="no">on</span><span class="p">;</span>
+    <span class="kn">tcp_nopush</span>          <span class="no">on</span><span class="p">;</span>
+    <span class="kn">tcp_nodelay</span>         <span class="no">on</span><span class="p">;</span>
+    <span class="kn">keepalive_timeout</span>   <span class="mi">65</span><span class="p">;</span>
+    <span class="kn">types_hash_max_size</span> <span class="mi">2048</span><span class="p">;</span>
+    <span class="kn">include</span>             <span class="s">/etc/nginx/mime.types</span><span class="p">;</span>
+    <span class="kn">default_type</span>        <span class="s">application/octet-stream</span><span class="p">;</span>
+    <span class="kn">include</span> <span class="s">/etc/nginx/conf.d/*.conf</span><span class="p">;</span>
+
+    <span class="kn">server</span> <span class="p">{</span>
+        <span class="kn">listen</span>       <span class="mi">80</span> <span class="s">default_server</span><span class="p">;</span>
+        <span class="kn">server_name</span>  <span class="s">_</span><span class="p">;</span>
+        <span class="kn">root</span>         <span class="s">/usr/share/nginx/html</span><span class="p">;</span>
+
+	<span class="kn">return</span> <span class="mi">301</span> <span class="s">https://</span><span class="nv">$host$request_uri</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="kn">server</span> <span class="p">{</span>
+		<span class="kn">listen</span>       <span class="mi">443</span> <span class="s">ssl</span> <span class="s">http2</span> <span class="s">default_server</span><span class="p">;</span>
+		<span class="kn">server_name</span>  <span class="s">_</span><span class="p">;</span>
+		<span class="kn">root</span>         <span class="s">/usr/share/nginx/html</span><span class="p">;</span>
+
+		<span class="kn">ssl_certificate</span> <span class="s">&#34;/ssl/server.crt&#34;</span><span class="p">;</span>
+		<span class="kn">ssl_certificate_key</span> <span class="s">&#34;/ssl/server.key&#34;</span><span class="p">;</span>
+		<span class="kn">ssl_session_cache</span> <span class="s">shared:SSL:1m</span><span class="p">;</span>
+		<span class="kn">ssl_session_timeout</span>  <span class="mi">10m</span><span class="p">;</span>
+		<span class="kn">ssl_ciphers</span> <span class="s">HIGH:!aNULL:!MD5</span><span class="p">;</span>
+		<span class="kn">ssl_prefer_server_ciphers</span> <span class="no">on</span><span class="p">;</span>
+
+		<span class="kn">location</span> <span class="s">/</span> <span class="p">{</span>
+			<span class="kn">resolver</span> <span class="mi">127</span><span class="s">.0.0.11</span><span class="p">;</span>
+			<span class="kn">proxy_pass</span> <span class="s">&#34;http://</span><span class="nv">$http_host&#34;</span><span class="p">;</span> 
+		<span class="p">}</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>The must important part of this configuration to understand is that when connections are received as HTTP they will be redirected to HTTPS using <code>return 301 https://$host$request_uri;</code>. When received as HTTPS they will be proxied using the <code>proxy_pass &quot;http://$http_host&quot;;</code> line. Note that we specify a DNS using <code>resolver 127.0.0.11;</code>, this is the internal Docker DNS that will be used to locate the IP address of the containers.</p>
+<h3 id="creating-a-self-singed-certificate">Creating a Self Singed Certificate</h3>
+<p>Since our Nginx reverse proxy is using HTTPS we will create a self singed certificate. This certificate will be created as a wildcard for the <code>test.net</code> domain.</p>
+<p>Create a folder and generate the selfsigned certifcate.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@DockerServer<span class="o">]</span>$ <span class="nb">cd</span> ~/reverseproxy/files/reverseproxy/
+<span class="o">[</span>user@DockerServer<span class="o">]</span>$ mkdir ssl
+<span class="o">[</span>user@DockerServer<span class="o">]</span>$ <span class="nb">cd</span> ssl/
+<span class="o">[</span>user@DockerServer<span class="o">]</span>$ sudo openssl req -x509 -nodes -days <span class="m">365</span> -newkey rsa:1024 -keyout server.key -out server.crt
+</code></pre></td></tr></table>
+</div>
+</div><p>When prompted with Common Name enter the wild card domain, like the following:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Common Name (eg, your name or your server&#39;s hostname) []:*.test.net
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="creating-content-for-end-points">Creating Content for End Points</h3>
+<p>Create folders for the <code>index.html</code> files that will be served to the Apache webservers, and create the files themselves.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@DockerServer<span class="o">]</span>$ <span class="nb">cd</span> ~/reverseproxy/
+<span class="o">[</span>user@DockerServer<span class="o">]</span>$ <span class="nb">cd</span> files/
+<span class="o">[</span>user@DockerServer<span class="o">]</span>$ mkdir web1
+<span class="o">[</span>user@DockerServer<span class="o">]</span>$ mkdir web2
+<span class="o">[</span>user@DockerServer<span class="o">]</span>$ <span class="nb">echo</span> <span class="s2">&#34;This is web1&#34;</span> &gt; web1/index.html
+<span class="o">[</span>user@DockerServer<span class="o">]</span>$ <span class="nb">echo</span> <span class="s2">&#34;This is web2&#34;</span> &gt; web2/index.html
+</code></pre></td></tr></table>
+</div>
+</div><p>At this point your file structure should look like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@DockerServer<span class="o">]</span>$ ls -lR ~/reverseproxy/
+/home/user/reverseproxy/:
+total <span class="m">4</span>
+-rw-rw-r--. <span class="m">1</span> user user <span class="m">474</span> Jul <span class="m">18</span> 20:00 docker-compose.yml
+drwxrwxr-x. <span class="m">5</span> user user  <span class="m">50</span> Jul <span class="m">18</span> 19:58 files
+
+/home/user/reverseproxy/files:
+total <span class="m">0</span>
+drwxrwxr-x. <span class="m">3</span> user user <span class="m">35</span> Jul <span class="m">18</span> 19:52 reverseproxy
+drwxrwxr-x. <span class="m">2</span> user user <span class="m">24</span> Jul <span class="m">18</span> 19:58 web1
+drwxrwxr-x. <span class="m">2</span> user user <span class="m">24</span> Jul <span class="m">18</span> 19:58 web2
+
+/home/user/reverseproxy/files/reverseproxy:
+total <span class="m">4</span>
+-rw-rw-r--. <span class="m">1</span> user user <span class="m">1285</span> Jul <span class="m">18</span> 19:52 nginx.conf
+drwxrwxr-x. <span class="m">2</span> user user   <span class="m">42</span> Jul <span class="m">18</span> 19:54 ssl
+
+/home/user/reverseproxy/files/reverseproxy/ssl:
+total <span class="m">8</span>
+-rw-r--r--. <span class="m">1</span> root root <span class="m">956</span> Jul <span class="m">18</span> 19:54 server.crt
+-rw-r--r--. <span class="m">1</span> root root <span class="m">912</span> Jul <span class="m">18</span> 19:54 server.key
+
+/home/user/reverseproxy/files/web1:
+total <span class="m">4</span>
+-rw-rw-r--. <span class="m">1</span> user user <span class="m">13</span> Jul <span class="m">18</span> 19:58 index.html
+
+/home/user/reverseproxy/files/web2:
+total <span class="m">4</span>
+-rw-rw-r--. <span class="m">1</span> user user <span class="m">13</span> Jul <span class="m">18</span> 19:58 index.html
+<span class="o">[</span>user@DockerServer<span class="o">]</span>$ 
+
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="testing-reverse-proxy">Testing Reverse Proxy</h2>
+<p>Run the following which will start up all the containers. It may take a second or so to download all the images.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@DockerServer<span class="o">]</span>$ <span class="nb">cd</span> ~/reverseproxy
+<span class="o">[</span>user@DockerServer<span class="o">]</span>$ docker-compose up -d
+</code></pre></td></tr></table>
+</div>
+</div><p>Now that the containers are running connect to the domains <code>web1.test.net</code> and <code>web2.test.net</code> from a browser. You should get a message saying that you are using a self singed certificate, once you pass that you will see the contents of the <code>index.html</code> file. If you have followed the instructions exactly, remember to either disable the firewall, or allow ports 80 and 443.</p>
+</div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>The article was updated on 2019-07-18</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span><a href="javascript:void(0);" title="Share on Twitter" data-sharer="twitter" data-url="https://blog.thinkbox.dev/posts/0003-create-reverse-proxy-with-docker/" data-title="Creating a Reverse Proxy with Docker" data-hashtags="Linux,Docker"><i class="fab fa-twitter fa-fw"></i></a><a href="javascript:void(0);" title="Share on Facebook" data-sharer="facebook" data-url="https://blog.thinkbox.dev/posts/0003-create-reverse-proxy-with-docker/" data-hashtag="Linux"><i class="fab fa-facebook-square fa-fw"></i></a><a href="javascript:void(0);" title="Share on Linkedin" data-sharer="linkedin" data-url="https://blog.thinkbox.dev/posts/0003-create-reverse-proxy-with-docker/"><i class="fab fa-linkedin fa-fw"></i></a><a href="javascript:void(0);" title="Share on WhatsApp" data-sharer="whatsapp" data-url="https://blog.thinkbox.dev/posts/0003-create-reverse-proxy-with-docker/" data-title="Creating a Reverse Proxy with Docker" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="javascript:void(0);" title="Share on Hacker News" data-sharer="hackernews" data-url="https://blog.thinkbox.dev/posts/0003-create-reverse-proxy-with-docker/" data-title="Creating a Reverse Proxy with Docker"><i class="fab fa-hacker-news fa-fw"></i></a><a href="javascript:void(0);" title="Share on Reddit" data-sharer="reddit" data-url="https://blog.thinkbox.dev/posts/0003-create-reverse-proxy-with-docker/"><i class="fab fa-reddit fa-fw"></i></a><a href="javascript:void(0);" title="Share on VK" data-sharer="vk" data-url="https://blog.thinkbox.dev/posts/0003-create-reverse-proxy-with-docker/" data-title="Creating a Reverse Proxy with Docker"><i class="fab fa-vk fa-fw"></i></a><a href="javascript:void(0);" title="Share on 微博" data-sharer="weibo" data-url="https://blog.thinkbox.dev/posts/0003-create-reverse-proxy-with-docker/" data-title="Creating a Reverse Proxy with Docker"><i class="fab fa-weibo fa-fw"></i></a><a href="javascript:void(0);" title="Share on 百度" data-sharer="baidu" data-url="https://blog.thinkbox.dev/posts/0003-create-reverse-proxy-with-docker/" data-title="Creating a Reverse Proxy with Docker"><i class="loveit it-baidu-fill"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/linux">Linux</a>,&nbsp;<a href="/tags/docker">Docker</a></section>
+        <section>
+            <span><a href="javascript:window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/">Home</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/0002-setting-up-ad-from-scratch/" class="prev" rel="prev" title="Setting Up Active Directory Network From Scratch"><i class="fas fa-angle-left fa-fw"></i>Setting Up Active Directory Network From Scratch</a></div>
+</div>
+<div class="comment"><div id="disqus_thread"></div><noscript>
+            Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript></div>
+    </article></div>
+            </main><footer class="footer">
+    <div class="copyright"><div class="copyright-line">Powered by <a href="https://gohugo.io/" target="_blank" rel="external nofollow noopener noreffer">Hugo</a> | Theme - <a href="https://github.com/dillonzq/LoveIt" target="_blank" rel="external nofollow noopener noreffer"><i class="far fa-heart fa-fw"></i> LoveIt</a>
+        </div>
+
+        <div class="copyright-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2019 - 2020</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank">Aleks</a></span></div>
+    </div>
+</footer>
+</div><a href="#" class="dynamic-to-top animated faster" id="dynamic-to-top">
+            <i class="fas fa-chevron-up fa-fw"></i>
+        </a><link rel="stylesheet" href="/lib/iconfont/iconfont.min.css"><script defer src="https://blog-thinkbox-dev.disqus.com/embed.js"></script><script src="/lib/smooth-scroll/smooth-scroll.polyfills.min.js"></script><script src="/lib/sharer/sharer.min.js"></script><script src="/lib/lazysizes/lazysizes.min.js"></script><script src="/js/theme.min.js"></script>
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-161605270-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+</body>
+</html>

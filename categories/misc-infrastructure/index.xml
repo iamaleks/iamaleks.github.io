@@ -6,10 +6,20 @@
     <description>Recent content in Misc Infrastructure on ThinkBox</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Wed, 17 Jul 2019 23:48:26 -0400</lastBuildDate>
+    <lastBuildDate>Thu, 18 Jul 2019 17:15:47 -0400</lastBuildDate>
     
 	<atom:link href="https://blog.thinkbox.dev/categories/misc-infrastructure/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Creating a Reverse Proxy with Docker</title>
+      <link>https://blog.thinkbox.dev/posts/0003-create-reverse-proxy-with-docker/</link>
+      <pubDate>Thu, 18 Jul 2019 17:15:47 -0400</pubDate>
+      
+      <guid>https://blog.thinkbox.dev/posts/0003-create-reverse-proxy-with-docker/</guid>
+      <description>Introduction This blog post will explain the concept of a reverse proxy, and will demonstrate the steps that need to be taken in order to create a Nginx reverse proxy inside of Docker.
+The concept of a reverse proxy is very simple, a client computer will connect to a central point that will pass their connection on to the desired destination. For example, lets take a look at the diagram below.</description>
+    </item>
     
     <item>
       <title>Setting Up Active Directory Network From Scratch</title>
