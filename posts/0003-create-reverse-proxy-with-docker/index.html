@@ -119,7 +119,7 @@ The concept of a reverse proxy is very simple, a client computer will connect to
         <li><a href="#configure-dns">Configure DNS</a></li>
         <li><a href="#creating-a-docker-compose-configuration-file">Creating a Docker Compose Configuration File</a></li>
         <li><a href="#nginx-reverse-proxy-configuration">Nginx Reverse Proxy Configuration</a></li>
-        <li><a href="#creating-a-self-singed-certificate">Creating a Self Singed Certificate</a></li>
+        <li><a href="#creating-a-self-signed-certificate">Creating a Self Signed Certificate</a></li>
         <li><a href="#creating-content-for-end-points">Creating Content for End Points</a></li>
       </ul>
     </li>
@@ -407,7 +407,7 @@ sh-4.2#
 </code></pre></td></tr></table>
 </div>
 </div><p>The must important part of this configuration to understand is that when connections are received as HTTP they will be redirected to HTTPS using <code>return 301 https://$host$request_uri;</code>. When received as HTTPS they will be proxied using the <code>proxy_pass &quot;http://$http_host&quot;;</code> line. Note that we specify a DNS using <code>resolver 127.0.0.11;</code>, this is the internal Docker DNS that will be used to locate the IP address of the containers.</p>
-<h3 id="creating-a-self-singed-certificate">Creating a Self Singed Certificate</h3>
+<h3 id="creating-a-self-signed-certificate">Creating a Self Signed Certificate</h3>
 <p>Since our Nginx reverse proxy is using HTTPS we will create a self singed certificate. This certificate will be created as a wildcard for the <code>test.net</code> domain.</p>
 <p>Create a folder and generate the selfsigned certifcate.</p>
 <div class="highlight"><div class="chroma">
