@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <title>Configuring Wazuh and Kibana to Monitor Endpoints | ThinkBox</title>
+        <meta name="Description" content=""><meta property="og:title" content="Configuring Wazuh and Kibana to Monitor Endpoints" />
+<meta property="og:description" content="Introduction Wazuh is a host intrusion detection system (HIDS) that is capable of performing log analysis, integrity checking, Windows registry monitoring, rootkit detection, and generating alerts based of a set of predefined rules.
+The following picture shows the different components that will be needed on this setup, this picture was found on an article related to this subject. The picture is more specific to OSSEC, however, that is alright since Wazuh is based on OSSEC." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://blog.thinkbox.dev/posts/0014-setting-up-wazuh/" />
+<meta property="article:published_time" content="2020-01-21T22:32:25-04:00" />
+<meta property="article:modified_time" content="2020-01-21T22:32:25-04:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Configuring Wazuh and Kibana to Monitor Endpoints"/>
+<meta name="twitter:description" content="Introduction Wazuh is a host intrusion detection system (HIDS) that is capable of performing log analysis, integrity checking, Windows registry monitoring, rootkit detection, and generating alerts based of a set of predefined rules.
+The following picture shows the different components that will be needed on this setup, this picture was found on an article related to this subject. The picture is more specific to OSSEC, however, that is alright since Wazuh is based on OSSEC."/>
+<meta name="theme-color" content="#ffffff">
+<meta name="msapplication-TileColor" content="#da532c">
+<link rel="canonical" href="https://blog.thinkbox.dev/posts/0014-setting-up-wazuh/" />
+<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="prev" href="https://blog.thinkbox.dev/posts/0013-monitor-windows-endpoint/" /><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="/lib/animate/animate.min.css"><link rel="stylesheet" href="/css/style.min.css"><meta name="google-site-verification" content="UA-161605270-1" /><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Configuring Wazuh and Kibana to Monitor Endpoints",
+        "inLanguage": "en",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/blog.thinkbox.dev\/posts\/0014-setting-up-wazuh\/"
+        },"genre": "posts","keywords": "Wazuh","wordcount":  871 ,
+        "url": "https:\/\/blog.thinkbox.dev\/posts\/0014-setting-up-wazuh\/","datePublished": "2020-01-21","dateModified": "2020-01-21","author": {
+                "@type": "Person",
+                "name": "Aleks"
+            },"description": ""
+    }
+    </script></head>
+    <body><script>
+            if (!window.localStorage || !window.localStorage.getItem('theme')) {window.isDark = 'dark' === 'dark';} else {
+                window.isDark = (window.localStorage && window.localStorage.getItem('theme')) === 'dark';
+            }
+            window.isDark && document.body.classList.add('dark-theme');
+        </script><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/">ThinkBox</a>
+        </div>
+        <div class="menu"><a class="menu-item" href="/posts/" rel="noopener noreffer">Posts</a><a class="menu-item" href="/tags/" rel="noopener noreffer">Tags</a><a class="menu-item" href="/categories/" rel="noopener noreffer">Categories</a><span class="menu-item">|</span>
+            <a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-wrapper">
+        <div class="header-container">
+            <div class="header-title">
+                <a href="/">ThinkBox</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><a class="menu-item" href="/posts/" title="" rel="noopener noreffer">Posts</a><a class="menu-item" href="/tags/" title="" rel="noopener noreffer">Tags</a><a class="menu-item" href="/categories/" title="" rel="noopener noreffer">Categories</a><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header>
+
+<script>
+    window.desktopHeaderMode = "fixed";
+    window.mobileHeaderMode = "auto";
+</script>
+<main class="main">
+                <div class="container"><article class="page single"><h1 class="single-title animated flipInX">Configuring Wazuh and Kibana to Monitor Endpoints</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel="noopener noreffer author" class="author"><i class="fas fa-user-circle fa-fw"></i>Aleks</a>
+</span>&nbsp;
+                    <span class="post-category">included in<a href="/categories/information-security">
+                                <i class="far fa-folder fa-fw"></i>Information security
+                            </a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i><time datetime=2020-01-21>2020-01-21</time>&nbsp;
+                <i class="fas fa-pencil-alt fa-fw"></i>about 871 words&nbsp;
+                <i class="far fa-clock fa-fw"></i>5 min&nbsp;</div>
+        </div><div class="toc" id="toc-auto">
+                <h2 class="toc-title">Contents</h2>
+                <div class="toc-content" id="toc-content-auto"></div>
+            </div>
+            <div class="toc" id="toc-static">
+                <details>
+                    <summary>
+                        <div class="toc-title">
+                            <span>Contents</span>
+                            <span><i class="details icon fas fa-angle-down"></i></span>
+                        </div>
+                    </summary>
+                    <div class="toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#wazuh-configuration">Wazuh Configuration</a>
+      <ul>
+        <li><a href="#configuring-wazuh-base">Configuring Wazuh Base</a></li>
+        <li><a href="#shipping-logs-to-elasticsearch">Shipping Logs to Elasticsearch</a></li>
+      </ul>
+    </li>
+    <li><a href="#adding-wazuh-plugin-to-kibana">Adding Wazuh Plugin to Kibana</a></li>
+    <li><a href="#windows-endpoint-configuration">Windows Endpoint Configuration</a></li>
+    <li><a href="#references">References</a></li>
+  </ul>
+</nav></div>
+                </details>
+            </div><div class="content" id="content" style="text-align: justify;"><h2 id="introduction">Introduction</h2>
+<p>Wazuh is a host intrusion detection system (HIDS) that is capable of performing log analysis, integrity checking, Windows registry monitoring, rootkit detection, and generating alerts based of a set of predefined rules.</p>
+<p>The following picture shows the different components that will be needed on this setup, this picture was found on an <a href="https://medium.com/devoops-and-universe/ossec-and-elk-as-an-unified-security-information-and-event-management-system-siem-bcc5f310a733" target="_blank" rel="noopener noreffer">article</a>
+ related to this subject. The picture is more specific to OSSEC, however, that is alright since Wazuh is based on OSSEC.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="https://miro.medium.com/max/720/1*eEcPlVyZw4TFBpxBg8RzOQ.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>In order to setup Wazuh you will need to have a already running instance of ELK, instructions for this can be found in another <a href="https://blog.thinkbox.dev/posts/0012-configure-single-elk-node/" target="_blank" rel="noopener noreffer">post</a>
+.</p>
+<p>The OSSEC Manager (which will be the Wazuh Manager) is the core component which will interact with the endpoint and send logs to Logstash. There will also be a RESTful API interface installed for a Wazuh Kibana plugin to connect to in order to visualize all of this. The OSSEC Agent is the component that is installed on the endpoint, in this case the agent will be the Wazuh agent which will be installed on Windows.</p>
+<p>For more information and resources where all this information was found please consult the references section.</p>
+<h2 id="wazuh-configuration">Wazuh Configuration</h2>
+<h3 id="configuring-wazuh-base">Configuring Wazuh Base</h3>
+<p>This section will configure the core of Wazuh by installing the Wazuh Manager and Wazuh API component. Begin by importing the GPG key that all the Wazuh packages use.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@ELKServer ~<span class="o">]</span>$ sudo rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH
+</code></pre></td></tr></table>
+</div>
+</div><p>Next, add the Wazuh repository as seen below.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>wazuh_repo<span class="o">]</span>
+<span class="nv">gpgcheck</span><span class="o">=</span><span class="m">1</span>
+<span class="nv">gpgkey</span><span class="o">=</span>https://packages.wazuh.com/key/GPG-KEY-WAZUH
+<span class="nv">enabled</span><span class="o">=</span><span class="m">1</span>
+<span class="nv">name</span><span class="o">=</span>Wazuh repository
+<span class="nv">baseurl</span><span class="o">=</span>https://packages.wazuh.com/3.x/yum/
+<span class="nv">protect</span><span class="o">=</span><span class="m">1</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Run the following commands which will install the Wazuh Manager and enable the service so it will start up on boot.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@ELKServer ~<span class="o">]</span>$ sudo yum install wazuh-manager
+<span class="o">[</span>user@ELKServer ~<span class="o">]</span>$ sudo systemctl <span class="nb">enable</span> wazuh-manager
+</code></pre></td></tr></table>
+</div>
+</div><p>The Wazuh API component provides a RESTful API interface for applications to communicate with Wazuh, this is what the Kibana Wazuh Plugin will use.</p>
+<p>The Wazuh API component runs using NodeJS, run the following commands in order to install it.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@ELKServer ~<span class="o">]</span>$ sudo curl --silent --location https://rpm.nodesource.com/setup_8.x <span class="p">|</span> bash -
+<span class="o">[</span>user@ELKServer ~<span class="o">]</span>$ sudo yum install nodejs
+</code></pre></td></tr></table>
+</div>
+</div><p>And finally install and enable the Wazuh API component.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@ELKServer ~<span class="o">]</span>$ sudo yum install wazuh-api
+<span class="o">[</span>user@ELKServer ~<span class="o">]</span>$ sudo systemctl <span class="nb">enable</span> wazuh-api
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="shipping-logs-to-elasticsearch">Shipping Logs to Elasticsearch</h3>
+<p>The next step is to send the logs from Wazuh to Elasticsearch in order to be able to query and view them from Kibana. The Wazuh Manager stores some of the logs on the filesystem in text files, for examples when alerts are generated they will be stored in the <code>/var/ossec/logs/alerts/</code> folder.</p>
+<p>In order to ship these text files we will use Filebeat to send them to Elasticsearch. Begin by installing Filebeat.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@ELKServer ~<span class="o">]</span>$ sudo yum install filebeat-7.5.1
+</code></pre></td></tr></table>
+</div>
+</div><p>Next, use curl to download a premade Filebeat configuration to the proper directory and set the permissions. Please note, you must enter the filebeat.yml file and add the IP address of your Elasticsearch instance.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@ELKServer ~<span class="o">]</span>$ sudo curl -so /etc/filebeat/filebeat.yml https://raw.githubusercontent.com/wazuh/wazuh/v3.11.0/extensions/filebeat/7.x/filebeat.yml
+<span class="o">[</span>user@ELKServer ~<span class="o">]</span>$ sudo chmod go+r /etc/filebeat/filebeat.yml
+</code></pre></td></tr></table>
+</div>
+</div><p>The following wazuh-templates.json file will be used as a template for alerts, download it and place it in the correct directory along with the correct permissions.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@ELKServer ~<span class="o">]</span>$ sudo curl -so /etc/filebeat/wazuh-template.json https://raw.githubusercontent.com/wazuh/wazuh/v3.11.0/extensions/elasticsearch/7.x/wazuh-template.json
+
+<span class="o">[</span>user@ELKServer ~<span class="o">]</span>$ sudo chmod go+r /etc/filebeat/wazuh-template.json
+</code></pre></td></tr></table>
+</div>
+</div><p>Filebeat will also need to be configured to use some custom modules from Wazuh.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@ELKServer ~<span class="o">]</span>$ sudo curl -s https://packages.wazuh.com/3.x/filebeat/wazuh-filebeat-0.1.tar.gz <span class="p">|</span> sudo tar -xvz -C /usr/share/filebeat/module
+</code></pre></td></tr></table>
+</div>
+</div><p>Lastly, start and enable the Filebeat service.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@ELKServer ~<span class="o">]</span>$ sudo systemctl daemon-reload
+<span class="o">[</span>user@ELKServer ~<span class="o">]</span>$ sudo systemctl <span class="nb">enable</span> filebeat.service
+<span class="o">[</span>user@ELKServer ~<span class="o">]</span>$ sudo systemctl start filebeat.service
+</code></pre></td></tr></table>
+</div>
+</div><p>The Wazuh Manager server will itself send some logs to Elasticsearch while will result in a created index within Elasticsearch. Check the Elasticsearch indexes in order to confirm one has been created.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0014-setting-up-wazuh/new_wazuh_alert_index.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h2 id="adding-wazuh-plugin-to-kibana">Adding Wazuh Plugin to Kibana</h2>
+<p>Wazuh has created a Kibana Plugin which takes the form of a custom dashboard. The installation instructions for this where found in the Github for this project.</p>
+<p>Run the following command and restart Kibana in order to install this plugin. When Kibana restarts it may take a few seconds for it to startup completely.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@ELKServer ~<span class="o">]</span>$ sudo -u kibana /usr/share/kibana/bin/kibana-plugin install https://packages.wazuh.com/wazuhapp/wazuhapp-3.11.0_7.5.1.zip
+<span class="o">[</span>user@ELKServer ~<span class="o">]</span>$ sudo systemctl restart kibana
+</code></pre></td></tr></table>
+</div>
+</div><p>After Kibana is started you will notice a new section for Wazuh.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0014-setting-up-wazuh/wazuh-dashboard-example-1024x415.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h2 id="windows-endpoint-configuration">Windows Endpoint Configuration</h2>
+<p>Now it is time to configure a Windows machine with the Wazuh Agent in order to be able to monitor the endpoint for alerts. Begin by downloading the <a href="https://packages.wazuh.com/3.x/windows/wazuh-agent-3.10.2-1.msi" target="_blank" rel="noopener noreffer">Wazuh Agent MSI</a>
+, or heading over to the <a href="https://documentation.wazuh.com/3.7/installation-guide/packages-list/index.html" target="_blank" rel="noopener noreffer">download page</a>
+ to look for the newest version.</p>
+<p>Now run the MSI with the ADDRESS and AUTHD_SERVER parameters set to your Wazuh Manager IP address. It should be registered almost immediately.</p>
+<p>The service responsible for the Wazuh Agent can also be viewed under the name OssecSvc.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="nb">PS </span><span class="n">C:</span><span class="p">\</span><span class="n">Users</span><span class="p">\</span><span class="n">Administrator</span><span class="p">\</span><span class="n">Downloads</span><span class="p">&gt;</span> <span class="p">.\</span><span class="n">wazuh-agent</span><span class="p">-</span><span class="n">3</span><span class="p">.</span><span class="n">10</span><span class="p">.</span><span class="n">2</span><span class="p">-</span><span class="n">1</span><span class="p">.</span><span class="n">msi</span> <span class="p">/</span><span class="n">q</span> <span class="n">ADDRESS</span><span class="p">=</span><span class="s2">&#34;10.0.0.2&#34;</span> <span class="n">AUTHD_SERVER</span><span class="p">=</span><span class="s2">&#34;10.0.0.2&#34;</span>
+<span class="nb">PS </span><span class="n">C:</span><span class="p">\</span><span class="n">Users</span><span class="p">\</span><span class="n">Administrator</span><span class="p">\</span><span class="n">Downloads</span><span class="p">&gt;</span> <span class="nb">Get-Service</span> <span class="n">-Name</span> <span class="n">OssecSvc</span>
+ 
+<span class="n">Status</span>   <span class="n">Name</span>               <span class="n">DisplayName</span>
+<span class="p">------</span>   <span class="p">----</span>               <span class="p">-----------</span>
+<span class="n">Running</span>  <span class="n">OssecSvc</span>           <span class="n">Wazuh</span>
+ 
+ 
+<span class="nb">PS </span><span class="n">C:</span><span class="p">\</span><span class="n">Users</span><span class="p">\</span><span class="n">Administrator</span><span class="p">\</span><span class="n">Downloads</span><span class="p">&gt;</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="references">References</h2>
+<ul>
+<li><a href="https://medium.com/devoops-and-universe/ossec-and-elk-as-an-unified-security-information-and-event-management-system-siem-bcc5f310a733" target="_blank" rel="noopener noreffer">OSSEC (Wazuh) and ELK as a unified security information and event management system (SIEM).</a>
+</li>
+<li><a href="https://documentation.wazuh.com/3.11/user-manual/overview.html" target="_blank" rel="noopener noreffer">Wazuh Documentation Overview</a>
+</li>
+<li><a href="https://documentation.wazuh.com/3.11/installation-guide/installing-wazuh-manager/linux/centos/wazuh_server_packages_centos.html#wazuh-server-packages-centos" target="_blank" rel="noopener noreffer">Wazuh Base Install</a>
+</li>
+<li><a href="https://documentation.wazuh.com/3.11/installation-guide/installing-wazuh-agent/windows/wazuh_agent_package_windows.html#wazuh-agent-package-windows" target="_blank" rel="noopener noreffer">Wazuh Windows Installation</a>
+</li>
+<li><a href="https://logz.io/blog/how-to-build-a-pci-dss-dashboard-with-elk-and-wazuh/" target="_blank" rel="noopener noreffer">How to Build a PCI-DSS Dashboard with ELK and Wazuh</a>
+</li>
+</ul>
+</div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>The article was updated on 2020-01-21</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span><a href="javascript:void(0);" title="Share on Twitter" data-sharer="twitter" data-url="https://blog.thinkbox.dev/posts/0014-setting-up-wazuh/" data-title="Configuring Wazuh and Kibana to Monitor Endpoints" data-hashtags="Wazuh"><i class="fab fa-twitter fa-fw"></i></a><a href="javascript:void(0);" title="Share on Facebook" data-sharer="facebook" data-url="https://blog.thinkbox.dev/posts/0014-setting-up-wazuh/" data-hashtag="Wazuh"><i class="fab fa-facebook-square fa-fw"></i></a><a href="javascript:void(0);" title="Share on Linkedin" data-sharer="linkedin" data-url="https://blog.thinkbox.dev/posts/0014-setting-up-wazuh/"><i class="fab fa-linkedin fa-fw"></i></a><a href="javascript:void(0);" title="Share on WhatsApp" data-sharer="whatsapp" data-url="https://blog.thinkbox.dev/posts/0014-setting-up-wazuh/" data-title="Configuring Wazuh and Kibana to Monitor Endpoints" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="javascript:void(0);" title="Share on Hacker News" data-sharer="hackernews" data-url="https://blog.thinkbox.dev/posts/0014-setting-up-wazuh/" data-title="Configuring Wazuh and Kibana to Monitor Endpoints"><i class="fab fa-hacker-news fa-fw"></i></a><a href="javascript:void(0);" title="Share on Reddit" data-sharer="reddit" data-url="https://blog.thinkbox.dev/posts/0014-setting-up-wazuh/"><i class="fab fa-reddit fa-fw"></i></a><a href="javascript:void(0);" title="Share on VK" data-sharer="vk" data-url="https://blog.thinkbox.dev/posts/0014-setting-up-wazuh/" data-title="Configuring Wazuh and Kibana to Monitor Endpoints"><i class="fab fa-vk fa-fw"></i></a><a href="javascript:void(0);" title="Share on 微博" data-sharer="weibo" data-url="https://blog.thinkbox.dev/posts/0014-setting-up-wazuh/" data-title="Configuring Wazuh and Kibana to Monitor Endpoints"><i class="fab fa-weibo fa-fw"></i></a><a href="javascript:void(0);" title="Share on 百度" data-sharer="baidu" data-url="https://blog.thinkbox.dev/posts/0014-setting-up-wazuh/" data-title="Configuring Wazuh and Kibana to Monitor Endpoints"><i class="loveit it-baidu-fill"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/wazuh">Wazuh</a></section>
+        <section>
+            <span><a href="javascript:window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/">Home</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/0013-monitor-windows-endpoint/" class="prev" rel="prev" title="Monitoring Windows Endpoints with Winlogbeat"><i class="fas fa-angle-left fa-fw"></i>Monitoring Windows Endpoints with Winlogbeat</a></div>
+</div>
+<div class="comment"><div id="disqus_thread"></div><noscript>
+            Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript></div>
+    </article></div>
+            </main><footer class="footer">
+    <div class="copyright"><div class="copyright-line">Powered by <a href="https://gohugo.io/" target="_blank" rel="external nofollow noopener noreffer">Hugo</a> | Theme - <a href="https://github.com/dillonzq/LoveIt" target="_blank" rel="external nofollow noopener noreffer"><i class="far fa-heart fa-fw"></i> LoveIt</a>
+        </div>
+
+        <div class="copyright-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2019 - 2020</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank">Aleks</a></span></div>
+    </div>
+</footer>
+</div><a href="#" class="dynamic-to-top animated faster" id="dynamic-to-top">
+            <i class="fas fa-chevron-up fa-fw"></i>
+        </a><link rel="stylesheet" href="/lib/iconfont/iconfont.min.css"><script defer src="https://blog-thinkbox-dev.disqus.com/embed.js"></script><script src="/lib/smooth-scroll/smooth-scroll.polyfills.min.js"></script><script src="/lib/sharer/sharer.min.js"></script><script src="/lib/lazysizes/lazysizes.min.js"></script><script src="/js/theme.min.js"></script>
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-161605270-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+</body>
+</html>

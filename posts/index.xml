@@ -6,10 +6,20 @@
     <description>Recent content in Posts on ThinkBox</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Mon, 20 Jan 2020 22:32:25 -0400</lastBuildDate>
+    <lastBuildDate>Tue, 21 Jan 2020 22:32:25 -0400</lastBuildDate>
     
 	<atom:link href="https://blog.thinkbox.dev/posts/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Configuring Wazuh and Kibana to Monitor Endpoints</title>
+      <link>https://blog.thinkbox.dev/posts/0014-setting-up-wazuh/</link>
+      <pubDate>Tue, 21 Jan 2020 22:32:25 -0400</pubDate>
+      
+      <guid>https://blog.thinkbox.dev/posts/0014-setting-up-wazuh/</guid>
+      <description>Introduction Wazuh is a host intrusion detection system (HIDS) that is capable of performing log analysis, integrity checking, Windows registry monitoring, rootkit detection, and generating alerts based of a set of predefined rules.
+The following picture shows the different components that will be needed on this setup, this picture was found on an article related to this subject. The picture is more specific to OSSEC, however, that is alright since Wazuh is based on OSSEC.</description>
+    </item>
     
     <item>
       <title>Monitoring Windows Endpoints with Winlogbeat</title>

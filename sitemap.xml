@@ -2,13 +2,15 @@
     xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
     xmlns:xhtml="http://www.w3.org/1999/xhtml"
     ><url>
-            <loc>https://blog.thinkbox.dev/categories/</loc><lastmod>2020-01-20T22:32:25-04:00</lastmod></url><url>
+            <loc>https://blog.thinkbox.dev/categories/</loc><lastmod>2020-01-21T22:32:25-04:00</lastmod></url><url>
+            <loc>https://blog.thinkbox.dev/posts/0014-setting-up-wazuh/</loc><lastmod>2020-01-21T22:32:25-04:00</lastmod></url><url>
+            <loc>https://blog.thinkbox.dev/categories/information-security/</loc><lastmod>2020-01-21T22:32:25-04:00</lastmod></url><url>
+            <loc>https://blog.thinkbox.dev/posts/</loc><lastmod>2020-01-21T22:32:25-04:00</lastmod></url><url>
+            <loc>https://blog.thinkbox.dev/tags/</loc><lastmod>2020-01-21T22:32:25-04:00</lastmod></url><url>
+            <loc>https://blog.thinkbox.dev/</loc><lastmod>2020-01-21T22:32:25-04:00</lastmod></url><url>
+            <loc>https://blog.thinkbox.dev/tags/wazuh/</loc><lastmod>2020-01-21T22:32:25-04:00</lastmod></url><url>
             <loc>https://blog.thinkbox.dev/tags/elk/</loc><lastmod>2020-01-20T22:32:25-04:00</lastmod></url><url>
-            <loc>https://blog.thinkbox.dev/categories/information-security/</loc><lastmod>2020-01-20T22:32:25-04:00</lastmod></url><url>
             <loc>https://blog.thinkbox.dev/posts/0013-monitor-windows-endpoint/</loc><lastmod>2020-01-20T22:32:25-04:00</lastmod></url><url>
-            <loc>https://blog.thinkbox.dev/posts/</loc><lastmod>2020-01-20T22:32:25-04:00</lastmod></url><url>
-            <loc>https://blog.thinkbox.dev/tags/</loc><lastmod>2020-01-20T22:32:25-04:00</lastmod></url><url>
-            <loc>https://blog.thinkbox.dev/</loc><lastmod>2020-01-20T22:32:25-04:00</lastmod></url><url>
             <loc>https://blog.thinkbox.dev/posts/0012-configure-single-elk-node/</loc><lastmod>2020-01-15T22:32:25-04:00</lastmod></url><url>
             <loc>https://blog.thinkbox.dev/tags/openssl/</loc><lastmod>2019-11-20T00:44:07-04:00</lastmod></url><url>
             <loc>https://blog.thinkbox.dev/tags/pki/</loc><lastmod>2019-11-20T00:44:07-04:00</lastmod></url><url>
