@@ -2,13 +2,13 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Active Directory on ThinkBox</title>
-    <link>https://blog.thinkbox.dev/tags/active-directory/</link>
+    <link>https://blog.thinkbox.dev/categories/active-directory/</link>
     <description>Recent content in Active Directory on ThinkBox</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <lastBuildDate>Fri, 11 Oct 2019 22:21:18 -0400</lastBuildDate>
     
-	<atom:link href="https://blog.thinkbox.dev/tags/active-directory/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://blog.thinkbox.dev/categories/active-directory/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -19,16 +19,6 @@
       <guid>https://blog.thinkbox.dev/posts/0008-transferring-and-seizing-fsmo-roles/</guid>
       <description>Introduction Within a Active Directory environment there are 5 Flexible single master operation (FSMO) roles that are present, they can either all be on a single domain controller or can be distributed between multiple. There are 2 FSMO roles that are forest wide and 3 that are domain wide.
 This post will describe the steps taken in order to either transfer a FSMO role to another server, or seize a FSMO role.</description>
-    </item>
-    
-    <item>
-      <title>Setting Up Active Directory Network From Scratch</title>
-      <link>https://blog.thinkbox.dev/posts/0002-setting-up-ad-from-scratch/</link>
-      <pubDate>Wed, 17 Jul 2019 23:48:26 -0400</pubDate>
-      
-      <guid>https://blog.thinkbox.dev/posts/0002-setting-up-ad-from-scratch/</guid>
-      <description>Introduction This blog post will show step by step how to setup a basic Active Directory network. The network will consist of four computers, two servers and two clients. There will be a Domain Controller, a DHCP server, a central management station, and of course a desktop for the clients. This can all be seen in the diagram below.
-The purpose of the central management desktop for the administrator to easily manage multiple servers at once.</description>
     </item>
     
   </channel>

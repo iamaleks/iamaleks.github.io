@@ -6,10 +6,20 @@
     <description>Recent content in Windows on ThinkBox</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Sat, 21 Sep 2019 17:50:23 -0400</lastBuildDate>
+    <lastBuildDate>Fri, 11 Oct 2019 22:21:18 -0400</lastBuildDate>
     
 	<atom:link href="https://blog.thinkbox.dev/tags/windows/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Transferring and Seizing FSMO Roles</title>
+      <link>https://blog.thinkbox.dev/posts/0008-transferring-and-seizing-fsmo-roles/</link>
+      <pubDate>Fri, 11 Oct 2019 22:21:18 -0400</pubDate>
+      
+      <guid>https://blog.thinkbox.dev/posts/0008-transferring-and-seizing-fsmo-roles/</guid>
+      <description>Introduction Within a Active Directory environment there are 5 Flexible single master operation (FSMO) roles that are present, they can either all be on a single domain controller or can be distributed between multiple. There are 2 FSMO roles that are forest wide and 3 that are domain wide.
+This post will describe the steps taken in order to either transfer a FSMO role to another server, or seize a FSMO role.</description>
+    </item>
     
     <item>
       <title>Credential Guard on Windows</title>

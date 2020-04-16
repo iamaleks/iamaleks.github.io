@@ -1,0 +1,45 @@
+C:\Windows\system32\Ntdsutil.exe: roles
+fsmo maintenance: connection
+server connections: connect to server dc2.test.net
+Binding to dc2.test.net ...
+Connected to dc2.test.net using credentials of locally logged on user.
+server connections: quit
+
+
+fsmo maintenance: seize pdc
+Attempting safe transfer of PDC FSMO before seizure.
+ldap_modify_sW error 0x34(52 (Unavailable).
+Ldap extended error message is 000020AF: SvcErr: DSID-0321089F, problem 5002 (UNAVAILABLE), data 1722
+
+Win32 error returned is 0x20af(The requested FSMO operation failed. The current FSMO holder could not be contacted.)
+)
+Depending on the error code this may indicate a connection,
+ldap, or role transfer error.
+Transfer of PDC FSMO failed, proceeding with seizure ...
+Server "dc2.test.net" knows about 5 roles
+Schema - CN=NTDS Settings,CN=DC1,CN=Servers,CN=Default-First-Site-Name,CN=Sites,CN=Configuration,DC=test,DC=net
+Naming Master - CN=NTDS Settings,CN=DC1,CN=Servers,CN=Default-First-Site-Name,CN=Sites,CN=Configuration,DC=test,DC=net
+PDC - CN=NTDS Settings,CN=DC2,CN=Servers,CN=Default-First-Site-Name,CN=Sites,CN=Configuration,DC=test,DC=net
+RID - CN=NTDS Settings,CN=DC1,CN=Servers,CN=Default-First-Site-Name,CN=Sites,CN=Configuration,DC=test,DC=net
+Infrastructure - CN=NTDS Settings,CN=DC1,CN=Servers,CN=Default-First-Site-Name,CN=Sites,CN=Configuration,DC=test,DC=net
+
+fsmo maintenance: seize infrastructure master
+Attempting safe transfer of infrastructure FSMO before seizure.
+ldap_modify_sW error 0x34(52 (Unavailable).
+Ldap extended error message is 000020AF: SvcErr: DSID-032104DB, problem 5002 (UNAVAILABLE), data 1722
+
+Win32 error returned is 0x20af(The requested FSMO operation failed. The current FSMO holder could not be contacted.)
+)
+Depending on the error code this may indicate a connection,
+ldap, or role transfer error.
+Transfer of infrastructure FSMO failed, proceeding with seizure ...
+Server "dc2.test.net" knows about 5 roles
+Schema - CN=NTDS Settings,CN=DC1,CN=Servers,CN=Default-First-Site-Name,CN=Sites,CN=Configuration,DC=test,DC=net
+Naming Master - CN=NTDS Settings,CN=DC1,CN=Servers,CN=Default-First-Site-Name,CN=Sites,CN=Configuration,DC=test,DC=net
+PDC - CN=NTDS Settings,CN=DC2,CN=Servers,CN=Default-First-Site-Name,CN=Sites,CN=Configuration,DC=test,DC=net
+RID - CN=NTDS Settings,CN=DC1,CN=Servers,CN=Default-First-Site-Name,CN=Sites,CN=Configuration,DC=test,DC=net
+Infrastructure - CN=NTDS Settings,CN=DC2,CN=Servers,CN=Default-First-Site-Name,CN=Sites,CN=Configuration,DC=test,DC=net
+fsmo maintenance:
+
+
+
