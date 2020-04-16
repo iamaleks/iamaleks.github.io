@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Proxy on ThinkBox</title>
+    <link>https://blog.thinkbox.dev/tags/proxy/</link>
+    <description>Recent content in Proxy on ThinkBox</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Thu, 17 Oct 2019 20:43:53 -0400</lastBuildDate>
+    
+	<atom:link href="https://blog.thinkbox.dev/tags/proxy/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Filtering Domains with Squid Proxy</title>
+      <link>https://blog.thinkbox.dev/posts/0009-domain-filter-with-squid/</link>
+      <pubDate>Thu, 17 Oct 2019 20:43:53 -0400</pubDate>
+      
+      <guid>https://blog.thinkbox.dev/posts/0009-domain-filter-with-squid/</guid>
+      <description>Introduction Squid is a web proxy with caching and forwarding capabilities, however, this post will not be concerned with caching web content. The focus will be on using Squid to control which domains are accessible to a user, either through blacklisting or whitelisting.
+This can be useful for blocking undesired domains, such as those associated with malware or advertisements. On the other hand it can be use to limit what a set of computers in a network can connect to which can potently mitigate the impacts of an attack.</description>
+    </item>
+    
+  </channel>
+</rss>

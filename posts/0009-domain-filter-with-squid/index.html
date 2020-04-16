@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <title>Filtering Domains with Squid Proxy | ThinkBox</title>
+        <meta name="Description" content=""><meta property="og:title" content="Filtering Domains with Squid Proxy" />
+<meta property="og:description" content="Introduction Squid is a web proxy with caching and forwarding capabilities, however, this post will not be concerned with caching web content. The focus will be on using Squid to control which domains are accessible to a user, either through blacklisting or whitelisting.
+This can be useful for blocking undesired domains, such as those associated with malware or advertisements. On the other hand it can be use to limit what a set of computers in a network can connect to which can potently mitigate the impacts of an attack." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://blog.thinkbox.dev/posts/0009-domain-filter-with-squid/" />
+<meta property="article:published_time" content="2019-10-17T20:43:53-04:00" />
+<meta property="article:modified_time" content="2019-10-17T20:43:53-04:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Filtering Domains with Squid Proxy"/>
+<meta name="twitter:description" content="Introduction Squid is a web proxy with caching and forwarding capabilities, however, this post will not be concerned with caching web content. The focus will be on using Squid to control which domains are accessible to a user, either through blacklisting or whitelisting.
+This can be useful for blocking undesired domains, such as those associated with malware or advertisements. On the other hand it can be use to limit what a set of computers in a network can connect to which can potently mitigate the impacts of an attack."/>
+<meta name="theme-color" content="#ffffff">
+<meta name="msapplication-TileColor" content="#da532c">
+<link rel="canonical" href="https://blog.thinkbox.dev/posts/0009-domain-filter-with-squid/" />
+<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="prev" href="https://blog.thinkbox.dev/posts/0008-transferring-and-seizing-fsmo-roles/" /><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="/lib/animate/animate.min.css"><link rel="stylesheet" href="/css/style.min.css"><meta name="google-site-verification" content="UA-161605270-1" /><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Filtering Domains with Squid Proxy",
+        "inLanguage": "en",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/blog.thinkbox.dev\/posts\/0009-domain-filter-with-squid\/"
+        },"genre": "posts","keywords": "Security, Proxy, Squid","wordcount":  947 ,
+        "url": "https:\/\/blog.thinkbox.dev\/posts\/0009-domain-filter-with-squid\/","datePublished": "2019-10-17","dateModified": "2019-10-17","author": {
+                "@type": "Person",
+                "name": "Aleks"
+            },"description": ""
+    }
+    </script></head>
+    <body><script>
+            if (!window.localStorage || !window.localStorage.getItem('theme')) {window.isDark = 'dark' === 'dark';} else {
+                window.isDark = (window.localStorage && window.localStorage.getItem('theme')) === 'dark';
+            }
+            window.isDark && document.body.classList.add('dark-theme');
+        </script><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/">ThinkBox</a>
+        </div>
+        <div class="menu"><a class="menu-item" href="/posts/" rel="noopener noreffer">Posts</a><a class="menu-item" href="/tags/" rel="noopener noreffer">Tags</a><a class="menu-item" href="/categories/" rel="noopener noreffer">Categories</a><span class="menu-item">|</span>
+            <a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-wrapper">
+        <div class="header-container">
+            <div class="header-title">
+                <a href="/">ThinkBox</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><a class="menu-item" href="/posts/" title="" rel="noopener noreffer">Posts</a><a class="menu-item" href="/tags/" title="" rel="noopener noreffer">Tags</a><a class="menu-item" href="/categories/" title="" rel="noopener noreffer">Categories</a><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header>
+
+<script>
+    window.desktopHeaderMode = "fixed";
+    window.mobileHeaderMode = "auto";
+</script>
+<main class="main">
+                <div class="container"><article class="page single"><h1 class="single-title animated flipInX">Filtering Domains with Squid Proxy</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel="noopener noreffer author" class="author"><i class="fas fa-user-circle fa-fw"></i>Aleks</a>
+</span>&nbsp;
+                    <span class="post-category">included in<a href="/categories/misc-infrastructure">
+                                <i class="far fa-folder fa-fw"></i>Misc infrastructure
+                            </a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i><time datetime=2019-10-17>2019-10-17</time>&nbsp;
+                <i class="fas fa-pencil-alt fa-fw"></i>about 947 words&nbsp;
+                <i class="far fa-clock fa-fw"></i>5 min&nbsp;</div>
+        </div><div class="toc" id="toc-auto">
+                <h2 class="toc-title">Contents</h2>
+                <div class="toc-content" id="toc-content-auto"></div>
+            </div>
+            <div class="toc" id="toc-static">
+                <details>
+                    <summary>
+                        <div class="toc-title">
+                            <span>Contents</span>
+                            <span><i class="details icon fas fa-angle-down"></i></span>
+                        </div>
+                    </summary>
+                    <div class="toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#introduction">Introduction</a>
+      <ul>
+        <li><a href="#http-proxies">HTTP Proxies</a></li>
+      </ul>
+    </li>
+    <li><a href="#installing-squid">Installing Squid</a></li>
+    <li><a href="#blacklisting-domains">Blacklisting Domains</a></li>
+    <li><a href="#whitelisting-domains">Whitelisting Domains</a></li>
+  </ul>
+</nav></div>
+                </details>
+            </div><div class="content" id="content" style="text-align: justify;"><h2 id="introduction">Introduction</h2>
+<p>Squid is a web proxy with caching and forwarding capabilities, however, this post will not be concerned with caching web content. The focus will be on using Squid to control which domains are accessible to a user, either through blacklisting or whitelisting.</p>
+<p>This can be useful for blocking undesired domains, such as those associated with malware or advertisements. On the other hand it can be use to limit what a set of computers in a network can connect to which can potently mitigate the impacts of an attack.</p>
+<h3 id="http-proxies">HTTP Proxies</h3>
+<p>Lets go over quickly how HTTP proxies work. There are three components here, the Proxy Client, the Proxy Server, and the destination server that the client wants to connect to.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0009-domain-filter-with-squid/HTTPDiagram.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>The following lists the steps taken to request content through an HTTP proxy:</p>
+<ol>
+<li>
+<p>The client will send a HTTP CONNECT request to the Proxy Server in order to notify it of the destination it wants to connect to. If it is a domain the Proxy Server will resolve this into an IP address, and will attempt to establish a initial TCP connection to the destination.</p>
+</li>
+<li>
+<p>If the Proxy Server successfully establishes a connection to the destination it will send back a HTTP CONNECTION ESTABLISHED message to the Proxy Client.</p>
+</li>
+<li>
+<p>Now that there is a connection established the Proxy Client will send a HTTP GET Request wrapped in a HTTP message that holds the target destination, target port, and the contents to the Proxy Server. This message will then be forwarded to the destination by the Proxy Server.</p>
+</li>
+<li>
+<p>Lastly, the Proxy Server will receive the response from the destination. It will then return the response to the Proxy Client.</p>
+</li>
+</ol>
+<h2 id="installing-squid">Installing Squid</h2>
+<p>Most distributions have Squid in their repositories, for this I will be using CentOS 7. Squid can be installed using the following command:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@SquidServer ~<span class="o">]</span>$ sudo yum install -y squid
+</code></pre></td></tr></table>
+</div>
+</div><p>Replace the package manager and package name for your distribution and it should also work.</p>
+<h2 id="blacklisting-domains">Blacklisting Domains</h2>
+<p>In order to blacklist a collection of domains a list must be made which will contain them. In this example we will be blacklisting all the subdomains related to <code>google.com</code>. This can be done by writing it out as <code>.google.com</code>, where the <code>.</code> represents a wildcard. This means that <code>google.com</code> and <code>maps.google.com</code> will be blacklisted.</p>
+<p>As can be seen below a list has been created with this declaration.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@SquidServer ~<span class="o">]</span>$ cat /etc/squid/domain_list.txt
+.google.com
+<span class="o">[</span>user@SquidServer ~<span class="o">]</span>$
+</code></pre></td></tr></table>
+</div>
+</div><p>Now a configuration file must be created for Squid. The configuration file listed below has the following requirements met:</p>
+<ul>
+<li>Only allow access to port 80 and 443.</li>
+<li>Block domains listed in /etc/squid/domain_list.txt.</li>
+<li>Block access to web content through IP addresses.</li>
+</ul>
+<p>These requirements are fairly strict and can be removed if needed. The regular expression will match any numbers that appear to be an IP address and block access to it. However, it is done in a lazy way and will match invalid IP addresses as well.</p>
+<p>In the settings caching has also been disabled with <code>cache deny all</code>, you can also disable access logs by uncommenting the <code>access_log none</code> field.</p>
+<p>This configuration file must be placed in <code>/etc/squid/squid.conf</code>.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-apache" data-lang="apache"><span class="c">### ACL ###</span>
+
+<span class="nb">acl</span> safe_ports port <span class="m">80</span> <span class="m">443</span>
+<span class="nb">acl</span> url_list dstdomain <span class="s2">&#34;/etc/squid/domain_list.txt&#34;</span>
+<span class="nb">acl</span> home src <span class="m">10.0.0.0/24</span>
+<span class="nb">acl</span> ip_url url_regex -i ^(http://)?[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}(:443)?
+
+<span class="c">### ACTIONS ###</span>
+
+<span class="nb">http_access</span> deny ip_url       # Prevent connections to IPs through proxy
+<span class="nb">http_access</span> deny url_list     # Block <span class="k">all</span> domains in URL list
+<span class="nb">http_access</span> deny !safe_ports  # Block <span class="k">all</span> connections that are NOT in safe_ports
+<span class="nb">http_access</span> allow home        # Allow from home subnet
+<span class="nb">http_access</span> deny <span class="k">all</span>          # Block <span class="k">all</span> else
+
+<span class="c">### CONFIG OPTIONS ###</span>
+
+<span class="nb">http_port</span> <span class="m">3128</span>                # Squid normally listens to port <span class="m">3128</span>
+<span class="nb">coredump_dir</span> <span class="sx">/var/spool/squid</span> # Leave coredumps in the first cache dir
+<span class="nb">dns_v4_first</span> <span class="k">on</span>               # IPV4, not IPV6
+<span class="nb">cache</span> deny <span class="k">all</span>                # Prevent Squid from caching <span class="k">any</span> response
+<span class="c">#access_log none              # Disable access logging</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>After the confiration file has been setup start the Squid proxy.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"> <span class="o">[</span>user@SquidServer ~<span class="o">]</span>$ sudo systemctl start squid
+</code></pre></td></tr></table>
+</div>
+</div><p>Now that the Squid proxy is up and running configure a system to use the proxy and browse to a domain you know is blacklisted. You will be greeted with a web page similar to the following.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0009-domain-filter-with-squid/GoogleBlacklisted.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h2 id="whitelisting-domains">Whitelisting Domains</h2>
+<p>In order to whitelist domains two changes need to be made. First, <code>http_access deny !home</code> was changed in order to deny traffic that is not from the home subnet. The <code>!</code> will negate the expression. Secondly, the <code>http_access deny url_list</code> was set to <code>allow</code> in order to allow the domains that have been specified in the list.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-apache" data-lang="apache"><span class="c">### ACL ###</span>
+
+<span class="nb">acl</span> safe_ports port <span class="m">80</span> <span class="m">443</span>
+<span class="nb">acl</span> url_list dstdomain <span class="s2">&#34;/etc/squid/domain_list.txt&#34;</span>
+<span class="nb">acl</span> home src <span class="m">10.0.0.0/24</span>
+<span class="nb">acl</span> ip_url url_regex -i ^(http://)?[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}(:443)?
+
+<span class="c">### ACTIONS ###</span>
+
+<span class="nb">http_access</span> deny ip_url       # Prevent connections to IPs through proxy
+<span class="nb">http_access</span> deny !safe_ports  # Block <span class="k">all</span> connections that are NOT in safe_ports
+<span class="nb">http_access</span> deny !home        # Block subnets NOT from home network
+<span class="nb">http_access</span> allow url_list    # Allow <span class="k">all</span> domains in URL list
+<span class="nb">http_access</span> deny <span class="k">all</span>          # Block <span class="k">all</span> else
+
+<span class="c">### CONFIG OPTIONS ###</span>
+
+<span class="nb">http_port</span> <span class="m">3128</span>                # Squid normally listens to port <span class="m">3128</span>
+<span class="nb">coredump_dir</span> <span class="sx">/var/spool/squid</span> # Leave coredumps in the first cache dir
+<span class="nb">dns_v4_first</span> <span class="k">on</span>               # IPV4, not IPV6
+<span class="nb">cache</span> deny <span class="k">all</span>                # Prevent Squid from caching <span class="k">any</span> response
+<span class="c">#access_log none              # Disable access logging</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>After making the appropriate changes restart Squid.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"> <span class="o">[</span>user@SquidServer ~<span class="o">]</span>$ sudo systemctl restart squid
+</code></pre></td></tr></table>
+</div>
+</div><p>Now the only domains that should be accessible are those that are in the domain_list.txt file.</p>
+</div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>The article was updated on 2019-10-17</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span><a href="javascript:void(0);" title="Share on Twitter" data-sharer="twitter" data-url="https://blog.thinkbox.dev/posts/0009-domain-filter-with-squid/" data-title="Filtering Domains with Squid Proxy" data-hashtags="Security,Proxy,Squid"><i class="fab fa-twitter fa-fw"></i></a><a href="javascript:void(0);" title="Share on Facebook" data-sharer="facebook" data-url="https://blog.thinkbox.dev/posts/0009-domain-filter-with-squid/" data-hashtag="Security"><i class="fab fa-facebook-square fa-fw"></i></a><a href="javascript:void(0);" title="Share on Linkedin" data-sharer="linkedin" data-url="https://blog.thinkbox.dev/posts/0009-domain-filter-with-squid/"><i class="fab fa-linkedin fa-fw"></i></a><a href="javascript:void(0);" title="Share on WhatsApp" data-sharer="whatsapp" data-url="https://blog.thinkbox.dev/posts/0009-domain-filter-with-squid/" data-title="Filtering Domains with Squid Proxy" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="javascript:void(0);" title="Share on Hacker News" data-sharer="hackernews" data-url="https://blog.thinkbox.dev/posts/0009-domain-filter-with-squid/" data-title="Filtering Domains with Squid Proxy"><i class="fab fa-hacker-news fa-fw"></i></a><a href="javascript:void(0);" title="Share on Reddit" data-sharer="reddit" data-url="https://blog.thinkbox.dev/posts/0009-domain-filter-with-squid/"><i class="fab fa-reddit fa-fw"></i></a><a href="javascript:void(0);" title="Share on VK" data-sharer="vk" data-url="https://blog.thinkbox.dev/posts/0009-domain-filter-with-squid/" data-title="Filtering Domains with Squid Proxy"><i class="fab fa-vk fa-fw"></i></a><a href="javascript:void(0);" title="Share on 微博" data-sharer="weibo" data-url="https://blog.thinkbox.dev/posts/0009-domain-filter-with-squid/" data-title="Filtering Domains with Squid Proxy"><i class="fab fa-weibo fa-fw"></i></a><a href="javascript:void(0);" title="Share on 百度" data-sharer="baidu" data-url="https://blog.thinkbox.dev/posts/0009-domain-filter-with-squid/" data-title="Filtering Domains with Squid Proxy"><i class="loveit it-baidu-fill"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/security">Security</a>,&nbsp;<a href="/tags/proxy">Proxy</a>,&nbsp;<a href="/tags/squid">Squid</a></section>
+        <section>
+            <span><a href="javascript:window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/">Home</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/0008-transferring-and-seizing-fsmo-roles/" class="prev" rel="prev" title="Transferring and Seizing FSMO Roles"><i class="fas fa-angle-left fa-fw"></i>Transferring and Seizing FSMO Roles</a></div>
+</div>
+<div class="comment"><div id="disqus_thread"></div><noscript>
+            Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript></div>
+    </article></div>
+            </main><footer class="footer">
+    <div class="copyright"><div class="copyright-line">Powered by <a href="https://gohugo.io/" target="_blank" rel="external nofollow noopener noreffer">Hugo</a> | Theme - <a href="https://github.com/dillonzq/LoveIt" target="_blank" rel="external nofollow noopener noreffer"><i class="far fa-heart fa-fw"></i> LoveIt</a>
+        </div>
+
+        <div class="copyright-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2019 - 2020</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank">Aleks</a></span></div>
+    </div>
+</footer>
+</div><a href="#" class="dynamic-to-top animated faster" id="dynamic-to-top">
+            <i class="fas fa-chevron-up fa-fw"></i>
+        </a><link rel="stylesheet" href="/lib/iconfont/iconfont.min.css"><script defer src="https://blog-thinkbox-dev.disqus.com/embed.js"></script><script src="/lib/smooth-scroll/smooth-scroll.polyfills.min.js"></script><script src="/lib/sharer/sharer.min.js"></script><script src="/lib/lazysizes/lazysizes.min.js"></script><script src="/js/theme.min.js"></script>
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-161605270-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+</body>
+</html>
