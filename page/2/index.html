@@ -11,7 +11,7 @@
 <meta property="og:description" content="" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://blog.thinkbox.dev/" />
-<meta property="og:updated_time" content="2019-11-07T00:44:07-04:00" />
+<meta property="og:updated_time" content="2019-11-20T00:44:07-04:00" />
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="ThinkBox"/>
 <meta name="twitter:description" content=""/>
@@ -79,10 +79,23 @@
         data-src=""
         alt="avatar"
         title="Home" /></a>
-        </div><h2 class="home-description"><div id="id-8de2e6" class="typeit"></div></h2><div class="home-social-links"><a href="https://github.com/iamaleks" title="GitHub" target="_blank" rel="noopener noreffer me"><i class="fab fa-github-alt fa-fw"></i></a>
+        </div><h2 class="home-description"><div id="id-55428b" class="typeit"></div></h2><div class="home-social-links"><a href="https://github.com/iamaleks" title="GitHub" target="_blank" rel="noopener noreffer me"><i class="fab fa-github-alt fa-fw"></i></a>
 <a href="https://linkedin.com/in/aleksandr-wagner-03b105199/" title="LinkedIn" target="_blank" rel="noopener noreffer me"><i class="fab fa-linkedin fa-fw"></i></a>
 </div>
 </div>
+<article class="single summary" itemscope itemtype="http://schema.org/Article"><h1 class="single-title" itemprop="name headline">
+        <a href="/posts/0005-esxi-save-state/">Saving ESXi Configuration State</a>
+    </h1><div class="post-meta"><span class="post-author"><a href="/" title="Author" rel="noopener noreffer author" class="author"><i class="fas fa-user-circle fa-fw"></i>Aleks</a>
+</span>&nbsp;<span class="post-publish">
+            published on&nbsp;<time datetime=2019-08-15>2019-08-15</time>
+        </span>&nbsp;
+            <span class="post-category">included in<a href="/categories/vsphere">
+                        <i class="far fa-folder fa-fw"></i>Vsphere
+                    </a></span></div><div class="content">Saving the configuration state of a standalone ESXi server will allow for the restoration of all configurations if a new instance is installed. This will include all virtual machines registrations, switches, port groups, and system configurations.
+Backing Up State Running auto-backup.sh will write the current configuration onto the disk, which is stored in /bootbank/state.tgz. ESXi has a cronjob that will run this script every hour, however, if there was a change made recently and you are backing up the configuration it would be best to run this script.</div><div class="post-footer">
+        <a href="/posts/0005-esxi-save-state/">Read More</a><div class="post-tags">
+                <i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/esxi">ESXi</a></div></div>
+</article>
 <article class="single summary" itemscope itemtype="http://schema.org/Article"><h1 class="single-title" itemprop="name headline">
         <a href="/posts/0004-locking-down-workstation-applocker/">Locking Down a Workstation with AppLocker</a>
     </h1><div class="post-meta"><span class="post-author"><a href="/" title="Author" rel="noopener noreffer author" class="author"><i class="fas fa-user-circle fa-fw"></i>Aleks</a>
@@ -154,9 +167,9 @@ This post is split up into 5 sections:
 </div><a href="#" class="dynamic-to-top animated faster" id="dynamic-to-top">
             <i class="fas fa-chevron-up fa-fw"></i>
         </a><script>
-        window.typeitArr = [["id-8de2e6"]];
+        window.typeitArr = [["id-55428b"]];
     </script><script>
-        window.contentMap = {"id-8de2e6":"Writings about things I have done."};
+        window.contentMap = {"id-55428b":"Writings about things I have done."};
     </script><script src="/lib/smooth-scroll/smooth-scroll.polyfills.min.js"></script><script src="/lib/lazysizes/lazysizes.min.js"></script><script src="/lib/typeit/typeit.min.js"></script><script src="/js/theme.min.js"></script>
 <script type="application/javascript">
 var doNotTrack = false;

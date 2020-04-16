@@ -6,10 +6,19 @@
     <description>Recent content in Posts on ThinkBox</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Thu, 07 Nov 2019 00:44:07 -0400</lastBuildDate>
+    <lastBuildDate>Wed, 20 Nov 2019 00:44:07 -0400</lastBuildDate>
     
 	<atom:link href="https://blog.thinkbox.dev/posts/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Understanding and Implementing PKI with OpenSSL</title>
+      <link>https://blog.thinkbox.dev/posts/0011-pki-with-openssl/</link>
+      <pubDate>Wed, 20 Nov 2019 00:44:07 -0400</pubDate>
+      
+      <guid>https://blog.thinkbox.dev/posts/0011-pki-with-openssl/</guid>
+      <description>Introduction This post will aim to give an overview of TLS and public key infrastructure (PKI). This first part of this post will give a theoretical overview of how it works. The second part of the post will demonstrate how to setup a CA with OpenSSL and create certificates for web servers and code singing purposes. Furthermore, the code signing certificate will be used to sign a binary on a Windows machine.</description>
+    </item>
     
     <item>
       <title>Creating Device Guard Polices from a Golden Image</title>

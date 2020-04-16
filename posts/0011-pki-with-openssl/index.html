@@ -1,0 +1,1489 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <title>Understanding and Implementing PKI with OpenSSL | ThinkBox</title>
+        <meta name="Description" content=""><meta property="og:title" content="Understanding and Implementing PKI with OpenSSL" />
+<meta property="og:description" content="Introduction This post will aim to give an overview of TLS and public key infrastructure (PKI). This first part of this post will give a theoretical overview of how it works. The second part of the post will demonstrate how to setup a CA with OpenSSL and create certificates for web servers and code singing purposes. Furthermore, the code signing certificate will be used to sign a binary on a Windows machine." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://blog.thinkbox.dev/posts/0011-pki-with-openssl/" />
+<meta property="article:published_time" content="2019-11-20T00:44:07-04:00" />
+<meta property="article:modified_time" content="2019-11-20T00:44:07-04:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Understanding and Implementing PKI with OpenSSL"/>
+<meta name="twitter:description" content="Introduction This post will aim to give an overview of TLS and public key infrastructure (PKI). This first part of this post will give a theoretical overview of how it works. The second part of the post will demonstrate how to setup a CA with OpenSSL and create certificates for web servers and code singing purposes. Furthermore, the code signing certificate will be used to sign a binary on a Windows machine."/>
+<meta name="theme-color" content="#ffffff">
+<meta name="msapplication-TileColor" content="#da532c">
+<link rel="canonical" href="https://blog.thinkbox.dev/posts/0011-pki-with-openssl/" />
+<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="prev" href="https://blog.thinkbox.dev/posts/0010-device-guard-golden-image/" /><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="/lib/animate/animate.min.css"><link rel="stylesheet" href="/css/style.min.css"><meta name="google-site-verification" content="UA-161605270-1" /><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Understanding and Implementing PKI with OpenSSL",
+        "inLanguage": "en",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/blog.thinkbox.dev\/posts\/0011-pki-with-openssl\/"
+        },"genre": "posts","keywords": "PKI, OpenSSL","wordcount":  5516 ,
+        "url": "https:\/\/blog.thinkbox.dev\/posts\/0011-pki-with-openssl\/","datePublished": "2019-11-20","dateModified": "2019-11-20","author": {
+                "@type": "Person",
+                "name": "Aleks"
+            },"description": ""
+    }
+    </script></head>
+    <body><script>
+            if (!window.localStorage || !window.localStorage.getItem('theme')) {window.isDark = 'dark' === 'dark';} else {
+                window.isDark = (window.localStorage && window.localStorage.getItem('theme')) === 'dark';
+            }
+            window.isDark && document.body.classList.add('dark-theme');
+        </script><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/">ThinkBox</a>
+        </div>
+        <div class="menu"><a class="menu-item" href="/posts/" rel="noopener noreffer">Posts</a><a class="menu-item" href="/tags/" rel="noopener noreffer">Tags</a><a class="menu-item" href="/categories/" rel="noopener noreffer">Categories</a><span class="menu-item">|</span>
+            <a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-wrapper">
+        <div class="header-container">
+            <div class="header-title">
+                <a href="/">ThinkBox</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><a class="menu-item" href="/posts/" title="" rel="noopener noreffer">Posts</a><a class="menu-item" href="/tags/" title="" rel="noopener noreffer">Tags</a><a class="menu-item" href="/categories/" title="" rel="noopener noreffer">Categories</a><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header>
+
+<script>
+    window.desktopHeaderMode = "fixed";
+    window.mobileHeaderMode = "auto";
+</script>
+<main class="main">
+                <div class="container"><article class="page single"><h1 class="single-title animated flipInX">Understanding and Implementing PKI with OpenSSL</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel="noopener noreffer author" class="author"><i class="fas fa-user-circle fa-fw"></i>Aleks</a>
+</span>&nbsp;
+                    <span class="post-category">included in<a href="/categories/information-security">
+                                <i class="far fa-folder fa-fw"></i>Information security
+                            </a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i><time datetime=2019-11-20>2019-11-20</time>&nbsp;
+                <i class="fas fa-pencil-alt fa-fw"></i>about 5516 words&nbsp;
+                <i class="far fa-clock fa-fw"></i>26 min&nbsp;</div>
+        </div><div class="toc" id="toc-auto">
+                <h2 class="toc-title">Contents</h2>
+                <div class="toc-content" id="toc-content-auto"></div>
+            </div>
+            <div class="toc" id="toc-static">
+                <details>
+                    <summary>
+                        <div class="toc-title">
+                            <span>Contents</span>
+                            <span><i class="details icon fas fa-angle-down"></i></span>
+                        </div>
+                    </summary>
+                    <div class="toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#pki-in-theory">PKI in Theory</a>
+      <ul>
+        <li><a href="#tls">TLS</a></li>
+        <li><a href="#certificates">Certificates</a></li>
+        <li><a href="#certificate-authority">Certificate Authority</a></li>
+      </ul>
+    </li>
+    <li><a href="#security-features">Security Features</a>
+      <ul>
+        <li><a href="#hsts">HSTS</a></li>
+        <li><a href="#csp">CSP</a></li>
+        <li><a href="#certificate-pinning">Certificate Pinning</a></li>
+        <li><a href="#revocation">Revocation</a></li>
+        <li><a href="#crl">CRL</a></li>
+        <li><a href="#ocsp">OCSP</a></li>
+      </ul>
+    </li>
+    <li><a href="#pki-in-practice">PKI in Practice</a>
+      <ul>
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#create-root-ca">Create Root CA</a></li>
+        <li><a href="#create-intermediate-ca">Create Intermediate CA</a></li>
+        <li><a href="#create-code-signing-ca">Create Code Signing CA</a></li>
+        <li><a href="#web-server-certificate">Web Server Certificate</a></li>
+        <li><a href="#create-ocsp-certificate">Create OCSP Certificate</a></li>
+      </ul>
+    </li>
+    <li><a href="#pki-in-action">PKI in Action</a>
+      <ul>
+        <li><a href="#using-website-certificate">Using Website Certificate</a></li>
+        <li><a href="#revoking-website-certificate">Revoking Website Certificate</a></li>
+        <li><a href="#signing-an-windows-applications">Signing an Windows Applications</a></li>
+      </ul>
+    </li>
+    <li><a href="#references">References</a></li>
+    <li><a href="#appendix">Appendix</a>
+      <ul>
+        <li><a href="#root-caconf">root-ca.conf</a></li>
+      </ul>
+    </li>
+    <li><a href="#subca-caconf">subca-ca.conf</a></li>
+    <li><a href="#codesign-caconf">codesign-ca.conf</a></li>
+    <li><a href="#webcertconf">webcert.conf</a></li>
+  </ul>
+</nav></div>
+                </details>
+            </div><div class="content" id="content" style="text-align: justify;"><h2 id="introduction">Introduction</h2>
+<p>This post will aim to give an overview of TLS and public key infrastructure (PKI). This first part of this post will give a theoretical overview of how it works. The second part of the post will demonstrate how to setup a CA with OpenSSL and create certificates for web servers and code singing purposes. Furthermore, the code signing certificate will be used to sign a binary on a Windows machine. For more detailed information about TLS and PKI I recommend the Bulletproof SSL and TLS book, there are some diagrams in this post that are actually from this book.</p>
+<h2 id="pki-in-theory">PKI in Theory</h2>
+<h3 id="tls">TLS</h3>
+<p>Transport Layer Security (TLS) is a cryptographic protocol that has the goal of securing a line of communication between two parties. There are a few components of TLS, two of the most important are the <strong>authentication</strong> and <strong>encryption</strong> components.</p>
+<p>Usually when checking the cipher suite of a website using TLS you may see a string such as the following:
+Cipher Suite Construction (Bulletproof SSL and TLS Book)</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0011-pki-with-openssl/pki_cipher_suite_construction.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p><em>Cipher Suite Construction <a href="https://www.amazon.com/Bulletproof-SSL-TLS-Understanding-Applications/dp/1907117040/ref=sr_1_1?keywords=Bulletproof&#43;ssl&amp;qid=1574287549&amp;sr=8-1" target="_blank" rel="noopener noreffer">(Bulletproof SSL and TLS Book)</a>
+</em></p>
+<p>From this cipher suite we can figure out which cryptographic primitives are being used for what task. RSA is being used for <strong>authentication</strong>, there are some websites that use ECDSA for this task. The authentication mechanism relies on public key cryptography. During the beginning stages of the TLS handshake the client will send the server a message encrypted with the servers public key. The only way the server can read the message is by having in its possession the private key, this will prove to the user the identity of the server. If the server is unsuccessful at decrypting the message the TLS connection cannot move forward to the next phase.</p>
+<p>The second important component is <strong>encryption</strong>, this is handled by the symmetric cipher AES with a key size of 128 bits using the GCM mode. Its important to understand that AES will take a preshared secret that both parties must be in possession of, this is where the key exchange phase comes into play. Diffie Hellmen (DHE), or in this case Elliptic-Curve Diffie Hellman (ECDHE), is used to create a shared secret between two parties communicating over an unsecure medium. Once this shared secret is created it can be fed into AES which will encrypt the data. After a set time the key exchange process will renegotiate a new shared secret.</p>
+<p>Now, there is a very important concept called Perfect Forward Secrecy. What this allows us to achieve is the separation between the key used by the server for authentication and the key used for encryption. This extremely important as the key used for authentication is stored on the web servers disk, if it is compromised it is impossible to decrypt any intercepted TLS traffic as that is not the key used for encryption. The key used for encryption was generated using the DHE algorithm and is considered ephemeral, which means it only exists for a specific period of time during a TLS session.</p>
+<p>In TLS 1.2 a user has the ability to pick the cipher suite, one of the options is to use the RSA key for authentication as the encryption key. This will not provide any Perfect Forward Secrecy, a shared secret will be generated and encrypted with the RSA key which will be used for encryption by both parties. This will allow an attacker in possession of the RSA private key to decrypt TLS traffic on the fly, this can be dangerous if in the hands of an attacker but at the same time useful if used by a company to inspect TLS traffic for signs of malicious intent. One interesting thing to note is that ECDHE is made mandatory in TLS 1.3, this means that it will not be possible to intercept TLS traffic using this method.</p>
+<h3 id="certificates">Certificates</h3>
+<p>People connect to websites every day using TLS, as stated in the previous section on important component is authentication. A user has to know if the website they are connecting to is legitimate or an imposter website. This is done by checking the websites certificate using the X.509 certificate provided by the website and the public key. Below can be seen an outline of the contents of a X.509 certificate:</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0011-pki-with-openssl/x509certificateversions.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p><em><a href="https://docs.microsoft.com/en-us/windows/win32/seccertenroll/about-x-509-public-key-certificates" target="_blank" rel="noopener noreffer">X.509 Public Key Certificates</a>
+</em></p>
+<p>The X.509 certificate contains important information about the entity, such as a website or user. It may contain information such as the domain of a website, when the certificate expires, and who issued the certificate. This certificate also contains the public key of the entity, which is used during the TLS negotiation phase.</p>
+<p>One interesting problem revolves around how a user can confirm that a certificate is a legitimate certificate associated with a specific entity. For example, how can you know that the certificate provided by your banks website is actually from the bank and not from a attacker siting in a coffee shop. This issue is solved by using certificate authorities, which are discussed in the next section. For this section the most important thing to understand is that entities, such as websites or users, can be represented using certificates.</p>
+<h3 id="certificate-authority">Certificate Authority</h3>
+<p>A certificate authority (CA) is used as a central root of trust that users inherently trust. Now lets go back to the problem at hand, how can we know if a certificate is trust worthy? We can confirm the legitimacy of a certificate by checking if it is singed by a valid CA. Lets look at the example below of the certificate hierarchy for this website:</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0011-pki-with-openssl/thinkbox_certificate_hierarchy.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p><em>Certificate Hierarchy</em></p>
+<p>We can see that there are three entities, <strong>DST Root CA</strong>, <strong>Let’s Encrypt Authority</strong>, and <strong>thinkbox.dev</strong>. Lets start from the bottom. When you initially connect to this website you will receive a certificate from the webserver, this is the certificate that identifies the <strong>thinkbox.dev</strong> entity. In order to confirm this is a legitimate certificate you check that it is singed by the <strong>Let’s Encrypt Authority</strong> intermediate CA. After a check will be performed on the <strong>Let’s Encrypt Authority</strong> intermediate CA certificate to confirm that it is singed by <strong>DST Root CA</strong>. If all these checks pass we know that thinkbox.dev is a legitimate certificate.</p>
+<p><strong>DST Root CA</strong> is the Root CA, it is self singed. This CA’s certificate is stored on a machine and is not transferred over the network. The root of trust lies with the Root CA. Lets Encrypt Authority is considered an intermediate CA as it is used to sign certificates for websites. The Root CA key is considered important and is stored offline most of the time.</p>
+<p>Through this mechanism we now have a method of verifying the identity of an entity before establishing a secure connection. Just to clarify quickly take a look at the diagram below:</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0011-pki-with-openssl/certificate_chains_r2r23.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p><em>Certificate Chain <a href="https://www.amazon.com/Bulletproof-SSL-TLS-Understanding-Applications/dp/1907117040/ref=sr_1_1?keywords=Bulletproof&#43;ssl&amp;qid=1574287549&amp;sr=8-1" target="_blank" rel="noopener noreffer">(Bulletproof SSL and TLS Book)</a>
+</em></p>
+<p>The Root CA is stored on the system, either with the operating system or the browser. It is never transferred over the network. The intermediate CA and the end entity certificate are bundled together, for example the <strong>thinkbox.dev</strong> and <strong>Lets Encrypt Authority</strong> CA certificates are bundled into a single file referred to as the certificate chain. There is no real reason to hold the intermediate CA certificate on a system as its identity can also be verified through the Root CA. Furthermore, the validity time of the intermediate certificate is usually much less that the Root CA and will need to be changed more often over a long period of time.</p>
+<h2 id="security-features">Security Features</h2>
+<h3 id="hsts">HSTS</h3>
+<p>HTTP Strict Transport Security (HSTS) is a mechanism that informs the browser it should interact with a website using TLS. You can think of this as caching which sites use TLS in a way, however, this is done for security reasons to prevent downgrade attacks and cookies being transferred over plaintext. This is a feature that needs to be configured on the web server serving a TLS connection in order to server the HSTS in the HTTP answer, the following shows an example of a Nginx HSTS configatiton setting:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Strict-Transport-Security: max-age=31536000; includeSubDomains
+</code></pre></td></tr></table>
+</div>
+</div><p>As can be seen HSTS is enabled for all a domain and all of its subdomains for 31536000 seconds, which is around 1 year.</p>
+<p>There also exists HSTS preloading where a browser already knows it should connect using TLS from a list. All .dev domains are included in this HSTS list, and there are methods of adding your own domain to this list. More information about be found in these two <a href="https://scotthelme.co.uk/hsts-the-missing-link-in-tls/" target="_blank" rel="noopener noreffer">blog</a>
+ <a href="https://scotthelme.co.uk/hsts-preloading/" target="_blank" rel="noopener noreffer">posts</a>
+.</p>
+<h3 id="csp">CSP</h3>
+<p>Content Security Policy is a mechanism that aims to dictate what content can load on a web page, for example it is possible to prevent inline Javascript from running and control which sources Javascript code can load from. Such a feature can mitigate the effects of a Cross Site Scripting attack. It is also possible to control where other forms of content load from, such as limiting images to a single domain. For more information please view this <a href="https://scotthelme.co.uk/content-security-policy-an-introduction/" target="_blank" rel="noopener noreffer">blog post</a>
+.</p>
+<h3 id="certificate-pinning">Certificate Pinning</h3>
+<p>Certificate pinning aims to make a connection between a service and the certificate it provides. For example, when you load your browser and go to a website there will be a check made in order to confirm that the certificate really does belong to the service you are connecting to. Google used to do this with their websites on the Chrome browser, however, they seem to have backed away from this feature. Certificate pinning is not widely adopted by browsers and is not commonly used.</p>
+<h3 id="revocation">Revocation</h3>
+<p>Revoking certificates is useful in a few scenarios, one of which is if the private key of your certificate is leaked. There are two revocation methods that can be used depending on the application.</p>
+<h3 id="crl">CRL</h3>
+<p>A Certificate Revocation List (CRL) is generated from a list that holds all the certificates that have been revoked. Modern browsers do not support CRL files, however, there are applications such as OpenVPN which do support it. If a user of a OpenVPN server lost their private key the administrator can revoke the certificate so an attacker cannot connect to it.</p>
+<h3 id="ocsp">OCSP</h3>
+<p>Online Certificate Status Protocol (OCSP) is a protocol that works over HTTP which can tell a client if a specific certificate is revoked or not. A client connects to a server called the OCSP responded, it sends a query for a specfic certificate and receives a reply. This is the method that modern browsers use.</p>
+<h2 id="pki-in-practice">PKI in Practice</h2>
+<h3 id="overview">Overview</h3>
+<p>This section will aim to create a set of CA’s and certificates for some services using OpenSSL. The following diagram shows the PKI layout overview:</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0011-pki-with-openssl/pki_diagram_openssl.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>We will be generating a RootCA first. Next we will create two intermediate CA’s for web services and code singing. Lastly, we will create a certificate for two web services and sign them with the Sub CA.</p>
+<p>The first web service will be a simple static web page. The second will be a OCSP responder, this needs a certificate because it works over HTTP in plain text and needs to be singed to prevent tampering.</p>
+<p>Lets begin by setting up a directory structure as seen below in the code snippet. We are going to have 5 folders for all the entities we want to represent.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@CAServer ~<span class="o">]</span>$ <span class="nb">cd</span> ~
+
+<span class="o">[</span>user@CAServer ~<span class="o">]</span>$ mkdir RootCA SubCA CodeSignCA IssuedWebCerts
+<span class="o">[</span>user@CAServer ~<span class="o">]</span>$ mkdir RootCA/certs RootCA/conf RootCA/db RootCA/issued RootCA/private
+
+<span class="o">[</span>user@CAServer ~<span class="o">]</span>$ mkdir SubCA/certs SubCA/conf SubCA/db SubCA/issued SubCA/private
+<span class="o">[</span>user@CAServer ~<span class="o">]</span>$ mkdir CodeSignCA/conf CodeSignCA/issued CodeSignCA/private
+
+<span class="o">[</span>user@CAServer ~<span class="o">]</span>$ mkdir OCSPCert
+<span class="o">[</span>user@CAServer ~<span class="o">]</span>$ mkdir OCSPCert/private OCSPCert/issued
+
+
+<span class="o">[</span>user@CAServer ~<span class="o">]</span>$ mkdir IssuedWebCerts/webserver.test.net
+<span class="o">[</span>user@CAServer ~<span class="o">]</span>$ mkdir IssuedWebCerts/webserver.test.net/conf IssuedWebCerts/webserver.test.net/issued IssuedWebCerts/webserver.test.net/private
+</code></pre></td></tr></table>
+</div>
+</div><p>You must also make sure that you have the configuration files for OpenSSL on the system and in the proper location, if not the commands that follow in the next section will not work.</p>
+<p>Scroll down to the appendix in order to view the configuration files and place then into the correct location as seen in the code snippet below.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@CAServer ~<span class="o">]</span>$ cp root-ca.conf RootCA/conf/root-ca.conf
+<span class="o">[</span>user@CAServer ~<span class="o">]</span>$ cp subca-ca.conf SubCA/conf/subca-ca.conf
+<span class="o">[</span>user@CAServer ~<span class="o">]</span>$ cp codesign-ca.conf CodeSignCA/conf/codesign-ca.conf
+<span class="o">[</span>user@CAServer ~<span class="o">]</span>$ cp webcert.conf IssuedWebCerts/webserver.test.net/conf/webcert.conf
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="create-root-ca">Create Root CA</h3>
+<p>In this section we will generate the Root CA key pair and create a certificate. The following shows the directory structure you should have setup.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@CAServer RootCA<span class="o">]</span>$ ls -l
+total <span class="m">0</span>
+drwxr-xr-x. <span class="m">2</span> user user <span class="m">6</span> Nov  <span class="m">9</span> 22:12 certs
+drwxr-xr-x. <span class="m">2</span> user user <span class="m">26</span> Nov  <span class="m">9</span> 22:10 conf
+drwxr-xr-x. <span class="m">2</span> user user  <span class="m">6</span> Nov  <span class="m">9</span> 22:11 db
+drwxr-xr-x. <span class="m">2</span> user user  <span class="m">6</span> Nov  <span class="m">9</span> 22:12 issued
+drwxr-xr-x. <span class="m">2</span> user user  <span class="m">6</span> Nov  <span class="m">9</span> 22:11 private
+<span class="o">[</span>user@CAServer RootCA<span class="o">]</span>$
+</code></pre></td></tr></table>
+</div>
+</div><p>Begin by creating three files, root-ca.db, root-ca.db.attr, and root-ca-crt-srl. The following list shows a short description of each file created.</p>
+<ul>
+<li><strong>root-ca.db</strong>: This text database will hold a list of issued certificates and there state of validity, that is whether they where revoked or not.</li>
+<li><strong>root-ca.db.attr</strong>: A file with attribute set, for example it can allow a CA to issue multiple certificates with the same subject field.</li>
+<li><strong>root-ca-crt.srl</strong>: This contains the serial number that will be used by the CA, this is supposed to be a unique number among all CA’s. There are standards that dictate this value should have <a href="https://www.securityweek.com/mozilla-wants-64-bits-entropy-certificate-serial-numbers" target="_blank" rel="noopener noreffer">64 bits of entropy</a>
+.</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@CAServer RootCA<span class="o">]</span>$  touch db/root-ca.db
+<span class="o">[</span>user@CAServer RootCA<span class="o">]</span>$  touch db/root-ca.db.attr
+<span class="o">[</span>user@CAServer RootCA<span class="o">]</span>$ openssl rand -hex <span class="m">16</span> &gt; db/root-ca.crt.srl
+</code></pre></td></tr></table>
+</div>
+</div><p>Now the Root CA certificate can be created. The first command below will create a Certificate Signing Request (CSR), which is a file that contains a certificate which needs to be signed by a CA. Since the Root CA is a self signed CA the second command will create a self singed certificate from the CSR.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@CAServer RootCA<span class="o">]</span>$  openssl req -new -config conf/root-ca.conf -out root-ca.csr -keyout private/root-ca.key
+<span class="o">[</span>user@CAServer RootCA<span class="o">]</span>$  openssl ca -selfsign -config conf/root-ca.conf -in root-ca.csr -out issued/root-ca.crt -extensions root_ca_ext -days <span class="m">3650</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="create-intermediate-ca">Create Intermediate CA</h3>
+<p>In this section we will generate the Intermediate CA key pair for Sub CA and create a certificate. The following shows the directory structure you should have setup.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@CAServer SubCA<span class="o">]</span>$ ls -l
+total <span class="m">0</span>
+drwxr-xr-x. <span class="m">2</span> user user  <span class="m">6</span> Nov  <span class="m">9</span> 23:23 certs
+drwxr-xr-x. <span class="m">2</span> user user <span class="m">27</span> Nov  <span class="m">9</span> 23:37 conf
+drwxr-xr-x. <span class="m">2</span> user user  <span class="m">6</span> Nov  <span class="m">9</span> 23:23 db
+drwxr-xr-x. <span class="m">2</span> user user  <span class="m">6</span> Nov  <span class="m">9</span> 23:23 issued
+drwxr-xr-x. <span class="m">2</span> user user  <span class="m">6</span> Nov  <span class="m">9</span> 23:23 private
+<span class="o">[</span>user@CAServer SubCA<span class="o">]</span>$
+</code></pre></td></tr></table>
+</div>
+</div><p>Just like with the Root CA the initial setup files must be created, for a description of each reference the previous section.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@CAServer SubCA<span class="o">]</span>$ touch db/subca-ca.db
+<span class="o">[</span>user@CAServer SubCA<span class="o">]</span>$ touch db/subca-ca.db.attr
+<span class="o">[</span>user@CAServer SubCA<span class="o">]</span>$ openssl rand -hex <span class="m">16</span> &gt; db/subca-ca.crt.srl
+</code></pre></td></tr></table>
+</div>
+</div><p>Once again we begin by creating a CSR for the Sub CA in the first command. This time we head over to the RootCA directory and use the Root CA certificate and key in order to sign the CSR. Lastly, we create a certificate chain which will contain the RootCA and the SubCA, this will be used as input for our OCSP responder in a later section.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@CAServer SubCA<span class="o">]</span>$ openssl req -new -config conf/subca-ca.conf -out subca-ca.csr -keyout private/subca-ca.key
+
+<span class="o">[</span>user@CAServer RootCA<span class="o">]</span>$ openssl ca -config conf/root-ca.conf -in ../SubCA/subca-ca.csr -out ../SubCA/issued/subca-ca.crt -extensions signing_ca_ext
+
+<span class="o">[</span>user@CAServer SubCA<span class="o">]</span>$ cat issued/subca-ca.crt ../RootCA/issued/root-ca.crt &gt; subca-ca_chain.crt
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="create-code-signing-ca">Create Code Signing CA</h3>
+<p>In this section we will generate the code signing CA. The following shows the directory structure you should have setup.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@CAServer CodeSignCA<span class="o">]</span>$ ls -l
+total <span class="m">0</span>
+drwxr-xr-x. <span class="m">2</span> user user <span class="m">30</span> Nov  <span class="m">9</span> 23:56 conf
+drwxr-xr-x. <span class="m">2</span> user user  <span class="m">6</span> Nov  <span class="m">9</span> 23:52 issued
+drwxr-xr-x. <span class="m">2</span> user user  <span class="m">6</span> Nov  <span class="m">9</span> 23:52 private
+<span class="o">[</span>user@CAServer CodeSignCA<span class="o">]</span>$
+</code></pre></td></tr></table>
+</div>
+</div><p>Just as before we begin by generating a CSR. We go to the RootCA directory in order to sign the Code Signing CA CSR with the RootCA key. Once this is finished we package the Code Signing certificate and private key in a PKCS12 format file. We do this in order to reference a single file on a Windows machine we will use to sign application in a later section.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@CAServer CodeSignCA<span class="o">]</span>$ openssl req -new -config conf/codesign-ca.conf -out codesign-ca.csr -keyout private/codesign-ca.key
+
+<span class="o">[</span>user@CAServer RootCA<span class="o">]</span>$ openssl ca -config conf/root-ca.conf -in ../CodeSignCA/codesign-ca.csr -out ../CodeSignCA/issued/codesign-ca.crt -extensions codesign_ca_ext
+
+<span class="o">[</span>user@CAServer CodeSignCA<span class="o">]</span>$ openssl pkcs12 -export -out codesignca.pfx -in issued/codesign-ca.crt -inkey private/codesign-ca.key
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="web-server-certificate">Web Server Certificate</h3>
+<p>Since we will have a website with TLS we will create a certificate for it. The following shows a directory structure that should match yours.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@CAServer webserver.test.net<span class="o">]</span>$ ls -l
+total <span class="m">0</span>
+drwxr-xr-x. <span class="m">2</span> user user <span class="m">6</span> Nov <span class="m">10</span> 00:35 conf
+drwxr-xr-x. <span class="m">2</span> user user <span class="m">6</span> Nov <span class="m">10</span> 00:35 issued
+drwxr-xr-x. <span class="m">2</span> user user <span class="m">6</span> Nov <span class="m">10</span> 00:35 private
+<span class="o">[</span>user@CAServer webserver.test.net<span class="o">]</span>$
+</code></pre></td></tr></table>
+</div>
+</div><p>We begin by generating the key and CSR for the certificate in the first command. After, we go to SubCA in order to sign the CSR of the web server. Lastly, we create a certificate chain file which will contain the web server certificate and the Sub CA certificate.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@CAServer webserver.test.net<span class="o">]</span>$ openssl req -new -config conf/webcert.conf -out webserver.test.net.csr -keyout private/webserver.test.net.key
+
+<span class="o">[</span>user@CAServer SubCA<span class="o">]</span>$ openssl ca -config conf/subca-ca.conf -in ../IssuedWebCerts/webserver.test.net/webserver.test.net.csr -out ../IssuedWebCerts/webserver.test.net/issued/webserver.test.net.crt -extensions server_ext
+
+<span class="o">[</span>user@CAServer webserver.test.net<span class="o">]</span>$ cat issued/webserver.test.net.crt ../../SubCA/issued/subca-ca.crt &gt; webserver.test.net_chain.crt
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="create-ocsp-certificate">Create OCSP Certificate</h3>
+<p>Lastly, since OCSP works over HTTP we need to sign the message with ac certificate. Within the OCSP directory create a new CSR for the OCSP certificate. Next, go into the SubCA and sign the CSR.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@CAServer OCSPCert<span class="o">]</span>$ openssl req -new -config ../SubCA/conf/subca-ca.conf -out oscp.csr -keyout private/oscp.key
+
+<span class="o">[</span>user@CAServer SubCA<span class="o">]</span>$ openssl ca -config conf/subca-ca.conf -in ../OCSPCert/oscp.csr -out ../OCSPCert/issued/ocsp.crt -extensions ocsp_ext
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="pki-in-action">PKI in Action</h2>
+<p>This section will aim to demonstrate the PKI in action by showing it working within the browser on a website, and signing Windows applications with the Code Signing CA.</p>
+<h3 id="using-website-certificate">Using Website Certificate</h3>
+<p>A web server was configured along with DNS for the webserver.test.net domain. On a Windows machine the Root CA was imported into the root CA store. As can be seen below Firefox tells us we have a secure connection to the web server.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0011-pki-with-openssl/website-secured.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>Upon further inspection we can see a familiar certificates hierarchy. We have the Root CA on the system and received the Sub CA and web server certificate from the web server. The certificates all validates and Firefox tells us we have a secure connection.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0011-pki-with-openssl/website-certpath.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h3 id="revoking-website-certificate">Revoking Website Certificate</h3>
+<p>Since we connected succesfully to the web server we will now revboke the certificate. Below is the command used to revoke the certificate.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@CAServer SubCA<span class="o">]</span>$ openssl ca -config /root/SubCA/conf/subca-ca.conf -revoke /root/IssuedWebCerts/webserver.test.net/issued/webserver.test.net.crt
+</code></pre></td></tr></table>
+</div>
+</div><p>The following command will run a OCSP responder for clients to query.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>root@CAServer ~<span class="o">]</span>$ openssl ocsp -port 10.0.0.2:80 -text -sha256 -index SubCA/db/subca-ca.db -CA SubCA/subca-ca_chain.crt -rkey OCSPCert/private/oscp.key -rsigner OCSPCert/issued/ocsp.crt
+</code></pre></td></tr></table>
+</div>
+</div><p>Now before connecting one thing should be pointed out. OCSP is by default set to soft fail, this means even if the certificate is invalid the connection will be allowed. A hard fail can cause issues if the OCSP responder cannot be reached, for example if the CA’s infrastructure goes down. In order to set it to hard fail in Firefox set the security.OCSP.require option to true in the about:config settings.</p>
+<p>After this is done browsing to the website greets us with an error preventing us from getting access.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0011-pki-with-openssl/ocsp_browser_error-1-1024x512.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>Looking in Wireshark we can see a request was sent, in the reply within the red rectangle we can see that the OCSP responder notifes us that the certificate is revoked.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0011-pki-with-openssl/ocsp_wireshark.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h3 id="signing-an-windows-applications">Signing an Windows Applications</h3>
+<p>In order to sign Windows applications a Windows machine is needed, I used Windows Server 2019 for this task. In order to sign applications the signtool program is needed, this can be downloaded thought he Windows SDK kit. As seen below you only need to select the “Windows SDK Signing Tools for Desktop Apps”.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0011-pki-with-openssl/signtools_from_sdk.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>Transfer the Code Sign CA PKCS12 format file created onto the Windows machine. Below is a command shown which will sign a executable file. We need to specfy the PKCS12, the password, and a timestamp server. The timestamp server is used to allow <a href="https://docs.microsoft.com/en-us/windows/win32/seccrypto/time-stamping-authenticode-signatures" target="_blank" rel="noopener noreffer">‘signatures to be verifiable even after the certificates used for signature have expired‘</a>
+.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">C:<span class="se">\P</span>rogram Files <span class="o">(</span>x86<span class="o">)</span><span class="se">\W</span>indows Kits<span class="se">\1</span>0<span class="se">\b</span>in<span class="se">\1</span>0.0.18362.0<span class="se">\x</span>64&gt;signtool sign /f <span class="s2">&#34;C:\Users\Admin\Downloads\codesign-ca.p12&#34;</span> /p supersecretpassword /tr http://timestamp.digicert.com /td sha256 /fd sha256 /a <span class="s2">&#34;C:\Users\Admin\Downloads\main.exe&#34;</span>
+Done Adding Additional Store
+Successfully signed: C:<span class="se">\U</span>sers<span class="se">\A</span>dmin<span class="se">\D</span>ownloads<span class="se">\m</span>ain.exe
+
+C:<span class="se">\P</span>rogram Files <span class="o">(</span>x86<span class="o">)</span><span class="se">\W</span>indows Kits<span class="se">\1</span>0<span class="se">\b</span>in<span class="se">\1</span>0.0.18362.0<span class="se">\x</span>64&gt;
+</code></pre></td></tr></table>
+</div>
+</div><p>Below can be seen a PowerShell Cmdlet is being used to sign a PowerShell script. The same idea applies as to the binary executable file.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="nb">Set-AuthenticodeSignature</span> <span class="n">-Certificate</span> <span class="p">(</span><span class="nb">Get-PfxCertificate</span> <span class="n">-FilePath</span> <span class="p">.\</span><span class="n">codesignca</span><span class="p">.</span><span class="n">pfx</span><span class="p">)</span> <span class="n">-TimestampServer</span> <span class="s2">&#34;http://timestamp.digicert.com&#34;</span> <span class="n">-HashAlgorithm</span> <span class="n">SHA256</span> <span class="n">-FilePath</span> <span class="p">.\</span><span class="n">MyScript</span><span class="p">.</span><span class="n">ps1</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Now we can see that the executable file has a signature.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0011-pki-with-openssl/singed-main_binary.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>The PowerShell script also has a signature.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0011-pki-with-openssl/singed-powershell-script.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>Looking at the certificate path we can see these files have been signed with the Code Sign CA, which has been verified by the Root CA.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0011-pki-with-openssl/signed-certificate-path.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="http://blog.dornea.nu/2015/10/02/manage-pki-using-openssl/" target="_blank" rel="noopener noreffer">Manage PKI Using OpenSSL</a>
+</li>
+<li><a href="https://jamielinux.com/docs/openssl-certificate-authority/sign-server-and-client-certificates.html" target="_blank" rel="noopener noreffer">OpenSSL Certificate Authority</a>
+</li>
+<li><a href="https://ilhicas.com/2018/04/09/Creating-oscp-responder-docker.html" target="_blank" rel="noopener noreffer">Creating an OSCP responder in Docker</a>
+</li>
+<li><a href="https://blogs.technet.microsoft.com/askds/2009/09/01/designing-and-implementing-a-pki-part-i-design-and-planning/" target="_blank" rel="noopener noreffer">Designing and Implementing a PKI: Part I Design and Planning</a>
+</li>
+<li><a href="https://www.amazon.com/Bulletproof-SSL-TLS-Understanding-Applications/dp/1907117040/ref=sr_1_1?keywords=Bulletproof&#43;ssl&amp;qid=1574287549&amp;sr=8-1" target="_blank" rel="noopener noreffer">Bulletproof SSL and TLS: Understanding and Deploying SSL/TLS and PKI to Secure Servers and Web Applications</a>
+</li>
+<li><a href="https://www.digicert.com/code-signing/signcode-signtool-command-line.htm" target="_blank" rel="noopener noreffer">Signing Windows Programs with SignTool</a>
+</li>
+<li><a href="https://www.symbolcrash.com/wp-content/uploads/2019/02/Authenticode_PE-1.pdf" target="_blank" rel="noopener noreffer">Windows Authenticode Portable Executable Signature Format</a>
+</li>
+<li><a href="https://scotthelme.co.uk/hsts-the-missing-link-in-tls/" target="_blank" rel="noopener noreffer">HSTS – The missing link in Transport Layer Security</a>
+</li>
+<li><a href="https://scotthelme.co.uk/hsts-preloading/" target="_blank" rel="noopener noreffer">HSTS Preloading</a>
+</li>
+<li><a href="https://scotthelme.co.uk/content-security-policy-an-introduction/" target="_blank" rel="noopener noreffer">Content Security Policy – An Introduction</a>
+</li>
+</ul>
+<h2 id="appendix">Appendix</h2>
+<h3 id="root-caconf">root-ca.conf</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">[ default ]
+ca                      = root-ca               # CA name
+dir                     = .                     # Top dir
+base_url                = http://pki.test.net  # CA base URL
+aia_url                 = $base_url/$ca.cer     # CA certificate URL
+crl_url                 = $base_url/$ca.crl     # CRL distribution point
+name_opt                = multiline,-esc_msb,utf8 # Display UTF-8 characters
+openssl_conf            = openssl_init          # Library config section
+
+# CA certificate request
+
+[ req ]
+default_bits            = 4096                  # RSA key size
+encrypt_key             = yes                   # Protect private key
+default_md              = sha2                  # MD to use
+utf8                    = yes                   # Input is UTF-8
+string_mask             = utf8only              # Emit UTF-8 strings
+prompt                  = no                    # Don&#39;t prompt for DN
+distinguished_name      = ca_dn                 # DN section
+req_extensions          = ca_reqext             # Desired extensions
+
+[ ca_dn ]
+countryName             = &#34;TE&#34;
+organizationName        = &#34;TestPKI Root&#34;
+organizationalUnitName  = &#34;testPKI Root CA&#34;
+commonName              = &#34;TestPKI Root&#34;
+
+[ ca_reqext ]
+keyUsage                = critical,keyCertSign,cRLSign
+basicConstraints        = critical,CA:true
+subjectKeyIdentifier    = hash
+
+# CA operational settings
+
+[ ca ]
+default_ca              = root_ca               # The default CA section
+
+[ root_ca ]
+certificate             = $dir/issued/$ca.crt       # The CA cert
+private_key             = $dir/private/$ca.key # CA private key
+new_certs_dir           = $dir/certs           # Certificate archive
+serial                  = $dir/db/$ca.crt.srl # Serial number file
+crlnumber               = $dir/db/$ca.crl.srl # CRL number file
+database                = $dir/db/$ca.db # Index file
+unique_subject          = no                    # Require unique subject
+default_days            = 3652                  # How long to certify for
+default_md              = sha1                  # MD to use
+policy                  = match_pol             # Default naming policy
+email_in_dn             = no                    # Add email to cert DN
+preserve                = no                    # Keep passed DN ordering
+name_opt                = $name_opt             # Subject DN display options
+cert_opt                = ca_default            # Certificate display options
+copy_extensions         = none                  # Copy extensions from CSR
+x509_extensions         = signing_ca_ext        # Default cert extensions
+default_crl_days        = 30                    # How long before next CRL
+crl_extensions          = crl_ext               # CRL extensions
+
+[ match_pol ]
+countryName             = optional
+stateOrProvinceName     = optional
+localityName            = optional
+organizationName        = optional
+organizationalUnitName  = optional
+commonName              = supplied
+
+[ any_pol ]
+domainComponent         = optional
+countryName             = optional
+stateOrProvinceName     = optional
+localityName            = optional
+organizationName        = optional
+organizationalUnitName  = optional
+commonName              = optional
+emailAddress            = optional
+
+# Extensions
+
+[ root_ca_ext ]
+keyUsage                = critical,keyCertSign,cRLSign
+basicConstraints        = critical,CA:true
+subjectKeyIdentifier    = hash
+authorityKeyIdentifier  = keyid:always
+
+[ signing_ca_ext ]
+keyUsage                = critical,keyCertSign,cRLSign
+basicConstraints        = critical,CA:true,pathlen:0
+subjectKeyIdentifier    = hash
+authorityKeyIdentifier  = keyid:always
+authorityInfoAccess     = @issuer_info
+crlDistributionPoints   = @crl_info
+authorityInfoAccess     = OCSP;URI:http://ocsp.test.net:80
+
+[ codesign_ca_ext ]
+keyUsage                = critical,digitalSignature
+extendedKeyUsage        = critical,codeSigning
+subjectKeyIdentifier    = hash
+authorityInfoAccess     = @issuer_info
+crlDistributionPoints   = @crl_info
+authorityInfoAccess     = OCSP;URI:http://ocsp.test.net:80
+
+[ ocsp_ca_ext ]
+basicConstraints = CA:FALSE
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid,issuer
+keyUsage = critical, digitalSignature
+extendedKeyUsage = critical, OCSPSigning
+
+[ crl_ext ]
+authorityKeyIdentifier  = keyid:always
+authorityInfoAccess     = @issuer_info
+
+[ issuer_info ]
+caIssuers;URI.0         = $aia_url
+
+[ crl_info ]
+URI.0                   = $crl_url
+
+# Policy OIDs
+
+[ openssl_init ]
+oid_section             = additional_oids
+
+[ additional_oids ]
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="subca-caconf">subca-ca.conf</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">[ default ]
+ca                      = subca-ca                # CA name
+dir                     = .                     # Top dir
+base_url                = http://subca.test.net/ca    # CA base URL
+aia_url                 = $base_url/$ca.cer     # CA certificate URL
+crl_url                 = $base_url/$ca.crl     # CRL distribution point
+name_opt                = multiline,-esc_msb,utf8 # Display UTF-8 characters
+
+# CA certificate request
+
+[ req ]
+default_bits            = 4096                  # RSA key size
+encrypt_key             = yes                   # Protect private key
+default_md              = sha2                  # MD to use
+utf8                    = yes                   # Input is UTF-8
+string_mask             = utf8only              # Emit UTF-8 strings
+prompt                  = no                    # Don&#39;t prompt for DN
+distinguished_name      = ca_dn                 # DN section
+req_extensions          = ca_reqext             # Desired extensions
+
+[ ca_dn ]
+countryName             = &#34;TE&#34;
+organizationName        = &#34;TestPKI Sub&#34;
+organizationalUnitName  = &#34;test.net Sub CA&#34;
+commonName              = &#34;TestPKI Sub&#34;
+
+[ ca_reqext ]
+keyUsage                = critical,keyCertSign,cRLSign
+basicConstraints        = critical,CA:true,pathlen:0
+subjectKeyIdentifier    = hash
+
+# CA operational settings
+
+[ ca ]
+default_ca              = subca_ca                # The default CA section
+
+[ subca_ca ]
+certificate             = $dir/issued/$ca.crt       # The CA cert
+private_key             = $dir/private/$ca.key
+new_certs_dir           = $dir/certs           # Certificate archive
+serial                  = $dir/db/$ca.crt.srl # Serial number file
+crlnumber               = $dir/db/$ca.crl.srl # CRL number file
+database                = $dir/db/$ca.db # Index file
+unique_subject          = no                    # Require unique subject
+default_days            = 365                   # How long to certify for
+default_md              = sha256                # MD to use
+policy                  = match_pol             # Default naming policy
+email_in_dn             = no                    # Add email to cert DN
+preserve                = no                    # Keep passed DN ordering
+name_opt                = $name_opt             # Subject DN display options
+cert_opt                = ca_default            # Certificate display options
+copy_extensions         = copy                  # Copy extensions from CSR
+x509_extensions         = server_ext            # Default cert extensions
+default_crl_days        = 1                     # How long before next CRL
+crl_extensions          = crl_ext               # CRL extensions
+
+[ match_pol ]
+countryName             = optional                 # Must match &#39;NO&#39;
+stateOrProvinceName     = optional              # Included if present
+localityName            = optional              # Included if present
+organizationName        = optional                 # Must match &#39;Green AS&#39;
+organizationalUnitName  = optional              # Included if present
+commonName              = supplied              # Must be present
+
+[ extern_pol ]
+countryName             = supplied              # Must be present
+stateOrProvinceName     = optional              # Included if present
+localityName            = optional              # Included if present
+organizationName        = supplied              # Must be present
+organizationalUnitName  = optional              # Included if present
+commonName              = supplied              # Must be present
+
+[ any_pol ]
+domainComponent         = optional
+countryName             = optional
+stateOrProvinceName     = optional
+localityName            = optional
+organizationName        = optional
+organizationalUnitName  = optional
+commonName              = optional
+emailAddress            = optional
+
+# Extensions
+
+[ server_ext ]
+keyUsage                = critical,digitalSignature,keyEncipherment
+basicConstraints        = CA:false
+extendedKeyUsage        = serverAuth,clientAuth
+subjectKeyIdentifier    = hash
+authorityKeyIdentifier  = keyid:always
+authorityInfoAccess     = @issuer_info
+crlDistributionPoints   = @crl_info
+authorityInfoAccess     = OCSP;URI:http://ocsp.test.net:80
+
+[ client_ext ]
+keyUsage                = critical,digitalSignature
+basicConstraints        = CA:false
+extendedKeyUsage        = clientAuth
+subjectKeyIdentifier    = hash
+authorityKeyIdentifier  = keyid:always
+authorityInfoAccess     = @issuer_info
+crlDistributionPoints   = @crl_info
+
+[ ocsp_ext ]
+basicConstraints = CA:FALSE
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid,issuer
+keyUsage = critical, digitalSignature
+extendedKeyUsage = critical, OCSPSigning
+
+[ crl_ext ]
+authorityKeyIdentifier  = keyid:always
+authorityInfoAccess     = @issuer_info
+
+[ issuer_info ]
+caIssuers;URI.0         = $aia_url
+
+[ crl_info ]
+URI.0                   = $crl_url
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="codesign-caconf">codesign-ca.conf</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">[ default ]
+ca                      = codesign-ca                # CA name
+dir                     = .                     # Top dir
+base_url                = http://codesign.test.net/ca    # CA base URL
+aia_url                 = $base_url/$ca.cer     # CA certificate URL
+crl_url                 = $base_url/$ca.crl     # CRL distribution point
+name_opt                = multiline,-esc_msb,utf8 # Display UTF-8 characters
+
+# CA certificate request
+
+[ req ]
+default_bits            = 4096                  # RSA key size
+encrypt_key             = yes                   # Protect private key
+default_md              = sha2                  # MD to use
+utf8                    = yes                   # Input is UTF-8
+string_mask             = utf8only              # Emit UTF-8 strings
+prompt                  = no                    # Don&#39;t prompt for DN
+distinguished_name      = ca_dn                 # DN section
+req_extensions          = ca_reqext             # Desired extensions
+
+[ ca_dn ]
+countryName             = &#34;TE&#34;
+organizationName        = &#34;TestPKI CodeSign&#34;
+organizationalUnitName  = &#34;test.net CodeSign&#34;
+commonName              = &#34;TestPKI CodeSign&#34;
+
+[ ca_reqext ]
+keyUsage                = critical,digitalSignature
+extendedKeyUsage        = critical,codeSigning
+subjectKeyIdentifier    = hash
+
+# CA operational settings
+
+[ ca ]
+default_ca              = codesign_ca                # The default CA section
+
+[ codesign_ca ]
+certificate             = $dir/issued/$ca.crt       # The CA cert
+private_key             = $dir/private/$ca.key # CA private key
+new_certs_dir           = $dir/certs           # Certificate archive
+serial                  = $dir/db/$ca.crt.srl # Serial number file
+crlnumber               = $dir/db/$ca.crl.srl # CRL number file
+database                = $dir/db/$ca.db # Index file
+unique_subject          = no                    # Require unique subject
+default_days            = 365                   # How long to certify for
+default_md              = sha256                # MD to use
+policy                  = match_pol             # Default naming policy
+email_in_dn             = no                    # Add email to cert DN
+preserve                = no                    # Keep passed DN ordering
+name_opt                = $name_opt             # Subject DN display options
+cert_opt                = ca_default            # Certificate display options
+copy_extensions         = copy                  # Copy extensions from CSR
+x509_extensions         = server_ext            # Default cert extensions
+default_crl_days        = 1                     # How long before next CRL
+crl_extensions          = crl_ext               # CRL extensions
+
+[ match_pol ]
+countryName             = match                 # Must match &#39;NO&#39;
+stateOrProvinceName     = optional              # Included if present
+localityName            = optional              # Included if present
+organizationName        = match                 # Must match &#39;Green AS&#39;
+organizationalUnitName  = optional              # Included if present
+commonName              = supplied              # Must be present
+
+[ extern_pol ]
+countryName             = supplied              # Must be present
+stateOrProvinceName     = optional              # Included if present
+localityName            = optional              # Included if present
+organizationName        = supplied              # Must be present
+organizationalUnitName  = optional              # Included if present
+commonName              = supplied              # Must be present
+
+[ any_pol ]
+domainComponent         = optional
+countryName             = optional
+stateOrProvinceName     = optional
+localityName            = optional
+organizationName        = optional
+organizationalUnitName  = optional
+commonName              = optional
+emailAddress            = optional
+
+# Extensions
+
+[ server_ext ]
+keyUsage                = critical,digitalSignature,keyEncipherment
+basicConstraints        = CA:false
+extendedKeyUsage        = serverAuth,clientAuth
+subjectKeyIdentifier    = hash
+authorityKeyIdentifier  = keyid:always
+authorityInfoAccess     = @issuer_info
+crlDistributionPoints   = @crl_info
+
+[ client_ext ]
+keyUsage                = critical,digitalSignature
+basicConstraints        = CA:false
+extendedKeyUsage        = clientAuth
+subjectKeyIdentifier    = hash
+authorityKeyIdentifier  = keyid:always
+authorityInfoAccess     = @issuer_info
+crlDistributionPoints   = @crl_info
+
+[ crl_ext ]
+authorityKeyIdentifier  = keyid:always
+authorityInfoAccess     = @issuer_info
+
+[ issuer_info ]
+caIssuers;URI.0         = $aia_url
+
+[ crl_info ]
+URI.0                   = $crl_url
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="webcertconf">webcert.conf</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">[ default ]
+SAN                     = DNS:webserver.test.net    # Default value / [S]ubject[A]lt[N]ame
+
+[ req ]
+default_bits            = 4096                  # RSA key size
+encrypt_key             = no                    # Protect private key
+default_md              = sha2                  # MD to use
+utf8                    = yes                   # Input is UTF-8
+string_mask             = utf8only              # Emit UTF-8 strings
+prompt                  = yes                   # Prompt for DN
+distinguished_name      = server_dn             # DN template
+req_extensions          = server_reqext         # Desired extensions
+
+[ server_dn ]
+countryName             = &#34;1. Country Name (2 letters) (eg, US)       &#34;
+countryName_max         = 2
+stateOrProvinceName     = &#34;2. State or Province Name   (eg, region)   &#34;
+localityName            = &#34;3. Locality Name            (eg, city)     &#34;
+organizationName        = &#34;4. Organization Name        (eg, company)  &#34;
+organizationalUnitName  = &#34;5. Organizational Unit Name (eg, section)  &#34;
+commonName              = &#34;6. Common Name              (eg, FQDN)     &#34;
+commonName_max          = 64
+
+[ server_reqext ]
+keyUsage                = critical,digitalSignature,keyEncipherment
+extendedKeyUsage        = serverAuth,clientAuth
+subjectKeyIdentifier    = hash
+subjectAltName          = @alt_names
+
+[alt_names]
+DNS.1 = webserver.test.net
+IP.1 = 10.0.0.3
+</code></pre></td></tr></table>
+</div>
+</div></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>The article was updated on 2019-11-20</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span><a href="javascript:void(0);" title="Share on Twitter" data-sharer="twitter" data-url="https://blog.thinkbox.dev/posts/0011-pki-with-openssl/" data-title="Understanding and Implementing PKI with OpenSSL" data-hashtags="PKI,OpenSSL"><i class="fab fa-twitter fa-fw"></i></a><a href="javascript:void(0);" title="Share on Facebook" data-sharer="facebook" data-url="https://blog.thinkbox.dev/posts/0011-pki-with-openssl/" data-hashtag="PKI"><i class="fab fa-facebook-square fa-fw"></i></a><a href="javascript:void(0);" title="Share on Linkedin" data-sharer="linkedin" data-url="https://blog.thinkbox.dev/posts/0011-pki-with-openssl/"><i class="fab fa-linkedin fa-fw"></i></a><a href="javascript:void(0);" title="Share on WhatsApp" data-sharer="whatsapp" data-url="https://blog.thinkbox.dev/posts/0011-pki-with-openssl/" data-title="Understanding and Implementing PKI with OpenSSL" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="javascript:void(0);" title="Share on Hacker News" data-sharer="hackernews" data-url="https://blog.thinkbox.dev/posts/0011-pki-with-openssl/" data-title="Understanding and Implementing PKI with OpenSSL"><i class="fab fa-hacker-news fa-fw"></i></a><a href="javascript:void(0);" title="Share on Reddit" data-sharer="reddit" data-url="https://blog.thinkbox.dev/posts/0011-pki-with-openssl/"><i class="fab fa-reddit fa-fw"></i></a><a href="javascript:void(0);" title="Share on VK" data-sharer="vk" data-url="https://blog.thinkbox.dev/posts/0011-pki-with-openssl/" data-title="Understanding and Implementing PKI with OpenSSL"><i class="fab fa-vk fa-fw"></i></a><a href="javascript:void(0);" title="Share on 微博" data-sharer="weibo" data-url="https://blog.thinkbox.dev/posts/0011-pki-with-openssl/" data-title="Understanding and Implementing PKI with OpenSSL"><i class="fab fa-weibo fa-fw"></i></a><a href="javascript:void(0);" title="Share on 百度" data-sharer="baidu" data-url="https://blog.thinkbox.dev/posts/0011-pki-with-openssl/" data-title="Understanding and Implementing PKI with OpenSSL"><i class="loveit it-baidu-fill"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/pki">PKI</a>,&nbsp;<a href="/tags/openssl">OpenSSL</a></section>
+        <section>
+            <span><a href="javascript:window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/">Home</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/0010-device-guard-golden-image/" class="prev" rel="prev" title="Creating Device Guard Polices from a Golden Image"><i class="fas fa-angle-left fa-fw"></i>Creating Device Guard Polices from a Golden Image</a></div>
+</div>
+<div class="comment"><div id="disqus_thread"></div><noscript>
+            Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript></div>
+    </article></div>
+            </main><footer class="footer">
+    <div class="copyright"><div class="copyright-line">Powered by <a href="https://gohugo.io/" target="_blank" rel="external nofollow noopener noreffer">Hugo</a> | Theme - <a href="https://github.com/dillonzq/LoveIt" target="_blank" rel="external nofollow noopener noreffer"><i class="far fa-heart fa-fw"></i> LoveIt</a>
+        </div>
+
+        <div class="copyright-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2019 - 2020</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank">Aleks</a></span></div>
+    </div>
+</footer>
+</div><a href="#" class="dynamic-to-top animated faster" id="dynamic-to-top">
+            <i class="fas fa-chevron-up fa-fw"></i>
+        </a><link rel="stylesheet" href="/lib/iconfont/iconfont.min.css"><script defer src="https://blog-thinkbox-dev.disqus.com/embed.js"></script><script src="/lib/smooth-scroll/smooth-scroll.polyfills.min.js"></script><script src="/lib/sharer/sharer.min.js"></script><script src="/lib/lazysizes/lazysizes.min.js"></script><script src="/js/theme.min.js"></script>
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-161605270-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+</body>
+</html>

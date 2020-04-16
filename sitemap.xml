@@ -2,12 +2,16 @@
     xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
     xmlns:xhtml="http://www.w3.org/1999/xhtml"
     ><url>
-            <loc>https://blog.thinkbox.dev/categories/</loc><lastmod>2019-11-07T00:44:07-04:00</lastmod></url><url>
+            <loc>https://blog.thinkbox.dev/categories/</loc><lastmod>2019-11-20T00:44:07-04:00</lastmod></url><url>
+            <loc>https://blog.thinkbox.dev/categories/information-security/</loc><lastmod>2019-11-20T00:44:07-04:00</lastmod></url><url>
+            <loc>https://blog.thinkbox.dev/tags/openssl/</loc><lastmod>2019-11-20T00:44:07-04:00</lastmod></url><url>
+            <loc>https://blog.thinkbox.dev/tags/pki/</loc><lastmod>2019-11-20T00:44:07-04:00</lastmod></url><url>
+            <loc>https://blog.thinkbox.dev/posts/</loc><lastmod>2019-11-20T00:44:07-04:00</lastmod></url><url>
+            <loc>https://blog.thinkbox.dev/tags/</loc><lastmod>2019-11-20T00:44:07-04:00</lastmod></url><url>
+            <loc>https://blog.thinkbox.dev/</loc><lastmod>2019-11-20T00:44:07-04:00</lastmod></url><url>
+            <loc>https://blog.thinkbox.dev/posts/0011-pki-with-openssl/</loc><lastmod>2019-11-20T00:44:07-04:00</lastmod></url><url>
             <loc>https://blog.thinkbox.dev/posts/0010-device-guard-golden-image/</loc><lastmod>2019-11-07T00:44:07-04:00</lastmod></url><url>
-            <loc>https://blog.thinkbox.dev/posts/</loc><lastmod>2019-11-07T00:44:07-04:00</lastmod></url><url>
             <loc>https://blog.thinkbox.dev/tags/security/</loc><lastmod>2019-11-07T00:44:07-04:00</lastmod></url><url>
-            <loc>https://blog.thinkbox.dev/tags/</loc><lastmod>2019-11-07T00:44:07-04:00</lastmod></url><url>
-            <loc>https://blog.thinkbox.dev/</loc><lastmod>2019-11-07T00:44:07-04:00</lastmod></url><url>
             <loc>https://blog.thinkbox.dev/tags/windows/</loc><lastmod>2019-11-07T00:44:07-04:00</lastmod></url><url>
             <loc>https://blog.thinkbox.dev/categories/windows-internals/</loc><lastmod>2019-11-07T00:44:07-04:00</lastmod></url><url>
             <loc>https://blog.thinkbox.dev/posts/0009-domain-filter-with-squid/</loc><lastmod>2019-10-17T20:43:53-04:00</lastmod></url><url>
