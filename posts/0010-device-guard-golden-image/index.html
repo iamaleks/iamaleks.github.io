@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <title>Creating Device Guard Polices from a Golden Image | ThinkBox</title>
+        <meta name="Description" content=""><meta property="og:title" content="Creating Device Guard Polices from a Golden Image" />
+<meta property="og:description" content="Introduction Device Guard is a system built into Windows 10 that can help mitigate the effects of a breach by controlling which applications are allowed to run, both processess in userland and drivers in the kernel. After Windows 10 1709 Device Guard is now known as Windows Defender Application Control, however, in this post it will be refereed to as Device Guard.
+This post will aim to show the steps taken to configure a Device Guard policy based on a golden image, this is a computer that is configured and has all the needed software installed." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://blog.thinkbox.dev/posts/0010-device-guard-golden-image/" />
+<meta property="article:published_time" content="2019-11-07T00:44:07-04:00" />
+<meta property="article:modified_time" content="2019-11-07T00:44:07-04:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Creating Device Guard Polices from a Golden Image"/>
+<meta name="twitter:description" content="Introduction Device Guard is a system built into Windows 10 that can help mitigate the effects of a breach by controlling which applications are allowed to run, both processess in userland and drivers in the kernel. After Windows 10 1709 Device Guard is now known as Windows Defender Application Control, however, in this post it will be refereed to as Device Guard.
+This post will aim to show the steps taken to configure a Device Guard policy based on a golden image, this is a computer that is configured and has all the needed software installed."/>
+<meta name="theme-color" content="#ffffff">
+<meta name="msapplication-TileColor" content="#da532c">
+<link rel="canonical" href="https://blog.thinkbox.dev/posts/0010-device-guard-golden-image/" />
+<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="prev" href="https://blog.thinkbox.dev/posts/0009-domain-filter-with-squid/" /><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="/lib/animate/animate.min.css"><link rel="stylesheet" href="/css/style.min.css"><meta name="google-site-verification" content="UA-161605270-1" /><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Creating Device Guard Polices from a Golden Image",
+        "inLanguage": "en",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/blog.thinkbox.dev\/posts\/0010-device-guard-golden-image\/"
+        },"genre": "posts","keywords": "Security, Windows","wordcount":  1242 ,
+        "url": "https:\/\/blog.thinkbox.dev\/posts\/0010-device-guard-golden-image\/","datePublished": "2019-11-07","dateModified": "2019-11-07","author": {
+                "@type": "Person",
+                "name": "Aleks"
+            },"description": ""
+    }
+    </script></head>
+    <body><script>
+            if (!window.localStorage || !window.localStorage.getItem('theme')) {window.isDark = 'dark' === 'dark';} else {
+                window.isDark = (window.localStorage && window.localStorage.getItem('theme')) === 'dark';
+            }
+            window.isDark && document.body.classList.add('dark-theme');
+        </script><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/">ThinkBox</a>
+        </div>
+        <div class="menu"><a class="menu-item" href="/posts/" rel="noopener noreffer">Posts</a><a class="menu-item" href="/tags/" rel="noopener noreffer">Tags</a><a class="menu-item" href="/categories/" rel="noopener noreffer">Categories</a><span class="menu-item">|</span>
+            <a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-wrapper">
+        <div class="header-container">
+            <div class="header-title">
+                <a href="/">ThinkBox</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><a class="menu-item" href="/posts/" title="" rel="noopener noreffer">Posts</a><a class="menu-item" href="/tags/" title="" rel="noopener noreffer">Tags</a><a class="menu-item" href="/categories/" title="" rel="noopener noreffer">Categories</a><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header>
+
+<script>
+    window.desktopHeaderMode = "fixed";
+    window.mobileHeaderMode = "auto";
+</script>
+<main class="main">
+                <div class="container"><article class="page single"><h1 class="single-title animated flipInX">Creating Device Guard Polices from a Golden Image</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel="noopener noreffer author" class="author"><i class="fas fa-user-circle fa-fw"></i>Aleks</a>
+</span>&nbsp;
+                    <span class="post-category">included in<a href="/categories/windows-internals">
+                                <i class="far fa-folder fa-fw"></i>Windows internals
+                            </a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i><time datetime=2019-11-07>2019-11-07</time>&nbsp;
+                <i class="fas fa-pencil-alt fa-fw"></i>about 1242 words&nbsp;
+                <i class="far fa-clock fa-fw"></i>6 min&nbsp;</div>
+        </div><div class="toc" id="toc-auto">
+                <h2 class="toc-title">Contents</h2>
+                <div class="toc-content" id="toc-content-auto"></div>
+            </div>
+            <div class="toc" id="toc-static">
+                <details>
+                    <summary>
+                        <div class="toc-title">
+                            <span>Contents</span>
+                            <span><i class="details icon fas fa-angle-down"></i></span>
+                        </div>
+                    </summary>
+                    <div class="toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#generating-policy-from-installed-software">Generating Policy from Installed Software</a>
+      <ul>
+        <li><a href="#generating-initial-policy">Generating Initial Policy</a></li>
+        <li><a href="#enable-device-guard">Enable Device Guard</a>
+          <ul>
+            <li><a href="#device-guard-policy-not-in-effect-after-reboot">Device Guard Policy not in Effect After Reboot</a></li>
+          </ul>
+        </li>
+        <li><a href="#view-audit-logs">View Audit Logs</a></li>
+        <li><a href="#set-policy-to-enforcing">Set Policy to Enforcing</a></li>
+      </ul>
+    </li>
+    <li><a href="#generating-policy-from-audit-logs">Generating Policy from Audit Logs</a>
+      <ul>
+        <li><a href="#fetch-default-windows-policy">Fetch Default Windows Policy</a></li>
+        <li><a href="#convert-default-policy-to-binary">Convert Default Policy to Binary</a></li>
+        <li><a href="#enabling-device-guard">Enabling Device Guard</a></li>
+        <li><a href="#generate-policy-from-audit-logs">Generate Policy from Audit Logs</a></li>
+        <li><a href="#create-final-policy">Create Final Policy</a></li>
+      </ul>
+    </li>
+    <li><a href="#references">References</a></li>
+  </ul>
+</nav></div>
+                </details>
+            </div><div class="content" id="content" style="text-align: justify;"><h2 id="introduction">Introduction</h2>
+<p>Device Guard is a system built into Windows 10 that can help mitigate the effects of a breach by controlling which applications are allowed to run, both processess in userland and drivers in the kernel. After Windows 10 1709 Device Guard is now known as Windows Defender Application Control, however, in this post it will be refereed to as Device Guard.</p>
+<p>This post will aim to show the steps taken to configure a Device Guard policy based on a golden image, this is a computer that is configured and has all the needed software installed. The configuration will be done on a Windows 10 LTSC build 17763.</p>
+<p>Two configuration polices will be created for the software installed on the system, the <a href="https://docs.microsoft.com/en-us/windows/security/threat-protection/windows-defender-application-control/select-types-of-rules-to-create#windows-defender-application-control-file-rule-levels" target="_blank" rel="noopener noreffer">rule level</a>
+ used in these examples will be <code>Publisher</code> with a fallback of <code>hash</code>. This means we will be whitelisting applications based on their root CA along with the publisher CA, if that fails a hash of the file will be used.</p>
+<p>The post will take two different approaches to creating a policy from a golden image:</p>
+<ul>
+<li>
+<p>The <a href="#generating-policy-from-installed-software" rel="noopener noreffer">first</a>
+ approach will scan for user applications and will add their signature or hash to a policy file.</p>
+</li>
+<li>
+<p>The <a href="#generating-policy-from-audit-logs" rel="noopener noreffer">second</a>
+ will start with a default Windows policy from Microsoft, this will allow all the certificates present on a default Windows installation. User activity will then be performed with this policy, and from new a new policy will be generated in order to whitelist the applications used.</p>
+</li>
+</ul>
+<h2 id="generating-policy-from-installed-software">Generating Policy from Installed Software</h2>
+<h3 id="generating-initial-policy">Generating Initial Policy</h3>
+<p>In order to begin creating the initial policy the directories to scan must be decided, for this example I will be using the system32 and programs folders. The following shows the commands used with the <code>New-CIPolicy</code> Cmdlet. Please note that all the polices generated will be in audit mode by default, this means that if you enable Device Guard with this policy it will only generate audit information about what could happen rather than actually blocking an application. We need this for the beginning, it will be turned off later on.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0010-device-guard-golden-image/1.1_RunningCIRules.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>These three commands will generate three seprate XML files that will define which CA&rsquo;s are allowed. The following code snippet shows an example of a possible field, here we can see that a CA with the Common Name of <code>Mozilla Corporation</code> will be allowed if it is signed by DigiCert.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-xml" data-lang="xml"><span class="nt">&lt;Signer</span> <span class="na">ID=</span><span class="s">&#34;ID_SIGNER_S_2FD&#34;</span> <span class="na">Name=</span><span class="s">&#34;DigiCert SHA2 Assured ID Code Signing CA&#34;</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;CertRoot</span> <span class="na">Type=</span><span class="s">&#34;TBS&#34;</span> <span class="na">Value=</span><span class="s">&#34;E767799478F64A34B3F53FF3BB9057FE1768F4AB178041B0DCC0FF1E210CBA65&#34;</span> <span class="nt">/&gt;</span>
+  <span class="nt">&lt;CertPublisher</span> <span class="na">Value=</span><span class="s">&#34;Mozilla Corporation&#34;</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;/Signer&gt;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Now, you may have noticed that the last run of <code>New-CIPolicy</code> gave an error saying it was unable to generate rules for all scanned files. This can happen at times, when it does you must check the log file in order to see which files are affected.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0010-device-guard-golden-image/1.2_FailedBinary.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>Looking at the log file we can see that the Firefox uninstaller binary is affected, however, for this example it will not change much so we will just leave it.</p>
+<p>After the three seperate polices have been created, they must be merged into a single XML file. This can be done using the <code>Merge-CIPolicy</code> Cmdlet.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0010-device-guard-golden-image/1.3_ConvertXMLToBinForAudit.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>In order to make use of the polices generated they must be converted into a binary format, this is done to make parsing the policy quicker for the computer. In order to convert it to a binary format use the <code>ConvertFrom-CIPolicy</code> Cmdlet, make sure to take note of the location of the binary policy.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0010-device-guard-golden-image/1.4_ConvertAuditToBin.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h3 id="enable-device-guard">Enable Device Guard</h3>
+<p>Now that a code integrity policy has been created Device Guard must be enabled. Start by navigating to <code>Computer Configuration -&gt; Administrative Templates -&gt; System -&gt; Device Guard</code> in the Group Policy editor.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0010-device-guard-golden-image/1.6_1_GoToGPO.gif,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>Next, enable Virilization Based Security. This is a feature of Windows 10 that Device Guard can make use of, select the code integrity portion of the settings and enable it.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0010-device-guard-golden-image/1.6_1_EnableVBS.gif,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>Lastly, enable and place the path to the policy binary under the Device Guard configuration.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0010-device-guard-golden-image/1.6_3_SpecifyCIPath.gif,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>After these settings are enabled restart the computer and when it boots up Device Guard should be running, depending on the policy it will either be in audit mode or enforcing. In this case it will be in audit mode.</p>
+<hr>
+<h4 id="device-guard-policy-not-in-effect-after-reboot">Device Guard Policy not in Effect After Reboot</h4>
+<p><strong><em>NOTE:</em></strong>  In some cases you may notice that the Device Guard policy is not in effect after reboot, this has happened a few times during my testing. In order to solve this reboot the computer a second time, and the policy should be in effect.</p>
+<hr>
+<h3 id="view-audit-logs">View Audit Logs</h3>
+<p>Now that the policy is running in audit mode you can view audit information in Event Viewer, head over to <code>Microsoft-Windows-CodeIntegrity</code> in EventViewer in order to view the logs.</p>
+<p>The most important log is Event ID 3076, this is the event that will show any applications that are run which do not meet the code integrity policy. In other words, if the policy was set to enforcing these applications would be blocked from running.</p>
+<p>Below we can see that a WinRAR executable has been prevented from running. The goal here is to perform user activity and watch the logs to see if any undesired applications have been blocked, after the policy can be altered in order to meet the requirements.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0010-device-guard-golden-image/1.5EventViewerAuditFail.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h3 id="set-policy-to-enforcing">Set Policy to Enforcing</h3>
+<p>Once the policy has been configured to meet the applications requirements it is a good idea to do a test run with the policy in enforcing mode. In order to do this use the <code>Set-RuleOption</code> and delete option 3, which is the option that enables audit mode.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0010-device-guard-golden-image/1.7_Enable_DG.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>After the option is deleted reboot the computer, the policy should now be enforcing. If you attempt to run any applications that do not meet your code integirty policy you will be greeted with a message that looks like the following screenshot.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0010-device-guard-golden-image/1.8_BlockedApplication.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h2 id="generating-policy-from-audit-logs">Generating Policy from Audit Logs</h2>
+<h3 id="fetch-default-windows-policy">Fetch Default Windows Policy</h3>
+<p>We will begin by using the default Windows audit policy, this can be found in the <code>C:\Windows\schemas\CodeIntegrity\ExamplePolicies</code> folder. Copy the desired file to the location where you will be creating the polices in.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0010-device-guard-golden-image/2.1_CopyWindowsDefault.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h3 id="convert-default-policy-to-binary">Convert Default Policy to Binary</h3>
+<p>Next, convert the policy into a binary format using the <code>ConvertFrom-CIPolicy</code> Cmdlet.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0010-device-guard-golden-image/2.2_CreateAuditBinaryRule.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h3 id="enabling-device-guard">Enabling Device Guard</h3>
+<p>Now enable Virtualization Based Security and Device Guard, you can see how this is done in the <a href="#enable-device-guard" rel="noopener noreffer">section above</a>
+.</p>
+<h3 id="generate-policy-from-audit-logs">Generate Policy from Audit Logs</h3>
+<p>Once you have booted into the system using the default Windows policy in audit mode the real work begins. The goal here is to use a system exaclty how a regular user would, this includes using all the applications that they would have. This will end up generating many log files regarding all the applications that the code integrity policy would not allow, from this we can generate a new policy to whitelist them.</p>
+<p>Once all user activities have been completed use the <code>New-CIPolicy</code> Cmdlet with the <code>-Audit</code> parameter in order to generate a new policy from the audit logs. You may see text that refers to programs that are no longer present, in most cases this is nothing to worry about.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0010-device-guard-golden-image/2.3_GenerateFromAuditLog.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h3 id="create-final-policy">Create Final Policy</h3>
+<p>Finish by merging the default Windows policy with the new audit policy. Depending on what stage you are in, you may wish to either keep or remove the audit option.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0010-device-guard-golden-image/2.4_CombineXMLS.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>Convert the policy to a binary format and reboot the computer to test it out.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0010-device-guard-golden-image/2.5_CreateBinaryConfg.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://docs.microsoft.com/en-ca/windows/security/threat-protection/windows-defender-application-control/windows-defender-application-control" target="_blank" rel="noopener noreffer">Windows Defender Application Control Microsoft Documentation</a>
+</li>
+<li><a href="https://docs.microsoft.com/en-us/powershell/module/configci/new-cipolicy?view=win10-ps" target="_blank" rel="noopener noreffer">New-CIPolicy Documentation</a>
+</li>
+<li><a href="https://docs.microsoft.com/en-us/windows/security/threat-protection/windows-defender-application-control/select-types-of-rules-to-create#windows-defender-application-control-file-rule-levels" target="_blank" rel="noopener noreffer">https://docs.microsoft.com/en-us/windows/security/threat-protection/windows-defender-application-control/select-types-of-rules-to-create#windows-defender-application-control-file-rule-levels</a>
+</li>
+<li><a href="https://blogs.technet.microsoft.com/ukplatforms/2017/04/04/getting-started-with-windows-10-device-guard-part-1-of-2/" target="_blank" rel="noopener noreffer">Getting Started with Windows 10 Device Guard – Part 1 of 2</a>
+</li>
+</ul>
+</div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>The article was updated on 2019-11-07</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span><a href="javascript:void(0);" title="Share on Twitter" data-sharer="twitter" data-url="https://blog.thinkbox.dev/posts/0010-device-guard-golden-image/" data-title="Creating Device Guard Polices from a Golden Image" data-hashtags="Security,Windows"><i class="fab fa-twitter fa-fw"></i></a><a href="javascript:void(0);" title="Share on Facebook" data-sharer="facebook" data-url="https://blog.thinkbox.dev/posts/0010-device-guard-golden-image/" data-hashtag="Security"><i class="fab fa-facebook-square fa-fw"></i></a><a href="javascript:void(0);" title="Share on Linkedin" data-sharer="linkedin" data-url="https://blog.thinkbox.dev/posts/0010-device-guard-golden-image/"><i class="fab fa-linkedin fa-fw"></i></a><a href="javascript:void(0);" title="Share on WhatsApp" data-sharer="whatsapp" data-url="https://blog.thinkbox.dev/posts/0010-device-guard-golden-image/" data-title="Creating Device Guard Polices from a Golden Image" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="javascript:void(0);" title="Share on Hacker News" data-sharer="hackernews" data-url="https://blog.thinkbox.dev/posts/0010-device-guard-golden-image/" data-title="Creating Device Guard Polices from a Golden Image"><i class="fab fa-hacker-news fa-fw"></i></a><a href="javascript:void(0);" title="Share on Reddit" data-sharer="reddit" data-url="https://blog.thinkbox.dev/posts/0010-device-guard-golden-image/"><i class="fab fa-reddit fa-fw"></i></a><a href="javascript:void(0);" title="Share on VK" data-sharer="vk" data-url="https://blog.thinkbox.dev/posts/0010-device-guard-golden-image/" data-title="Creating Device Guard Polices from a Golden Image"><i class="fab fa-vk fa-fw"></i></a><a href="javascript:void(0);" title="Share on 微博" data-sharer="weibo" data-url="https://blog.thinkbox.dev/posts/0010-device-guard-golden-image/" data-title="Creating Device Guard Polices from a Golden Image"><i class="fab fa-weibo fa-fw"></i></a><a href="javascript:void(0);" title="Share on 百度" data-sharer="baidu" data-url="https://blog.thinkbox.dev/posts/0010-device-guard-golden-image/" data-title="Creating Device Guard Polices from a Golden Image"><i class="loveit it-baidu-fill"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/security">Security</a>,&nbsp;<a href="/tags/windows">Windows</a></section>
+        <section>
+            <span><a href="javascript:window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/">Home</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/0009-domain-filter-with-squid/" class="prev" rel="prev" title="Filtering Domains with Squid Proxy"><i class="fas fa-angle-left fa-fw"></i>Filtering Domains with Squid Proxy</a></div>
+</div>
+<div class="comment"><div id="disqus_thread"></div><noscript>
+            Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript></div>
+    </article></div>
+            </main><footer class="footer">
+    <div class="copyright"><div class="copyright-line">Powered by <a href="https://gohugo.io/" target="_blank" rel="external nofollow noopener noreffer">Hugo</a> | Theme - <a href="https://github.com/dillonzq/LoveIt" target="_blank" rel="external nofollow noopener noreffer"><i class="far fa-heart fa-fw"></i> LoveIt</a>
+        </div>
+
+        <div class="copyright-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2019 - 2020</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank">Aleks</a></span></div>
+    </div>
+</footer>
+</div><a href="#" class="dynamic-to-top animated faster" id="dynamic-to-top">
+            <i class="fas fa-chevron-up fa-fw"></i>
+        </a><link rel="stylesheet" href="/lib/iconfont/iconfont.min.css"><script defer src="https://blog-thinkbox-dev.disqus.com/embed.js"></script><script src="/lib/smooth-scroll/smooth-scroll.polyfills.min.js"></script><script src="/lib/sharer/sharer.min.js"></script><script src="/lib/lazysizes/lazysizes.min.js"></script><script src="/js/theme.min.js"></script>
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-161605270-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+</body>
+</html>

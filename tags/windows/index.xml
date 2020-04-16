@@ -6,10 +6,20 @@
     <description>Recent content in Windows on ThinkBox</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Fri, 11 Oct 2019 22:21:18 -0400</lastBuildDate>
+    <lastBuildDate>Thu, 07 Nov 2019 00:44:07 -0400</lastBuildDate>
     
 	<atom:link href="https://blog.thinkbox.dev/tags/windows/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Creating Device Guard Polices from a Golden Image</title>
+      <link>https://blog.thinkbox.dev/posts/0010-device-guard-golden-image/</link>
+      <pubDate>Thu, 07 Nov 2019 00:44:07 -0400</pubDate>
+      
+      <guid>https://blog.thinkbox.dev/posts/0010-device-guard-golden-image/</guid>
+      <description>Introduction Device Guard is a system built into Windows 10 that can help mitigate the effects of a breach by controlling which applications are allowed to run, both processess in userland and drivers in the kernel. After Windows 10 1709 Device Guard is now known as Windows Defender Application Control, however, in this post it will be refereed to as Device Guard.
+This post will aim to show the steps taken to configure a Device Guard policy based on a golden image, this is a computer that is configured and has all the needed software installed.</description>
+    </item>
     
     <item>
       <title>Transferring and Seizing FSMO Roles</title>
