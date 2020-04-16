@@ -6,10 +6,20 @@
     <description>Recent content in Windows on ThinkBox</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Sun, 11 Aug 2019 23:23:32 -0400</lastBuildDate>
+    <lastBuildDate>Sat, 21 Sep 2019 17:50:23 -0400</lastBuildDate>
     
 	<atom:link href="https://blog.thinkbox.dev/tags/windows/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Credential Guard on Windows</title>
+      <link>https://blog.thinkbox.dev/posts/0007-cred-guard-windows/</link>
+      <pubDate>Sat, 21 Sep 2019 17:50:23 -0400</pubDate>
+      
+      <guid>https://blog.thinkbox.dev/posts/0007-cred-guard-windows/</guid>
+      <description>Introduction This post will aim to explain Credential Guard and Virtualization Based Security (VBS) which is the technology that makes it possible. There has been many discussions, papers, and talks about this subject. The goal of this post is for me to write out the technical details of this technology in my own words.
+There are many interesting and insightful resources available online that can also help you understand how this technology works, resources I have found useful will be linked in the References section at the end of the post.</description>
+    </item>
     
     <item>
       <title>Locking Down a Workstation with AppLocker</title>

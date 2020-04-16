@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <title>Credential Guard on Windows | ThinkBox</title>
+        <meta name="Description" content=""><meta property="og:title" content="Credential Guard on Windows" />
+<meta property="og:description" content="Introduction This post will aim to explain Credential Guard and Virtualization Based Security (VBS) which is the technology that makes it possible. There has been many discussions, papers, and talks about this subject. The goal of this post is for me to write out the technical details of this technology in my own words.
+There are many interesting and insightful resources available online that can also help you understand how this technology works, resources I have found useful will be linked in the References section at the end of the post." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://blog.thinkbox.dev/posts/0007-cred-guard-windows/" />
+<meta property="article:published_time" content="2019-09-21T17:50:23-04:00" />
+<meta property="article:modified_time" content="2019-09-21T17:50:23-04:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Credential Guard on Windows"/>
+<meta name="twitter:description" content="Introduction This post will aim to explain Credential Guard and Virtualization Based Security (VBS) which is the technology that makes it possible. There has been many discussions, papers, and talks about this subject. The goal of this post is for me to write out the technical details of this technology in my own words.
+There are many interesting and insightful resources available online that can also help you understand how this technology works, resources I have found useful will be linked in the References section at the end of the post."/>
+<meta name="theme-color" content="#ffffff">
+<meta name="msapplication-TileColor" content="#da532c">
+<link rel="canonical" href="https://blog.thinkbox.dev/posts/0007-cred-guard-windows/" />
+<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="prev" href="https://blog.thinkbox.dev/posts/0006-update-rollback-esxi/" /><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="/lib/animate/animate.min.css"><link rel="stylesheet" href="/css/style.min.css"><meta name="google-site-verification" content="UA-161605270-1" /><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Credential Guard on Windows",
+        "inLanguage": "en",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/blog.thinkbox.dev\/posts\/0007-cred-guard-windows\/"
+        },"genre": "posts","keywords": "Windows, Security","wordcount":  1684 ,
+        "url": "https:\/\/blog.thinkbox.dev\/posts\/0007-cred-guard-windows\/","datePublished": "2019-09-21","dateModified": "2019-09-21","author": {
+                "@type": "Person",
+                "name": "Aleks"
+            },"description": ""
+    }
+    </script></head>
+    <body><script>
+            if (!window.localStorage || !window.localStorage.getItem('theme')) {window.isDark = 'dark' === 'dark';} else {
+                window.isDark = (window.localStorage && window.localStorage.getItem('theme')) === 'dark';
+            }
+            window.isDark && document.body.classList.add('dark-theme');
+        </script><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/">ThinkBox</a>
+        </div>
+        <div class="menu"><a class="menu-item" href="/posts/" rel="noopener noreffer">Posts</a><a class="menu-item" href="/tags/" rel="noopener noreffer">Tags</a><a class="menu-item" href="/categories/" rel="noopener noreffer">Categories</a><span class="menu-item">|</span>
+            <a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-wrapper">
+        <div class="header-container">
+            <div class="header-title">
+                <a href="/">ThinkBox</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><a class="menu-item" href="/posts/" title="" rel="noopener noreffer">Posts</a><a class="menu-item" href="/tags/" title="" rel="noopener noreffer">Tags</a><a class="menu-item" href="/categories/" title="" rel="noopener noreffer">Categories</a><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header>
+
+<script>
+    window.desktopHeaderMode = "fixed";
+    window.mobileHeaderMode = "auto";
+</script>
+<main class="main">
+                <div class="container"><article class="page single"><h1 class="single-title animated flipInX">Credential Guard on Windows</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel="noopener noreffer author" class="author"><i class="fas fa-user-circle fa-fw"></i>Aleks</a>
+</span>&nbsp;
+                    <span class="post-category">included in<a href="/categories/windows-internals">
+                                <i class="far fa-folder fa-fw"></i>Windows internals
+                            </a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i><time datetime=2019-09-21>2019-09-21</time>&nbsp;
+                <i class="fas fa-pencil-alt fa-fw"></i>about 1684 words&nbsp;
+                <i class="far fa-clock fa-fw"></i>8 min&nbsp;</div>
+        </div><div class="toc" id="toc-auto">
+                <h2 class="toc-title">Contents</h2>
+                <div class="toc-content" id="toc-content-auto"></div>
+            </div>
+            <div class="toc" id="toc-static">
+                <details>
+                    <summary>
+                        <div class="toc-title">
+                            <span>Contents</span>
+                            <span><i class="details icon fas fa-angle-down"></i></span>
+                        </div>
+                    </summary>
+                    <div class="toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#introduction-to-virtualization-based-security">Introduction to Virtualization Based Security</a></li>
+    <li><a href="#introduction-to-credential-guard">Introduction to Credential Guard</a></li>
+    <li><a href="#enabling-credential-guard">Enabling Credential Guard</a></li>
+    <li><a href="#references">References</a></li>
+  </ul>
+</nav></div>
+                </details>
+            </div><div class="content" id="content" style="text-align: justify;"><h2 id="introduction">Introduction</h2>
+<p>This post will aim to explain Credential Guard and Virtualization Based Security (VBS) which is the technology that makes it possible. There has been many discussions, papers, and talks about this subject. The goal of this post is for me to write out the technical details of this technology in my own words.</p>
+<p>There are many interesting and insightful resources available online that can also help you understand how this technology works, resources I have found useful will be linked in the <a href="#references" rel="noopener noreffer">References</a>
+ section at the end of the post. I recommend looking through these resources as they are made by people that know much more about what they are talking about.</p>
+<p>This post will also provide the steps taken to enable Credential Guard and will show the technology in action by attempting to dump secrets from LSASS.</p>
+<h2 id="introduction-to-virtualization-based-security">Introduction to Virtualization Based Security</h2>
+<p>VBS is a key component that is capable of provided three security features, Device Guard, Credential Guard, and Guarded Fabric. This post will focus on Credential Guard, however, before talking about it we must first understand how how VBS makes it possible for this security feature to exist.</p>
+<p>The figure below shows a pretty typical scenario of how an operating system runs. It has the hardware on which the operating system runs, within the operating system we have the kernel (ring 0) and userland (ring 3) where the user will run their applications, such as firefox.</p>
+<p>However, there is a fatal flaw in this diagram. We usually assume that the NT Kernel at ring 0 is secure, as a result if an attacker gains the capability to run their own code at ring 0 we can assume everything below it is also compromised. Furthermore, userland also holds some very important information. For example, the LSASS process may store the NTML hash, clear-text password, or Kerberos tickets of a domain user logged onto the system. This creates a serious issue if an attacker is able to dump the memory of the LSASS process. As we will see later this is the exact thing that Credential Guard aims to mitigate.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0007-cred-guard-windows/Without.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>Now comes into play VBS, as you can see from the diagram below the architecture looks a bit different. We now have a hypervisor and two virtual machines running on top of it. The two virtual machines running on top of the hypervisor are called virtual trust levels (VTL), they are separated into VTL 0 and VTL 1. VTL 0 is our <em><strong>normal world</strong></em> where the existing huge NT Kernel is located with many different drivers, this is also where the user wil be performing their every day tasks with Firefox.</p>
+<p>VTL 1 is a <em><strong>secure world</strong></em>, it is very difficult to gain access from VTL 0 to VTL 1 since they are separated by a hypervisor. This secure world contains a small kernel named SKM (it may be called Secure Kernel by some), this is a very small kernel that performs a few very specific tasks in VTL 1. The main goal was to make the SKM extremely minimal in order to decrease the attack surface, unlike the main Windows NT Kernel the SKM is around 300KB and only has two modules that provide code integrity (SKCI.dll) and cryptographic operations (CNG.sys).</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0007-cred-guard-windows/With.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>Now, userland in VTL 1 is a bit different than userland in VTL 0. Userland in VTL 1 is refereed to as the Isolated User Mode (IUM), processes that run in the IUM are called trusted processes (trustlets). There are some differences between a trustlet and regular process. For starters a trustlet takes the form of a regular PE binary, however, there are some properties that are specific to IUM. Limitations are set on which DLLs they can import from, the PE header includes a <code>.tPolicy field</code> in order to provide metadata to the SKM, and the binary itself is signed with a certificate related to the IUM. Furthermore, trustlets also have a process attribute associated with them that is set to <code>PS_CP_SECURE_PROCESS</code> in order to signify that it is a trustlet.</p>
+<p>Now you may begin seeing the usefulness of VBS, we now have a space that we can perform tasks that an attacker will struggle to gain access to. In fact this is the entire threat model of VBS, we are assuming that VTL 0, where the user themselves runs their programs, is compromised at ring 0 level. This means that neither kernelspace or the userland can be trusted.</p>
+<p>This is a huge win from a defensive perspective, we can now place a trusted process, such as LSASS, in VTL 1 and an attacker will have difficulty accessing it since there is a separation at the hypervisor level.</p>
+<h2 id="introduction-to-credential-guard">Introduction to Credential Guard</h2>
+<p>Now it was already mentioned that LSASS is a process that holds secrets that an attacker can take advantage of. It usually holds a users hashed password and Kerberos tickets, however, depending on the logon type it may also store a users plaintext password.</p>
+<p>An attacker with the correct permissions on the system is capable of dumping the memory allocated to the LSASS process, this will result in the attacker being able to retrieve the users hash and Kerbeos tickets. These can be used for a Pass the Hash and Pass the Ticket attack.</p>
+<p>Credential Guard has the goal of mitigating these attacks, this is done by only storing encrypted blobs of the information in LSASS within VTL 0. This means that an attacker will be able to dump the memory contents of the LSASS process, however, since the data is encrypted it will be useless to them. Lets go into a bit more detail as to how the data is stored and how we can perform the regular LSASS functionality in order to keep our Single Sign On abilities.</p>
+<p>Now since we have Credential Guard enabled a new trustlet in VTL 1 named LSAISO will be created, this trustlet is responsible for performing all the sensative tasks related to the NTML hashes, clear-text passwords, and Kerberos tickets. This means that the only point at which they will be plaintext is inside of VTL 1 (there is an exception discussed later). LSASS in VTL 0 still plays a vital role in the process, however, since it is not trusted we can only allow it to store the hashes and tickets in a encrypted form. The only entity that can decrypt it is the LSAISO located in VTL 1.</p>
+<p>Furthermore, it is important to understand that the LSASS process in VTL 0 acts as a proxy. For example, if we are dealing with a Kerberos ticket the LSASS processes will receive a ticket from the Domain Controller in encrypted form, which it cannot decryp, and will forward it to the LSAISO. This is the same position a man-in-the-middle attacker would be in if they where sniffing the network traffic.</p>
+<p>If we are dealing with a plaintext password that a user used to login to the system this password will be sent from LSASS to LSAISO. The password will then be encrypted within LSAISO, after it will be returned to LSASS and stored in an encrypted format. If at any point the password in the form of a hash is required for a NTLM challenge the encrypted form of it will be sent from LSASS to LSAISO, and a proper response will be generated. Now there is a issue here, if LSASS is compromised before a user types in their password then it may be possible for an attacker to intercept it. However, if it is compromised after an attacker gained access they will only be able to gain access to the encrypted blob.</p>
+<p>Now to finish this section of a brief description of how the LSASS process in VTL 0 communicates with LSAISO in VTL 1 will be given. In order for LSASS to communicate with LSAISO Advanced Local Procedure Call (ALPC) is used to create a port through which an RPC interface is exposed on. This RPC interface consists of a set of function that LSASS can use to communicate with LSAISO.</p>
+<h2 id="enabling-credential-guard">Enabling Credential Guard</h2>
+<p>This section will describe the steps taken in order to enable Credential Guard. It will be enabled through group policy on a workstation joined to a domain. Before we begin lets run Mimikatz on the workstation before we enable Credential Guard. As you can see from the screenshot below we are able to get the hashes and clear text password of the Administrator domain user.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0007-cred-guard-windows/1-Before.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>In order to enable Credential guard head over to <code>Computer Configration -&gt; Polcies -&gt; Administrative Templates Policy -&gt; System -&gt; Device Guard</code> within the group policy object you are editing.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0007-cred-guard-windows/1-CredGuard.gif,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>Next open the <code>Turn On Virtulization Based Security</code> option. Enable the option and go down towards the <code>Credential Guard Configration</code>, set it to <code>Enabled with UEFI lock</code>. A UEFI lock is an option that can prevent the system from booting when Credential Guard is disabled. This is done by setting a EFI runtime variable in the firmware memory, this will be performed during a reboot. Of course, UEFI is required for this to happen. If you wish you can use the option without the lock</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0007-cred-guard-windows/2-CredGuard.gif,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>Information about whether VBS and Credential Guard are enabled can be viewed in System Information (msinfo32.exe). As can be seen below VBS is running and Credential Guard is setup.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0007-cred-guard-windows/1-After.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>You can also view the LSASS process and LSAISO trustlet running, note you cannot access LSAISO since it is running in VTL 1.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0007-cred-guard-windows/0-After.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>Now if we use Mimikatz to dump LSASS again we can see that the hash and password are no longer in a plaintext format.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0007-cred-guard-windows/2-After.PNG,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h2 id="references">References</h2>
+<ul>
+<li>
+<p><a href="https://www.youtube.com/watch?v=LqaWIn4y26E" target="_blank" rel="noopener noreffer">Battle Of The SKM And IUM: How Windows 10 Rewrites OS Architecture</a>
+ - <a href="http://www.alex-ionescu.com/blackhat2015.pdf" target="_blank" rel="noopener noreffer">Talk Slides</a>
+</p>
+</li>
+<li>
+<p><a href="https://www.youtube.com/watch?v=_646Gmr_uo0" target="_blank" rel="noopener noreffer">Analysis of the Attack Surface of Windows 10 Virtualization-Based Security</a>
+ - <a href="https://www.blackhat.com/docs/us-16/materials/us-16-Wojtczuk-Analysis-Of-The-Attack-Surface-Of-Windows-10-Virtualization-Based-Security.pdf" target="_blank" rel="noopener noreffer">Talk Slides</a>
+ - <a href="https://www.blackhat.com/docs/us-16/materials/us-16-Wojtczuk-Analysis-Of-The-Attack-Surface-Of-Windows-10-Virtualization-Based-Security-wp.pdf" target="_blank" rel="noopener noreffer">Whitepaper</a>
+</p>
+</li>
+<li>
+<p><a href="https://www.amazon.com/Windows-Internals-Part-architecture-management/dp/0735684189/ref=sr_1_1?keywords=Windows&#43;Internals&amp;qid=1569106874&amp;sr=8-1" target="_blank" rel="noopener noreffer">Page 611 of Windows Internals Book About VBS</a>
+</p>
+</li>
+<li>
+<p><a href="https://www.amazon.com/Windows-Internals-Part-architecture-management/dp/0735684189/ref=sr_1_1?keywords=Windows&#43;Internals&amp;qid=1569106874&amp;sr=8-1" target="_blank" rel="noopener noreffer">Page 123 of Windows Internals Book About Trustlets</a>
+</p>
+</li>
+<li>
+<p><a href="https://www.amazon.com/Windows-Internals-Part-architecture-management/dp/0735684189/ref=sr_1_1?keywords=Windows&#43;Internals&amp;qid=1569106874&amp;sr=8-1" target="_blank" rel="noopener noreffer">Page 616 of Windows Internals Book About UEFI Lock</a>
+</p>
+</li>
+<li>
+<p><a href="https://www.blackhat.com/docs/us-15/materials/us-15-Moore-Defeating%20Pass-the-Hash-Separation-Of-Powers-wp.pdf" target="_blank" rel="noopener noreffer">Defeating Pass-the-Hash</a>
+</p>
+</li>
+<li>
+<p><a href="https://docs.microsoft.com/en-us/windows/security/identity-protection/credential-guard/credential-guard-manage" target="_blank" rel="noopener noreffer">Manage Windows Defender Credential Guard</a>
+</p>
+</li>
+<li>
+<p><a href="https://blogs.technet.microsoft.com/ash/2016/03/02/windows-10-device-guard-and-credential-guard-demystified/" target="_blank" rel="noopener noreffer">Windows 10 Device Guard and Credential Guard Demystified</a>
+</p>
+</li>
+<li>
+<p><a href="https://docs.microsoft.com/en-us/windows/win32/procthread/isolated-user-mode--ium--processes" target="_blank" rel="noopener noreffer">Isolated User Mode (IUM) Processes</a>
+</p>
+</li>
+</ul>
+</div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>The article was updated on 2019-09-21</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span><a href="javascript:void(0);" title="Share on Twitter" data-sharer="twitter" data-url="https://blog.thinkbox.dev/posts/0007-cred-guard-windows/" data-title="Credential Guard on Windows" data-hashtags="Windows,Security"><i class="fab fa-twitter fa-fw"></i></a><a href="javascript:void(0);" title="Share on Facebook" data-sharer="facebook" data-url="https://blog.thinkbox.dev/posts/0007-cred-guard-windows/" data-hashtag="Windows"><i class="fab fa-facebook-square fa-fw"></i></a><a href="javascript:void(0);" title="Share on Linkedin" data-sharer="linkedin" data-url="https://blog.thinkbox.dev/posts/0007-cred-guard-windows/"><i class="fab fa-linkedin fa-fw"></i></a><a href="javascript:void(0);" title="Share on WhatsApp" data-sharer="whatsapp" data-url="https://blog.thinkbox.dev/posts/0007-cred-guard-windows/" data-title="Credential Guard on Windows" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="javascript:void(0);" title="Share on Hacker News" data-sharer="hackernews" data-url="https://blog.thinkbox.dev/posts/0007-cred-guard-windows/" data-title="Credential Guard on Windows"><i class="fab fa-hacker-news fa-fw"></i></a><a href="javascript:void(0);" title="Share on Reddit" data-sharer="reddit" data-url="https://blog.thinkbox.dev/posts/0007-cred-guard-windows/"><i class="fab fa-reddit fa-fw"></i></a><a href="javascript:void(0);" title="Share on VK" data-sharer="vk" data-url="https://blog.thinkbox.dev/posts/0007-cred-guard-windows/" data-title="Credential Guard on Windows"><i class="fab fa-vk fa-fw"></i></a><a href="javascript:void(0);" title="Share on 微博" data-sharer="weibo" data-url="https://blog.thinkbox.dev/posts/0007-cred-guard-windows/" data-title="Credential Guard on Windows"><i class="fab fa-weibo fa-fw"></i></a><a href="javascript:void(0);" title="Share on 百度" data-sharer="baidu" data-url="https://blog.thinkbox.dev/posts/0007-cred-guard-windows/" data-title="Credential Guard on Windows"><i class="loveit it-baidu-fill"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/windows">Windows</a>,&nbsp;<a href="/tags/security">Security</a></section>
+        <section>
+            <span><a href="javascript:window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/">Home</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/0006-update-rollback-esxi/" class="prev" rel="prev" title="Updating and Rolling Back ESXi"><i class="fas fa-angle-left fa-fw"></i>Updating and Rolling Back ESXi</a></div>
+</div>
+<div class="comment"><div id="disqus_thread"></div><noscript>
+            Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript></div>
+    </article></div>
+            </main><footer class="footer">
+    <div class="copyright"><div class="copyright-line">Powered by <a href="https://gohugo.io/" target="_blank" rel="external nofollow noopener noreffer">Hugo</a> | Theme - <a href="https://github.com/dillonzq/LoveIt" target="_blank" rel="external nofollow noopener noreffer"><i class="far fa-heart fa-fw"></i> LoveIt</a>
+        </div>
+
+        <div class="copyright-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2019 - 2020</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank">Aleks</a></span></div>
+    </div>
+</footer>
+</div><a href="#" class="dynamic-to-top animated faster" id="dynamic-to-top">
+            <i class="fas fa-chevron-up fa-fw"></i>
+        </a><link rel="stylesheet" href="/lib/iconfont/iconfont.min.css"><script defer src="https://blog-thinkbox-dev.disqus.com/embed.js"></script><script src="/lib/smooth-scroll/smooth-scroll.polyfills.min.js"></script><script src="/lib/sharer/sharer.min.js"></script><script src="/lib/lazysizes/lazysizes.min.js"></script><script src="/js/theme.min.js"></script>
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-161605270-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+</body>
+</html>
