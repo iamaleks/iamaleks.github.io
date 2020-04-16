@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <title>Updating and Rolling Back ESXi | ThinkBox</title>
+        <meta name="Description" content=""><meta property="og:title" content="Updating and Rolling Back ESXi" />
+<meta property="og:description" content="Updating ESXi For this example I will be updating ESXi build 8169922 to ESXi build 13981272 . You can check the current build of an ESXi box by running the following command:
+1 2 3  [root@testesxi:~] vmware -v VMware ESXi 6.7.0 build-8169922 [root@testesxi:~]   Updates come in the form of ZIP files, this ZIP file is usually downloaded from VMWare website .
+After an update file is retrieved check that the hash of the file matches." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://blog.thinkbox.dev/posts/0006-update-rollback-esxi/" />
+<meta property="article:published_time" content="2019-08-16T00:15:03-04:00" />
+<meta property="article:modified_time" content="2019-08-16T00:15:03-04:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Updating and Rolling Back ESXi"/>
+<meta name="twitter:description" content="Updating ESXi For this example I will be updating ESXi build 8169922 to ESXi build 13981272 . You can check the current build of an ESXi box by running the following command:
+1 2 3  [root@testesxi:~] vmware -v VMware ESXi 6.7.0 build-8169922 [root@testesxi:~]   Updates come in the form of ZIP files, this ZIP file is usually downloaded from VMWare website .
+After an update file is retrieved check that the hash of the file matches."/>
+<meta name="theme-color" content="#ffffff">
+<meta name="msapplication-TileColor" content="#da532c">
+<link rel="canonical" href="https://blog.thinkbox.dev/posts/0006-update-rollback-esxi/" />
+<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="prev" href="https://blog.thinkbox.dev/posts/0005-esxi-save-state/" /><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="/lib/animate/animate.min.css"><link rel="stylesheet" href="/css/style.min.css"><meta name="google-site-verification" content="UA-161605270-1" /><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Updating and Rolling Back ESXi",
+        "inLanguage": "en",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/blog.thinkbox.dev\/posts\/0006-update-rollback-esxi\/"
+        },"genre": "posts","keywords": "ESXi","wordcount":  720 ,
+        "url": "https:\/\/blog.thinkbox.dev\/posts\/0006-update-rollback-esxi\/","datePublished": "2019-08-16","dateModified": "2019-08-16","author": {
+                "@type": "Person",
+                "name": "Aleks"
+            },"description": ""
+    }
+    </script></head>
+    <body><script>
+            if (!window.localStorage || !window.localStorage.getItem('theme')) {window.isDark = 'dark' === 'dark';} else {
+                window.isDark = (window.localStorage && window.localStorage.getItem('theme')) === 'dark';
+            }
+            window.isDark && document.body.classList.add('dark-theme');
+        </script><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/">ThinkBox</a>
+        </div>
+        <div class="menu"><a class="menu-item" href="/posts/" rel="noopener noreffer">Posts</a><a class="menu-item" href="/tags/" rel="noopener noreffer">Tags</a><a class="menu-item" href="/categories/" rel="noopener noreffer">Categories</a><span class="menu-item">|</span>
+            <a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-wrapper">
+        <div class="header-container">
+            <div class="header-title">
+                <a href="/">ThinkBox</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><a class="menu-item" href="/posts/" title="" rel="noopener noreffer">Posts</a><a class="menu-item" href="/tags/" title="" rel="noopener noreffer">Tags</a><a class="menu-item" href="/categories/" title="" rel="noopener noreffer">Categories</a><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header>
+
+<script>
+    window.desktopHeaderMode = "fixed";
+    window.mobileHeaderMode = "auto";
+</script>
+<main class="main">
+                <div class="container"><article class="page single"><h1 class="single-title animated flipInX">Updating and Rolling Back ESXi</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel="noopener noreffer author" class="author"><i class="fas fa-user-circle fa-fw"></i>Aleks</a>
+</span>&nbsp;
+                    <span class="post-category">included in<a href="/categories/vsphere">
+                                <i class="far fa-folder fa-fw"></i>Vsphere
+                            </a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i><time datetime=2019-08-16>2019-08-16</time>&nbsp;
+                <i class="fas fa-pencil-alt fa-fw"></i>about 720 words&nbsp;
+                <i class="far fa-clock fa-fw"></i>4 min&nbsp;</div>
+        </div><div class="toc" id="toc-auto">
+                <h2 class="toc-title">Contents</h2>
+                <div class="toc-content" id="toc-content-auto"></div>
+            </div>
+            <div class="toc" id="toc-static">
+                <details>
+                    <summary>
+                        <div class="toc-title">
+                            <span>Contents</span>
+                            <span><i class="details icon fas fa-angle-down"></i></span>
+                        </div>
+                    </summary>
+                    <div class="toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#updating-esxi">Updating ESXi</a></li>
+    <li><a href="#rolling-back-an-update">Rolling Back an Update</a></li>
+    <li><a href="#deeper-look-at-update-procedure">Deeper Look at Update Procedure</a>
+      <ul>
+        <li><a href="#inside-update-file">Inside Update File</a></li>
+        <li><a href="#inside-vib-file">Inside VIB File</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+                </details>
+            </div><div class="content" id="content" style="text-align: justify;"><h2 id="updating-esxi">Updating ESXi</h2>
+<p>For this example I will be updating ESXi build 8169922 to ESXi build <a href="https://docs.vmware.com/en/VMware-vSphere/6.7/rn/esxi670-201906002.html" target="_blank" rel="noopener noreffer">13981272</a>
+. You can check the current build of an ESXi box by running the following command:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>root@testesxi:~<span class="o">]</span> vmware -v
+VMware ESXi 6.7.0 build-8169922
+<span class="o">[</span>root@testesxi:~<span class="o">]</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Updates come in the form of ZIP files, this ZIP file is usually downloaded from <a href="https://my.vmware.com/group/vmware/patch#search" target="_blank" rel="noopener noreffer">VMWare website</a>
+.</p>
+<p>After an update file is retrieved check that the hash of the file matches. This example is using the update for 13981272, so the information about this update can be found <a href="https://docs.vmware.com/en/VMware-vSphere/6.7/rn/esxi670-201906002.html" target="_blank" rel="noopener noreffer">here</a>
+.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>root@testesxi:/vmfs/volumes/5d55cc58-c3a568dd-8737-000c296293e4<span class="o">]</span> sha1sum ESXi670-201906002.zip
+47acd159abb65b43f08ce40d4eabeff821fb61d1  ESXi670-201906002.zip
+</code></pre></td></tr></table>
+</div>
+</div><p>Within an single update there are different profiles, each profile will update a different set of VIB (this is a vSphere installation bundle) files. For example, below there is a standard profile and a no-tools profile. The only difference is that the <code>tools-light</code> VIB will not be included, which contains the VMWare tools files ISOs.</p>
+<p>Sometimes there is a profile that will only allow an administrator to install security updates.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>root@testesxi:/vmfs/volumes/5d55cc58-c3a568dd-8737-000c296293e4<span class="o">]</span> esxcli software sources profile list -d /vmfs/volumes/5d55cc58-c3a568dd-8737-000c296293e4/E
+SXi670-201906002.zip
+Name                             Vendor        Acceptance Level  Creation Time        Modification Time
+-------------------------------  ------------  ----------------  -------------------  -------------------
+ESXi-6.7.0-20190604001-standard  VMware, Inc.  PartnerSupported  2019-06-20T14:52:12  2019-06-20T14:52:12
+ESXi-6.7.0-20190604001-no-tools  VMware, Inc.  PartnerSupported  2019-06-20T14:52:12  2019-06-20T14:52:12
+<span class="o">[</span>root@testesxi:/vmfs/volumes/5d55cc58-c3a568dd-8737-000c296293e4<span class="o">]</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>The following command will perform a dry run of an update. It will show which VIBs will be updated and skipped.</p>
+<p>In order to perform the real update omit the <code>--dry-run</code> parameter from the command, then after it is finished reboot the server.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">esxcli software profile update -p ESXi-6.7.0-20190604001-standard -d /vmfs/volumes/5d55cc58-c3a568dd-8737-000c296293e4/ESXi67
+0-201906002.zip --dry-run
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="rolling-back-an-update">Rolling Back an Update</h2>
+<p>It is possible to roll back to the previous version that was in place before the update.</p>
+<p>There is a directory named <code>/bootbank</code> which keeps the core files used by ESXi to setup the system, when an update occurs it is the files here that are updated. Before an update begins all the contents in <code>/bootbank</code> are copied to <code>/altbootbank</code>. This allows for the possibility to roll back to the previous version by copying the contents of <code>/altbootbank</code> back into <code>/bootbank</code>.</p>
+<p>In order to do this follow these instrctions:</p>
+<ol>
+<li>
+<p>Boot up ESXi.</p>
+</li>
+<li>
+<p>Press SHIFT+R during boot menu in order to enter recovery menu.</p>
+</li>
+<li>
+<p>The recovery menu looks as follows, press Y to perform the roll back.</p>
+</li>
+</ol>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0006-update-rollback-esxi/rollback.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>After performing these steps ESXi will boot into the version that was present before the update.</p>
+<h2 id="deeper-look-at-update-procedure">Deeper Look at Update Procedure</h2>
+<h3 id="inside-update-file">Inside Update File</h3>
+<p>The update file is a ZIP that contains a set of files that are used during the update, the following is a description of a few of them.</p>
+<ul>
+<li>
+<p><strong>index.xml</strong>: Information about the vendor and patch.</p>
+</li>
+<li>
+<p><strong>vendor-index.xml</strong>: Information about where metadata can be found, which points to the metadata.zip file.</p>
+</li>
+<li>
+<p><strong>metadata.zip</strong>: Contains metadata information, including profiles present in update and metadata about each VIB.</p>
+</li>
+</ul>
+<p>Furthermore, the vib20 folder contains all the VIB files that the update includes. This snippet below only shows 1 VIB files because there where so many.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@laptop update<span class="o">]</span>$ unzip -l ESXi670-201906002.zip 
+Archive:  ESXi670-201906002.zip
+  Length      Date    Time    Name
+---------  ---------- -----   ----
+      <span class="m">324</span>  2019-06-20 07:52   index.xml
+      <span class="m">207</span>  2019-06-20 07:52   vendor-index.xml
+   <span class="m">197629</span>  2019-06-20 07:52   metadata.zip
+  <span class="m">3888630</span>  2019-05-09 20:37   vib20/esx-ui/VMware_bootbank_esx-ui_1.33.3-13454473.vib
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="inside-vib-file">Inside VIB File</h3>
+<p>VIB, or vSphere Installation Bundle, is a file similar to a ZIP archive that is used to distribute software packages for ESXi.</p>
+<p>A few other VIB files may contain some other files, however, most will look like the UI VIB. This is the VIB that is responsible for the HTML5 web interface.</p>
+<p>There are three files here. The <strong>descriptor.xml</strong> contains information about the VIB and the files it extracts into the system. The <strong>sig.pkcs7</strong> contains a signature for the VIB file.</p>
+<p>The most interesting file is esx-ui, this is a TAR archive compressed with GZIP. Inside this archive there are files for the web interface functionality. The thing to understand here is that the file <code>esx-ui</code> in the VIB is the same file that is placed into the <code>/bootbank/esx_ui.v00</code> on the ESXi system. When ESXi boots it extracts the contents of the file.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@laptop esx-ui<span class="o">]</span>$ ar tv VMware_bootbank_esx-ui_1.33.3-13454473.vib 
+rwxrwxrwx 201/201  <span class="m">65009</span> Apr <span class="m">23</span> 11:45 <span class="m">2019</span> descriptor.xml
+rw-r--r-- 201/201   <span class="m">5500</span> Apr <span class="m">23</span> 11:46 <span class="m">2019</span> sig.pkcs7
+--------- 0/0 <span class="m">3817931</span> Dec <span class="m">31</span> 19:00 <span class="m">1969</span> esx-ui
+
+</code></pre></td></tr></table>
+</div>
+</div></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>The article was updated on 2019-08-16</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span><a href="javascript:void(0);" title="Share on Twitter" data-sharer="twitter" data-url="https://blog.thinkbox.dev/posts/0006-update-rollback-esxi/" data-title="Updating and Rolling Back ESXi" data-hashtags="ESXi"><i class="fab fa-twitter fa-fw"></i></a><a href="javascript:void(0);" title="Share on Facebook" data-sharer="facebook" data-url="https://blog.thinkbox.dev/posts/0006-update-rollback-esxi/" data-hashtag="ESXi"><i class="fab fa-facebook-square fa-fw"></i></a><a href="javascript:void(0);" title="Share on Linkedin" data-sharer="linkedin" data-url="https://blog.thinkbox.dev/posts/0006-update-rollback-esxi/"><i class="fab fa-linkedin fa-fw"></i></a><a href="javascript:void(0);" title="Share on WhatsApp" data-sharer="whatsapp" data-url="https://blog.thinkbox.dev/posts/0006-update-rollback-esxi/" data-title="Updating and Rolling Back ESXi" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="javascript:void(0);" title="Share on Hacker News" data-sharer="hackernews" data-url="https://blog.thinkbox.dev/posts/0006-update-rollback-esxi/" data-title="Updating and Rolling Back ESXi"><i class="fab fa-hacker-news fa-fw"></i></a><a href="javascript:void(0);" title="Share on Reddit" data-sharer="reddit" data-url="https://blog.thinkbox.dev/posts/0006-update-rollback-esxi/"><i class="fab fa-reddit fa-fw"></i></a><a href="javascript:void(0);" title="Share on VK" data-sharer="vk" data-url="https://blog.thinkbox.dev/posts/0006-update-rollback-esxi/" data-title="Updating and Rolling Back ESXi"><i class="fab fa-vk fa-fw"></i></a><a href="javascript:void(0);" title="Share on 微博" data-sharer="weibo" data-url="https://blog.thinkbox.dev/posts/0006-update-rollback-esxi/" data-title="Updating and Rolling Back ESXi"><i class="fab fa-weibo fa-fw"></i></a><a href="javascript:void(0);" title="Share on 百度" data-sharer="baidu" data-url="https://blog.thinkbox.dev/posts/0006-update-rollback-esxi/" data-title="Updating and Rolling Back ESXi"><i class="loveit it-baidu-fill"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/esxi">ESXi</a></section>
+        <section>
+            <span><a href="javascript:window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/">Home</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/0005-esxi-save-state/" class="prev" rel="prev" title="Saving ESXi Configuration State"><i class="fas fa-angle-left fa-fw"></i>Saving ESXi Configuration State</a></div>
+</div>
+<div class="comment"><div id="disqus_thread"></div><noscript>
+            Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript></div>
+    </article></div>
+            </main><footer class="footer">
+    <div class="copyright"><div class="copyright-line">Powered by <a href="https://gohugo.io/" target="_blank" rel="external nofollow noopener noreffer">Hugo</a> | Theme - <a href="https://github.com/dillonzq/LoveIt" target="_blank" rel="external nofollow noopener noreffer"><i class="far fa-heart fa-fw"></i> LoveIt</a>
+        </div>
+
+        <div class="copyright-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2019 - 2020</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank">Aleks</a></span></div>
+    </div>
+</footer>
+</div><a href="#" class="dynamic-to-top animated faster" id="dynamic-to-top">
+            <i class="fas fa-chevron-up fa-fw"></i>
+        </a><link rel="stylesheet" href="/lib/iconfont/iconfont.min.css"><script defer src="https://blog-thinkbox-dev.disqus.com/embed.js"></script><script src="/lib/smooth-scroll/smooth-scroll.polyfills.min.js"></script><script src="/lib/sharer/sharer.min.js"></script><script src="/lib/lazysizes/lazysizes.min.js"></script><script src="/js/theme.min.js"></script>
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-161605270-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+</body>
+</html>

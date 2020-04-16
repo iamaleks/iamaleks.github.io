@@ -6,10 +6,21 @@
     <description>Recent content in vsphere on ThinkBox</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Thu, 15 Aug 2019 22:59:00 -0400</lastBuildDate>
+    <lastBuildDate>Fri, 16 Aug 2019 00:15:03 -0400</lastBuildDate>
     
 	<atom:link href="https://blog.thinkbox.dev/categories/vsphere/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Updating and Rolling Back ESXi</title>
+      <link>https://blog.thinkbox.dev/posts/0006-update-rollback-esxi/</link>
+      <pubDate>Fri, 16 Aug 2019 00:15:03 -0400</pubDate>
+      
+      <guid>https://blog.thinkbox.dev/posts/0006-update-rollback-esxi/</guid>
+      <description>Updating ESXi For this example I will be updating ESXi build 8169922 to ESXi build 13981272 . You can check the current build of an ESXi box by running the following command:
+1 2 3  [root@testesxi:~] vmware -v VMware ESXi 6.7.0 build-8169922 [root@testesxi:~]   Updates come in the form of ZIP files, this ZIP file is usually downloaded from VMWare website .
+After an update file is retrieved check that the hash of the file matches.</description>
+    </item>
     
     <item>
       <title>Saving ESXi Configuration State</title>

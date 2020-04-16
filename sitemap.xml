@@ -2,13 +2,14 @@
     xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
     xmlns:xhtml="http://www.w3.org/1999/xhtml"
     ><url>
-            <loc>https://blog.thinkbox.dev/categories/</loc><lastmod>2019-08-15T22:59:00-04:00</lastmod></url><url>
-            <loc>https://blog.thinkbox.dev/tags/esxi/</loc><lastmod>2019-08-15T22:59:00-04:00</lastmod></url><url>
-            <loc>https://blog.thinkbox.dev/posts/</loc><lastmod>2019-08-15T22:59:00-04:00</lastmod></url><url>
+            <loc>https://blog.thinkbox.dev/categories/</loc><lastmod>2019-08-16T00:15:03-04:00</lastmod></url><url>
+            <loc>https://blog.thinkbox.dev/tags/esxi/</loc><lastmod>2019-08-16T00:15:03-04:00</lastmod></url><url>
+            <loc>https://blog.thinkbox.dev/posts/</loc><lastmod>2019-08-16T00:15:03-04:00</lastmod></url><url>
+            <loc>https://blog.thinkbox.dev/tags/</loc><lastmod>2019-08-16T00:15:03-04:00</lastmod></url><url>
+            <loc>https://blog.thinkbox.dev/</loc><lastmod>2019-08-16T00:15:03-04:00</lastmod></url><url>
+            <loc>https://blog.thinkbox.dev/posts/0006-update-rollback-esxi/</loc><lastmod>2019-08-16T00:15:03-04:00</lastmod></url><url>
+            <loc>https://blog.thinkbox.dev/categories/vsphere/</loc><lastmod>2019-08-16T00:15:03-04:00</lastmod></url><url>
             <loc>https://blog.thinkbox.dev/posts/0005-esxi-save-state/</loc><lastmod>2019-08-15T22:59:00-04:00</lastmod></url><url>
-            <loc>https://blog.thinkbox.dev/tags/</loc><lastmod>2019-08-15T22:59:00-04:00</lastmod></url><url>
-            <loc>https://blog.thinkbox.dev/</loc><lastmod>2019-08-15T22:59:00-04:00</lastmod></url><url>
-            <loc>https://blog.thinkbox.dev/categories/vsphere/</loc><lastmod>2019-08-15T22:59:00-04:00</lastmod></url><url>
             <loc>https://blog.thinkbox.dev/tags/applocker/</loc><lastmod>2019-08-11T23:23:32-04:00</lastmod></url><url>
             <loc>https://blog.thinkbox.dev/posts/0004-locking-down-workstation-applocker/</loc><lastmod>2019-08-11T23:23:32-04:00</lastmod></url><url>
             <loc>https://blog.thinkbox.dev/categories/misc-infrastructure/</loc><lastmod>2019-08-11T23:23:32-04:00</lastmod></url><url>
