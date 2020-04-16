@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <title>Configuring a Single Node ELK Instance | ThinkBox</title>
+        <meta name="Description" content=""><meta property="og:title" content="Configuring a Single Node ELK Instance" />
+<meta property="og:description" content="Introduction This post will aim to guide you in setting up a ELK stack instance, other posts will go into detail about other aspacts such as monitoring logs on Windows. A brief description will be given on all the components that will be used.
+If you are interested in reading more about the technical details of how the different components work please consult the References section, I have linked some interesting articles and videos that can be of use." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://blog.thinkbox.dev/posts/0012-configure-single-elk-node/" />
+<meta property="article:published_time" content="2020-01-15T22:32:25-04:00" />
+<meta property="article:modified_time" content="2020-01-15T22:32:25-04:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Configuring a Single Node ELK Instance"/>
+<meta name="twitter:description" content="Introduction This post will aim to guide you in setting up a ELK stack instance, other posts will go into detail about other aspacts such as monitoring logs on Windows. A brief description will be given on all the components that will be used.
+If you are interested in reading more about the technical details of how the different components work please consult the References section, I have linked some interesting articles and videos that can be of use."/>
+<meta name="theme-color" content="#ffffff">
+<meta name="msapplication-TileColor" content="#da532c">
+<link rel="canonical" href="https://blog.thinkbox.dev/posts/0012-configure-single-elk-node/" />
+<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="prev" href="https://blog.thinkbox.dev/posts/0011-pki-with-openssl/" /><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="/lib/animate/animate.min.css"><link rel="stylesheet" href="/css/style.min.css"><meta name="google-site-verification" content="UA-161605270-1" /><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Configuring a Single Node ELK Instance",
+        "inLanguage": "en",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/blog.thinkbox.dev\/posts\/0012-configure-single-elk-node\/"
+        },"genre": "posts","keywords": "ELK","wordcount":  1536 ,
+        "url": "https:\/\/blog.thinkbox.dev\/posts\/0012-configure-single-elk-node\/","datePublished": "2020-01-15","dateModified": "2020-01-15","author": {
+                "@type": "Person",
+                "name": "Aleks"
+            },"description": ""
+    }
+    </script></head>
+    <body><script>
+            if (!window.localStorage || !window.localStorage.getItem('theme')) {window.isDark = 'dark' === 'dark';} else {
+                window.isDark = (window.localStorage && window.localStorage.getItem('theme')) === 'dark';
+            }
+            window.isDark && document.body.classList.add('dark-theme');
+        </script><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/">ThinkBox</a>
+        </div>
+        <div class="menu"><a class="menu-item" href="/posts/" rel="noopener noreffer">Posts</a><a class="menu-item" href="/tags/" rel="noopener noreffer">Tags</a><a class="menu-item" href="/categories/" rel="noopener noreffer">Categories</a><span class="menu-item">|</span>
+            <a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-wrapper">
+        <div class="header-container">
+            <div class="header-title">
+                <a href="/">ThinkBox</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><a class="menu-item" href="/posts/" title="" rel="noopener noreffer">Posts</a><a class="menu-item" href="/tags/" title="" rel="noopener noreffer">Tags</a><a class="menu-item" href="/categories/" title="" rel="noopener noreffer">Categories</a><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header>
+
+<script>
+    window.desktopHeaderMode = "fixed";
+    window.mobileHeaderMode = "auto";
+</script>
+<main class="main">
+                <div class="container"><article class="page single"><h1 class="single-title animated flipInX">Configuring a Single Node ELK Instance</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel="noopener noreffer author" class="author"><i class="fas fa-user-circle fa-fw"></i>Aleks</a>
+</span>&nbsp;
+                    <span class="post-category">included in<a href="/categories/information-security">
+                                <i class="far fa-folder fa-fw"></i>Information security
+                            </a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i><time datetime=2020-01-15>2020-01-15</time>&nbsp;
+                <i class="fas fa-pencil-alt fa-fw"></i>about 1536 words&nbsp;
+                <i class="far fa-clock fa-fw"></i>8 min&nbsp;</div>
+        </div><div class="toc" id="toc-auto">
+                <h2 class="toc-title">Contents</h2>
+                <div class="toc-content" id="toc-content-auto"></div>
+            </div>
+            <div class="toc" id="toc-static">
+                <details>
+                    <summary>
+                        <div class="toc-title">
+                            <span>Contents</span>
+                            <span><i class="details icon fas fa-angle-down"></i></span>
+                        </div>
+                    </summary>
+                    <div class="toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#introduction">Introduction</a>
+      <ul>
+        <li><a href="#elasticsearch">Elasticsearch</a></li>
+        <li><a href="#kibana">Kibana</a></li>
+        <li><a href="#logstash">Logstash</a></li>
+        <li><a href="#beats">Beats</a></li>
+      </ul>
+    </li>
+    <li><a href="#configuring-elk">Configuring ELK</a>
+      <ul>
+        <li><a href="#creating-a-partition-for-logs">Creating a Partition for Logs</a></li>
+        <li><a href="#installing-elasticsearch">Installing Elasticsearch</a></li>
+        <li><a href="#configuring-elasticsearch">Configuring Elasticsearch</a></li>
+        <li><a href="#elasticsearch-license">Elasticsearch License</a></li>
+        <li><a href="#installing-kibana">Installing Kibana</a></li>
+        <li><a href="#installing-logstash">Installing Logstash</a></li>
+      </ul>
+    </li>
+    <li><a href="#references">References</a></li>
+  </ul>
+</nav></div>
+                </details>
+            </div><div class="content" id="content" style="text-align: justify;"><p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0012-configure-single-elk-node/elk-layout-1024x370.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h2 id="introduction">Introduction</h2>
+<p>This post will aim to guide you in setting up a ELK stack instance, other posts will go into detail about other aspacts such as monitoring logs on Windows. A brief description will be given on all the components that will be used.</p>
+<p>If you are interested in reading more about the technical details of how the different components work please consult the References section, I have linked some interesting articles and videos that can be of use.</p>
+<h3 id="elasticsearch">Elasticsearch</h3>
+<p>Elasticsearch is a database that can be classified as NoSQL, it provides searching and analytics capabilities at a distributed level. There are options to cluster multiple different nodes which can help with search speed and scalability, however, this post will only be concerned with setting up a single node. The core component of Elasticsearch is Apache Lucene which is what provides the actual searching capabilities. Elasticsearch itself is a layer built on top of Apache Lucene that allows for different features, such as clustering and sending queries as RESTful API requests.</p>
+<p>The main thing to understand is that Elasticsearch is the component on which all the logs will be stored, this means that logs will be sent to Elasticsearch and quires regarding logs will be sent to Elasticsearch .</p>
+<h3 id="kibana">Kibana</h3>
+<p>Kibana is a visualization layer of the ELK stack, it allows an analyst to go to a webpage and view all the logs that are stored on Elasticsearch. Kibana allows an analyst to create queries for specific logs and create visualizations.</p>
+<h3 id="logstash">Logstash</h3>
+<p>Logstash makes it easy to send data from endpoints to Elasticsearch and simplifies the process of ingesting data into Elasticsearch. It acts as a point to which logs are initially sent, they can be sent in a few different formats such as Syslog or Beats. This is refereed to as the input stage. After they can be filtered which can provide structure to logs and attach other information such as geographical location of an IP address. Lastly, the output stage sends the data to Elasticsearch.</p>
+<h3 id="beats">Beats</h3>
+<p>Beats are data shippers that can send information to either Logstash or Elasticsearch directly. There are a few different types, for example Metricbeat can send information regarding metrics of the operating system and Packetbeat can send network packet analytics information.</p>
+<p>For this post Winlogbeat will be used on a Windows endpoint system in order to ship Windows logs to Elasticsearch.</p>
+<h2 id="configuring-elk">Configuring ELK</h2>
+<p>Configuration of ELK will be done on CentOS 7 (these steps have also been tested on CentOS 8), all three components (Elasticsearch, Logstash, and Kibana) will be setup on the single server.</p>
+<h3 id="creating-a-partition-for-logs">Creating a Partition for Logs</h3>
+<p>This is more of a personal preference, but I like to create a dedicated disk and folder for Elasticsearch to put all the logs in. There is a default location, which you are free to use, but this section will show how to format a disk for the logs.</p>
+<p>We assume that the new disk will be /dev/sdb, and that it has been partitioned with 1 partition of /dev/sdb1. Begin by formatting the partition with your favourite filesystem, here I will use XFS.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@ELKNode<span class="o">]</span>$ mkfs.xfs /dev/sdb1
+</code></pre></td></tr></table>
+</div>
+</div><p>Now we will create the folder in which all the logs will be stored.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@ELKNode<span class="o">]</span>$ mkdir /logs
+<span class="o">[</span>user@ELKNode<span class="o">]</span>$ mount /dev/sdb1 /logs
+</code></pre></td></tr></table>
+</div>
+</div><p>After we will mount <strong>/dev/sdb1</strong> and figure out the UUID of the mount point using the blkid command. As can be seen below the UUID is <strong>08a16a80-45b3-4aee-87ff-48d43a55a63e</strong>.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@ELKNode<span class="o">]</span>$ blkid
+/dev/sda1: <span class="nv">UUID</span><span class="o">=</span><span class="s2">&#34;3D03-8706&#34;</span> <span class="nv">TYPE</span><span class="o">=</span><span class="s2">&#34;vfat&#34;</span> <span class="nv">PARTLABEL</span><span class="o">=</span><span class="s2">&#34;EFI System Partition&#34;</span> <span class="nv">PARTUUID</span><span class="o">=</span><span class="s2">&#34;ad07c298-d43e-4d99-8bd3-54e60788fb33&#34;</span>
+/dev/sda2: <span class="nv">UUID</span><span class="o">=</span><span class="s2">&#34;7bd4dd91-d7ca-4af1-9c7c-aec527b6e43b&#34;</span> <span class="nv">TYPE</span><span class="o">=</span><span class="s2">&#34;ext4&#34;</span> <span class="nv">PARTUUID</span><span class="o">=</span><span class="s2">&#34;8e3e5911-eaf5-4bf5-8df0-4ba4a7b73195&#34;</span>
+/dev/sda3: <span class="nv">UUID</span><span class="o">=</span><span class="s2">&#34;2k6w9c-tYU2-HCAZ-g2Sf-e4ke-jsyt-UwWMQk&#34;</span> <span class="nv">TYPE</span><span class="o">=</span><span class="s2">&#34;LVM2_member&#34;</span> <span class="nv">PARTUUID</span><span class="o">=</span><span class="s2">&#34;267d8f89-5e8a-4c2e-918e-3cb6d2622eaa&#34;</span>
+/dev/sdb1: <span class="nv">UUID</span><span class="o">=</span><span class="s2">&#34;08a16a80-45b3-4aee-87ff-48d43a55a63e&#34;</span> <span class="nv">TYPE</span><span class="o">=</span><span class="s2">&#34;xfs&#34;</span> <span class="nv">PARTUUID</span><span class="o">=</span><span class="s2">&#34;7fb72529-01&#34;</span>
+/dev/mapper/cl_centos8template-root: <span class="nv">UUID</span><span class="o">=</span><span class="s2">&#34;6b1b2d75-934e-4451-99c4-be8c4d9ec1ae&#34;</span> <span class="nv">TYPE</span><span class="o">=</span><span class="s2">&#34;xfs&#34;</span>
+/dev/mapper/cl_centos8template-swap: <span class="nv">UUID</span><span class="o">=</span><span class="s2">&#34;da38cf22-263b-4d5b-8bc4-007d85f26597&#34;</span> <span class="nv">TYPE</span><span class="o">=</span><span class="s2">&#34;swap&#34;</span>
+<span class="o">[</span>user@ELKNode<span class="o">]</span>$
+</code></pre></td></tr></table>
+</div>
+</div><p>Next, add the following line into the <code>/etc/fstab</code> file so this partaitoin can be mounted on boot.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="nv">UUID</span><span class="o">=</span>08a16a80-45b3-4aee-87ff-48d43a55a63e       /logs   xfs     defaults        <span class="m">0</span> <span class="m">0</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="installing-elasticsearch">Installing Elasticsearch</h3>
+<p>Elasticsearch is written in Java and so it will need to be installed, run the following command to install Java.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@ELKNode<span class="o">]</span>$ sudo yum install java-1.8.0-openjdk
+</code></pre></td></tr></table>
+</div>
+</div><p>In order to be able to install any components of the ELK stack the Elasticsearch repository must be added. In order to do this create a file located in <code>/etc/yum.repos.d/elasticsearch.repo</code> and add the following contents to it:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>elasticsearch-7.x<span class="o">]</span>
+<span class="nv">name</span><span class="o">=</span>Elasticsearch repository <span class="k">for</span> 7.x packages
+<span class="nv">baseurl</span><span class="o">=</span>https://artifacts.elastic.co/packages/7.x/yum
+<span class="nv">gpgcheck</span><span class="o">=</span><span class="m">1</span>
+<span class="nv">gpgkey</span><span class="o">=</span>https://artifacts.elastic.co/GPG-KEY-elasticsearch
+<span class="nv">enabled</span><span class="o">=</span><span class="m">1</span>
+<span class="nv">autorefresh</span><span class="o">=</span><span class="m">1</span>
+<span class="nv">type</span><span class="o">=</span>rpm-md
+</code></pre></td></tr></table>
+</div>
+</div><p>After the Elasticsearch repository is added Elasticsearch can be installed. We also need to change the owner of the /logs directory, if you are using a different disk to store the Elasticsearch data.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@ELKNode<span class="o">]</span>$ sudo yum install elasticsearch
+<span class="o">[</span>user@ELKNode<span class="o">]</span>$ chown elasticsearch:elasticsearch /logs/
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="configuring-elasticsearch">Configuring Elasticsearch</h3>
+<p>Now that Elasticsearch is installed it must be configured. The configuration file is located at <code>/etc/elasticsearch/elasticsearch.yml</code>. You can either copy paste the configuration from this website, or uncomment and edit the needed fields that are there by default.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">cluster.name: TestELK
+path.data: /logs # Default is /var/lib/elasticsearch
+path.logs: /logs # Default is /var/lib/elasticsearch
+network.host: 10.0.0.10
+http.port: 9200
+discovery.type: single-node
+</code></pre></td></tr></table>
+</div>
+</div><p>Elasticsearch has the ability to cluster multiple nodes, however, this functionality is out of scope for this post as only a single node will be setup. The cluster.name field describes the name of this cluster, it will not change much on a single node aside from the name in the logs. It is not mandatory to have this value since by default it is set to the name <code>elasticsearch</code>.</p>
+<p>The <code>path.data</code> field will specifies the location that Elasticsearch will store the data. More over, <code>path.logs</code> specifies the location that the log fields for Elasticsearch will be stored.</p>
+<p>By default Elasticsearch will be run on 127.0.0.1:9200, by running it on localhost it will also be in development mode. This is completely valid way to run, however, in this example I am binding it to a interface with the IP address 10.0.0.10 using the <code>network.host</code> field.</p>
+<p>Lastly, discovery.type field will be set to single-node. This setting will cause Elasticsearch to elect itself as the master and will not join any clusters. We need this since it will be running as a stand alone node.</p>
+<h3 id="elasticsearch-license">Elasticsearch License</h3>
+<p>Elasticsearch does have a <a href="https://www.elastic.co/subscriptions" target="_blank" rel="noopener noreffer">license</a>
+, most people looking to play around with it will probably use the Basic license which will have most of the important features. If the license is not set it may cause issues with querying Elasticsearch.</p>
+<p>Begin by starting Elasticsearch, this may take a moment or two. You will know for sure that Elasticsearch has started when it has binded to the specified port in the configuration, which is 9200 in this case.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@ELKNode<span class="o">]</span>$ sudo systemctl start elasticsearch
+<span class="o">[</span>user@ELKNode<span class="o">]</span>$ sudo systemctl <span class="nb">enable</span> elasticsearch
+</code></pre></td></tr></table>
+</div>
+</div><p>When it has started run the following command in order to view the current license.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@ELKNode<span class="o">]</span>$ curl -X GET <span class="s2">&#34;10.0.0.10:9200/_license?pretty&#34;</span>
+<span class="o">{</span>
+  <span class="s2">&#34;license&#34;</span> : <span class="o">{</span>
+    <span class="s2">&#34;status&#34;</span> : <span class="s2">&#34;active&#34;</span>,
+    <span class="s2">&#34;uid&#34;</span> : <span class="s2">&#34;729469ff-c9dc-4687-8c25-4136aed5a230&#34;</span>,
+    <span class="s2">&#34;type&#34;</span> : <span class="s2">&#34;basic&#34;</span>,
+    <span class="s2">&#34;issue_date&#34;</span> : <span class="s2">&#34;2019-09-19T04:15:59.184Z&#34;</span>,
+    <span class="s2">&#34;issue_date_in_millis&#34;</span> : 1568866559184,
+    <span class="s2">&#34;max_nodes&#34;</span> : 1000,
+    <span class="s2">&#34;issued_to&#34;</span> : <span class="s2">&#34;TestELK&#34;</span>,
+    <span class="s2">&#34;issuer&#34;</span> : <span class="s2">&#34;elasticsearch&#34;</span>,
+    <span class="s2">&#34;start_date_in_millis&#34;</span> : -1
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>This can also be done using PowerShell as seen below:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="nb">PS </span><span class="n">C:</span><span class="p">\&gt;</span> <span class="nb">Invoke-RestMethod</span> <span class="n">-Method</span> <span class="n">GET</span> <span class="n">-Uri</span> <span class="s1">&#39;10.0.0.10:9200/_license?pretty&#39;</span>  <span class="p">|</span> <span class="nb">Format-List</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Take note of the status and type field, which are set to active and basic. This means that the basic license is active, in this case it was automatically generated when it was started.</p>
+<p>In the case where it was not generated you may have to <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/start-basic.html" target="_blank" rel="noopener noreffer">start the license manually</a>
+, this can be done using the following command:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">curl -X POST <span class="s2">&#34;10.0.0.10:9200/_license/start_basic?pretty&#34;</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="installing-kibana">Installing Kibana</h3>
+<p>Now Kibana must be installed and configured. The Elasticsearch repository has already been added from the last section, so it is enough to just run the installation command.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@ELKNode<span class="o">]</span>$ sudo yum install kibana
+</code></pre></td></tr></table>
+</div>
+</div><p>The configuration file is located at <code>/etc/kibana/kibana.yml</code> make sure to alter it in order to make Kibana accessible. The default port is set to 5601, once again it is binded to the interface with the IP address of 10.0.0.10. Lastly, the Elasticsearch node is specified.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">server.port: 5601
+server.host: &#34;10.0.0.10&#34;
+elasticsearch.hosts: [&#34;http://10.0.0.10:9200&#34;]
+</code></pre></td></tr></table>
+</div>
+</div><p>Kibana will run on the port specified using HTTP, you will be able to connect to it through the browser. If HTTPS is desired a reverse proxy can be setup to point to Kibana, for this you may wish to alter some settings such as which IP address Kibana is binded.</p>
+<p>Start the Kibana service using the following command.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@ELKNode<span class="o">]</span>$ sudo systemctl start kibana
+<span class="o">[</span>user@ELKNode<span class="o">]</span>$ sudo systemctl <span class="nb">enable</span> kibana
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="installing-logstash">Installing Logstash</h3>
+<p>After Kibana is setup Logstash will need to be installed. Run the following command to install Logstash.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@ELKNode<span class="o">]</span>$ sudo yum install logstash
+</code></pre></td></tr></table>
+</div>
+</div><p>Start the Logstash service using the following command.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>user@ELKNode<span class="o">]</span>$ sudo systemctl start logstash
+<span class="o">[</span>user@ELKNode<span class="o">]</span>$ sudo systemctl <span class="nb">enable</span> logstash
+</code></pre></td></tr></table>
+</div>
+</div><p>After following these steps an instance of Elasticsearch, Kibana, and Logstash should be running and ready to take in logs. Following posts will discuss how to ingest logs into ELK.</p>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://www.elastic.co/blog/found-elasticsearch-from-the-bottom-up" target="_blank" rel="noopener noreffer">Elasticsearch from the Bottom Up, Part 1</a>
+</li>
+<li><a href="https://www.youtube.com/watch?v=v69kyU5XMFI" target="_blank" rel="noopener noreffer">The Elastic Stack as a SIEM – John Hubbard</a>
+</li>
+<li><a href="https://www.elastic.co/guide/en/logstash/current/pipeline.html" target="_blank" rel="noopener noreffer">How Logstash Works</a>
+</li>
+<li><a href="https://www.elastic.co/blog/a-practical-introduction-to-logstash" target="_blank" rel="noopener noreffer">A Practical Introduction to Logstash</a>
+</li>
+<li><a href="http://robwillis.info/2019/05/installing-elk-7-elasticsearch-logstash-and-kibana-windows-server-2016/" target="_blank" rel="noopener noreffer">Installing ELK 7 (Elasticsearch, Logstash and Kibana) – Windows Server 2016 (Part I)</a>
+</li>
+<li><a href="https://burnhamforensics.com/2018/08/14/creating-a-single-node-elk-stack/" target="_blank" rel="noopener noreffer">Creating a Single-Node ELK Stack</a>
+</li>
+<li><a href="https://github.com/Cyb3rWard0g/HELK/blob/master/winlogbeat/winlogbeat.yml" target="_blank" rel="noopener noreffer">HELK Winlogbeat Configuration</a>
+</li>
+</ul>
+</div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>The article was updated on 2020-01-15</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span><a href="javascript:void(0);" title="Share on Twitter" data-sharer="twitter" data-url="https://blog.thinkbox.dev/posts/0012-configure-single-elk-node/" data-title="Configuring a Single Node ELK Instance" data-hashtags="ELK"><i class="fab fa-twitter fa-fw"></i></a><a href="javascript:void(0);" title="Share on Facebook" data-sharer="facebook" data-url="https://blog.thinkbox.dev/posts/0012-configure-single-elk-node/" data-hashtag="ELK"><i class="fab fa-facebook-square fa-fw"></i></a><a href="javascript:void(0);" title="Share on Linkedin" data-sharer="linkedin" data-url="https://blog.thinkbox.dev/posts/0012-configure-single-elk-node/"><i class="fab fa-linkedin fa-fw"></i></a><a href="javascript:void(0);" title="Share on WhatsApp" data-sharer="whatsapp" data-url="https://blog.thinkbox.dev/posts/0012-configure-single-elk-node/" data-title="Configuring a Single Node ELK Instance" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="javascript:void(0);" title="Share on Hacker News" data-sharer="hackernews" data-url="https://blog.thinkbox.dev/posts/0012-configure-single-elk-node/" data-title="Configuring a Single Node ELK Instance"><i class="fab fa-hacker-news fa-fw"></i></a><a href="javascript:void(0);" title="Share on Reddit" data-sharer="reddit" data-url="https://blog.thinkbox.dev/posts/0012-configure-single-elk-node/"><i class="fab fa-reddit fa-fw"></i></a><a href="javascript:void(0);" title="Share on VK" data-sharer="vk" data-url="https://blog.thinkbox.dev/posts/0012-configure-single-elk-node/" data-title="Configuring a Single Node ELK Instance"><i class="fab fa-vk fa-fw"></i></a><a href="javascript:void(0);" title="Share on 微博" data-sharer="weibo" data-url="https://blog.thinkbox.dev/posts/0012-configure-single-elk-node/" data-title="Configuring a Single Node ELK Instance"><i class="fab fa-weibo fa-fw"></i></a><a href="javascript:void(0);" title="Share on 百度" data-sharer="baidu" data-url="https://blog.thinkbox.dev/posts/0012-configure-single-elk-node/" data-title="Configuring a Single Node ELK Instance"><i class="loveit it-baidu-fill"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/elk">ELK</a></section>
+        <section>
+            <span><a href="javascript:window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/">Home</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/0011-pki-with-openssl/" class="prev" rel="prev" title="Understanding and Implementing PKI with OpenSSL"><i class="fas fa-angle-left fa-fw"></i>Understanding and Implementing PKI with OpenSSL</a></div>
+</div>
+<div class="comment"><div id="disqus_thread"></div><noscript>
+            Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript></div>
+    </article></div>
+            </main><footer class="footer">
+    <div class="copyright"><div class="copyright-line">Powered by <a href="https://gohugo.io/" target="_blank" rel="external nofollow noopener noreffer">Hugo</a> | Theme - <a href="https://github.com/dillonzq/LoveIt" target="_blank" rel="external nofollow noopener noreffer"><i class="far fa-heart fa-fw"></i> LoveIt</a>
+        </div>
+
+        <div class="copyright-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2019 - 2020</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank">Aleks</a></span></div>
+    </div>
+</footer>
+</div><a href="#" class="dynamic-to-top animated faster" id="dynamic-to-top">
+            <i class="fas fa-chevron-up fa-fw"></i>
+        </a><link rel="stylesheet" href="/lib/iconfont/iconfont.min.css"><script defer src="https://blog-thinkbox-dev.disqus.com/embed.js"></script><script src="/lib/smooth-scroll/smooth-scroll.polyfills.min.js"></script><script src="/lib/sharer/sharer.min.js"></script><script src="/lib/lazysizes/lazysizes.min.js"></script><script src="/js/theme.min.js"></script>
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-161605270-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+</body>
+</html>

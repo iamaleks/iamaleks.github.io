@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Information Security on ThinkBox</title>
-    <link>https://blog.thinkbox.dev/categories/information-security/</link>
-    <description>Recent content in Information Security on ThinkBox</description>
+    <title>ELK on ThinkBox</title>
+    <link>https://blog.thinkbox.dev/tags/elk/</link>
+    <description>Recent content in ELK on ThinkBox</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <lastBuildDate>Wed, 15 Jan 2020 22:32:25 -0400</lastBuildDate>
     
-	<atom:link href="https://blog.thinkbox.dev/categories/information-security/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://blog.thinkbox.dev/tags/elk/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -19,15 +19,6 @@
       <guid>https://blog.thinkbox.dev/posts/0012-configure-single-elk-node/</guid>
       <description>Introduction This post will aim to guide you in setting up a ELK stack instance, other posts will go into detail about other aspacts such as monitoring logs on Windows. A brief description will be given on all the components that will be used.
 If you are interested in reading more about the technical details of how the different components work please consult the References section, I have linked some interesting articles and videos that can be of use.</description>
-    </item>
-    
-    <item>
-      <title>Understanding and Implementing PKI with OpenSSL</title>
-      <link>https://blog.thinkbox.dev/posts/0011-pki-with-openssl/</link>
-      <pubDate>Wed, 20 Nov 2019 00:44:07 -0400</pubDate>
-      
-      <guid>https://blog.thinkbox.dev/posts/0011-pki-with-openssl/</guid>
-      <description>Introduction This post will aim to give an overview of TLS and public key infrastructure (PKI). This first part of this post will give a theoretical overview of how it works. The second part of the post will demonstrate how to setup a CA with OpenSSL and create certificates for web servers and code singing purposes. Furthermore, the code signing certificate will be used to sign a binary on a Windows machine.</description>
     </item>
     
   </channel>
