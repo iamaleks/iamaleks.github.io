@@ -6,10 +6,19 @@
     <description>Recent content in Tags on ThinkBox</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Sun, 11 Aug 2019 23:23:32 -0400</lastBuildDate>
+    <lastBuildDate>Thu, 15 Aug 2019 22:59:00 -0400</lastBuildDate>
     
 	<atom:link href="https://blog.thinkbox.dev/tags/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>ESXi</title>
+      <link>https://blog.thinkbox.dev/tags/esxi/</link>
+      <pubDate>Thu, 15 Aug 2019 22:59:00 -0400</pubDate>
+      
+      <guid>https://blog.thinkbox.dev/tags/esxi/</guid>
+      <description></description>
+    </item>
     
     <item>
       <title>Applocker</title>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>ESXi on ThinkBox</title>
+    <link>https://blog.thinkbox.dev/tags/esxi/</link>
+    <description>Recent content in ESXi on ThinkBox</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Thu, 15 Aug 2019 22:59:00 -0400</lastBuildDate>
+    
+	<atom:link href="https://blog.thinkbox.dev/tags/esxi/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Saving ESXi Configuration State</title>
+      <link>https://blog.thinkbox.dev/posts/0005-esxi-save-state/</link>
+      <pubDate>Thu, 15 Aug 2019 22:59:00 -0400</pubDate>
+      
+      <guid>https://blog.thinkbox.dev/posts/0005-esxi-save-state/</guid>
+      <description>Saving the configuration state of a standalone ESXi server will allow for the restoration of all configurations if a new instance is installed. This will include all virtual machines registrations, switches, port groups, and system configurations.
+Backing Up State Running auto-backup.sh will write the current configuration onto the disk, which is stored in /bootbank/state.tgz. ESXi has a cronjob that will run this script every hour, however, if there was a change made recently and you are backing up the configuration it would be best to run this script.</description>
+    </item>
+    
+  </channel>
+</rss>
