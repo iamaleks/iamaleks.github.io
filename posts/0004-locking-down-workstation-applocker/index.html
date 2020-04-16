@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <title>Locking Down a Workstation with AppLocker | ThinkBox</title>
+        <meta name="Description" content=""><meta property="og:title" content="Locking Down a Workstation with AppLocker" />
+<meta property="og:description" content="Introduction AppLocker is a powerful component of the Windows operating system that allows an administrator to dictate whether a user has permissions to run a file. There are a few different types of files that can be controlled by AppLocker which include executable files (.exe), DLL files (.dll), Windows Installer files (.msi), PowerShell scripts (.ps1), and packaged applications (these include graphical programs such as Settings and the GUI for Defender)." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://blog.thinkbox.dev/posts/0004-locking-down-workstation-applocker/" />
+<meta property="article:published_time" content="2019-08-11T23:23:32-04:00" />
+<meta property="article:modified_time" content="2019-08-11T23:23:32-04:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Locking Down a Workstation with AppLocker"/>
+<meta name="twitter:description" content="Introduction AppLocker is a powerful component of the Windows operating system that allows an administrator to dictate whether a user has permissions to run a file. There are a few different types of files that can be controlled by AppLocker which include executable files (.exe), DLL files (.dll), Windows Installer files (.msi), PowerShell scripts (.ps1), and packaged applications (these include graphical programs such as Settings and the GUI for Defender)."/>
+<meta name="theme-color" content="#ffffff">
+<meta name="msapplication-TileColor" content="#da532c">
+<link rel="canonical" href="https://blog.thinkbox.dev/posts/0004-locking-down-workstation-applocker/" />
+<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="prev" href="https://blog.thinkbox.dev/posts/0003-create-reverse-proxy-with-docker/" /><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="/lib/animate/animate.min.css"><link rel="stylesheet" href="/css/style.min.css"><meta name="google-site-verification" content="UA-161605270-1" /><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Locking Down a Workstation with AppLocker",
+        "inLanguage": "en",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/blog.thinkbox.dev\/posts\/0004-locking-down-workstation-applocker\/"
+        },"genre": "posts","keywords": "Windows, Security, Applocker","wordcount":  1292 ,
+        "url": "https:\/\/blog.thinkbox.dev\/posts\/0004-locking-down-workstation-applocker\/","datePublished": "2019-08-11","dateModified": "2019-08-11","author": {
+                "@type": "Person",
+                "name": "Aleks"
+            },"description": ""
+    }
+    </script></head>
+    <body><script>
+            if (!window.localStorage || !window.localStorage.getItem('theme')) {window.isDark = 'dark' === 'dark';} else {
+                window.isDark = (window.localStorage && window.localStorage.getItem('theme')) === 'dark';
+            }
+            window.isDark && document.body.classList.add('dark-theme');
+        </script><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/">ThinkBox</a>
+        </div>
+        <div class="menu"><a class="menu-item" href="/posts/" rel="noopener noreffer">Posts</a><a class="menu-item" href="/tags/" rel="noopener noreffer">Tags</a><a class="menu-item" href="/categories/" rel="noopener noreffer">Categories</a><span class="menu-item">|</span>
+            <a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-wrapper">
+        <div class="header-container">
+            <div class="header-title">
+                <a href="/">ThinkBox</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><a class="menu-item" href="/posts/" title="" rel="noopener noreffer">Posts</a><a class="menu-item" href="/tags/" title="" rel="noopener noreffer">Tags</a><a class="menu-item" href="/categories/" title="" rel="noopener noreffer">Categories</a><a href="javascript:void(0);" class="menu-item theme-switch" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header>
+
+<script>
+    window.desktopHeaderMode = "fixed";
+    window.mobileHeaderMode = "auto";
+</script>
+<main class="main">
+                <div class="container"><article class="page single"><h1 class="single-title animated flipInX">Locking Down a Workstation with AppLocker</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel="noopener noreffer author" class="author"><i class="fas fa-user-circle fa-fw"></i>Aleks</a>
+</span>&nbsp;
+                    <span class="post-category">included in<a href="/categories/misc-infrastructure">
+                                <i class="far fa-folder fa-fw"></i>Misc infrastructure
+                            </a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i><time datetime=2019-08-11>2019-08-11</time>&nbsp;
+                <i class="fas fa-pencil-alt fa-fw"></i>about 1292 words&nbsp;
+                <i class="far fa-clock fa-fw"></i>7 min&nbsp;</div>
+        </div><div class="toc" id="toc-auto">
+                <h2 class="toc-title">Contents</h2>
+                <div class="toc-content" id="toc-content-auto"></div>
+            </div>
+            <div class="toc" id="toc-static">
+                <details>
+                    <summary>
+                        <div class="toc-title">
+                            <span>Contents</span>
+                            <span><i class="details icon fas fa-angle-down"></i></span>
+                        </div>
+                    </summary>
+                    <div class="toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#introduction">Introduction</a>
+      <ul>
+        <li><a href="#outline">Outline</a></li>
+      </ul>
+    </li>
+    <li><a href="#prerequisites">Prerequisites</a></li>
+    <li><a href="#default-rules">Default Rules</a>
+      <ul>
+        <li><a href="#creating-default-rules">Creating Default Rules</a></li>
+        <li><a href="#linking-gpo">Linking GPO</a></li>
+        <li><a href="#testing-default-rules">Testing Default Rules</a>
+          <ul>
+            <li><a href="#start-menu-not-working">Start Menu Not Working</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#blacklisting">Blacklisting</a></li>
+    <li><a href="#whitelisting">Whitelisting</a></li>
+  </ul>
+</nav></div>
+                </details>
+            </div><div class="content" id="content" style="text-align: justify;"><h2 id="introduction">Introduction</h2>
+<p>AppLocker is a powerful component of the Windows operating system that allows an administrator to dictate whether a user has permissions to run a file. There are a few different types of files that can be controlled by AppLocker which include executable files (.exe), DLL files (.dll), Windows Installer files (.msi), PowerShell scripts (.ps1), and packaged applications (these include graphical programs such as Settings and the GUI for Defender).</p>
+<p>This post will examine how a workstation can be locked down with AppLocker in order to mitigate the risks of a user running a malicious piece of software, and to limit what an attacker is capable of doing on a machine.</p>
+<p>The main goal of this post is to demonstrate the procedure of setting up and configuring AppLocker. Every environment various from one another, this means that the steps showed here must be altered to meet the requirements of your own environment. Furthermore, only executable file will be targeted in these example.</p>
+<h3 id="outline">Outline</h3>
+<p>This post will start of by demonstrating how to create a AppLocker group policy object and enforce it on a workstation. Default AppLocker rules will be applied as a start. Next, <code>cmd.exe</code> will be blacklisted with AppLocker to prevent a user from running it. Lastly, the procedure of whitelisting applications with AppLocker will be shown based on a set of requirements.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<p>This section will introduce the environment on which AppLocker will be used.</p>
+<p>A user named Tim located in the Test Users OU will the a domain user that will logon to a system to test AppLocker polices.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0004-locking-down-workstation-applocker/Prerequisites/dsa-msc-user.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>The endpoint system that will be configured will be a Windows 10 LTSC client computer that is apart of a domain. This computer account was placed in the User Workstations OU.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0004-locking-down-workstation-applocker/Prerequisites/dsa-msc-workstations.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>Before we can begin creating AppLocker polices a group policy object must be created in which all these polices will be specified. Enter <code>gpmc.msc</code> in order to edit the group polices. Continue by creating a new GPO as seen below.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0004-locking-down-workstation-applocker/Prerequisites/create-applocker-gpo-object.gif,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h2 id="default-rules">Default Rules</h2>
+<p>This section will demonstrate how to create default executable rules for AppLocker and how to apply them to a specific workstation.</p>
+<p>Every rule section in AppLocker has a set of default rules, the executable rules allow all executable located in the programs and windows folder to be run. Furthermore, the built in administrator is capable of running any executable.</p>
+<p>This is a pretty useful rule set, when it is implemented it can prevent a user from running any executable located outside of the programs and windows folder.</p>
+<h3 id="creating-default-rules">Creating Default Rules</h3>
+<p>In order to create the default rules edit the AppLocker Rules GPO object that was created earlier in <code>gpmc.msc</code>.</p>
+<p>Navigate to Computer Configuration -&gt; Polices -&gt; Windows Settings -&gt; Security Settings -&gt; Application Control Polices -&gt; AppLocker.</p>
+<p>Right click on the Executable Rules and select the Create Default Rules option. This can be seen below.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0004-locking-down-workstation-applocker/Creating_Default_Rules/create-default-rules.gif,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>Next, the Executable rules must be set to enforce in order for these polices to take effect.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0004-locking-down-workstation-applocker/Creating_Default_Rules/set-enforce.gif,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>Lastly, the Application Identity service must be set to start automatically on the workstation. This service ensures that AppLocker polices are appliced, if this service is not running no AppLocker polices will be applied to the system.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0004-locking-down-workstation-applocker/Creating_Default_Rules/enable-id-service.gif,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h3 id="linking-gpo">Linking GPO</h3>
+<p>Now that the GPO object is setup it must be linked to a specfic OU. In this example the users workstation is located in the User Workstations OU, so the GPO object will be linked there.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0004-locking-down-workstation-applocker/Creating_Default_Rules/link-default-app-policy.gif,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h3 id="testing-default-rules">Testing Default Rules</h3>
+<p>In order for the GPO rules to come into effect you can choose to wait until they are refreshed by the system. As an alternative you may run <code>gpupdate</code> in <code>cmd.exe</code> in order to update GPO immediately.</p>
+<p>As can be seen below when running a executable in the Downloads folder AppLocker prevents it, this means that the polices where successfully applied and enforced.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0004-locking-down-workstation-applocker/Creating_Default_Rules/running-malware.gif,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<hr>
+<h4 id="start-menu-not-working">Start Menu Not Working</h4>
+<p><strong><em>NOTE:</em></strong>  You may notice that the start menu no longer works along with programs such as Settings and Defender. When setting the executable policy to enforce it will interfere with these applications. These applications are called Packaged Apps.</p>
+<p>In order to solve this perform the following steps:</p>
+<p>Set Packaged App Rules to enforce.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0004-locking-down-workstation-applocker/Creating_Default_Rules/Notice1.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>Create the default rules under Packaged App Rules.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0004-locking-down-workstation-applocker/Creating_Default_Rules/Notice2.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>After either wait for the GPO&rsquo;s to update on the system, or run <code>gpupdate</code> to force an update.</p>
+<hr>
+<h2 id="blacklisting">Blacklisting</h2>
+<p>This section will demonstrate how add to the default rules and black list executable. For this example <code>cmd.exe</code> will be blacklisted.</p>
+<p>Begin by creating a new rule in Executable Rules.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0004-locking-down-workstation-applocker/Blacklisting/blacklist-cmd-1.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>Set the action to Deny. In this example the target group has been set to Domain Users.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0004-locking-down-workstation-applocker/Blacklisting/blacklist-cmd-2.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>Select Path as the condition.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0004-locking-down-workstation-applocker/Blacklisting/blacklist-cmd-3.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>Input the path in which the executable is located.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0004-locking-down-workstation-applocker/Blacklisting/blacklist-cmd-4.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>The end result will appear as follows.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0004-locking-down-workstation-applocker/Blacklisting/blacklist-cmd-5.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>Upon attempting to run <code>cmd.exe</code> it will be blocked.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0004-locking-down-workstation-applocker/Blacklisting/blacklist-cmd-6.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<h2 id="whitelisting">Whitelisting</h2>
+<p>This section will whitelist a set of applications on the user workstation based on the following requirements:</p>
+<ul>
+<li>A Domain User should be able to login to the desktop.</li>
+<li>A Domain User should be able to open and use Firefox.</li>
+</ul>
+<p>The requirements are extremely simple, the end result will be a a desktop on which only Firefox is usable. Of course in a different environment there will be different requirements. This is why the most important thing to take away is the steps taken to achieve this.</p>
+<p>We will begin by setting the Executable rules to Audit only. This will cause AppLocker to continue working, however, instead of blocking an application a log message will be generated warning of the event. This will allow us to view what is allowed by AppLocker and what has been blocked.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0004-locking-down-workstation-applocker/Whitelisting/whitelist-1.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>In order to have a fallback mechanism and a user to run programs such as Event Viewer the Domain Admins will be allowed to run anything they want. This sort of rule may be useful during testing, in a case where a mistake is made a Domain Admin user can be used to run <code>gpupdate</code> to update the rules. Furthermore, running programs such as <code>gpupdate</code> and Event Viewer as the Domain Admin will not show up as a warning in the logs.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0004-locking-down-workstation-applocker/Whitelisting/whitelist-2.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>Run Event Viewer on the client workstation, the program name is <code>eventvwr.msc</code>. Navigate to Applications and Services Logs -&gt; Microsoft -&gt; Windows -&gt; AppLocker. This is the location that stores the logs for AppLocker. If there are any logs clear them, then reboot the computer.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0004-locking-down-workstation-applocker/Whitelisting/whitelist-3.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>When the client workstation reboots login as a regular domain user and open the AppLocker logs in Event Viewer once again. You will see many Warning messages, these are there because there are many programs that are run on startup when the user logs in. Whitelisting these is critical for a user to be able to login. You will notice that the binary file path is located in the General details, and the user that attempted to run is is located under User.</p>
+<p>The idea here is to perform tasks a regular user would, such as logging in and opening Firefox. Logs will be generated of which binaries are used, and these binaries must be whitelisted later on. Perform this step as many times as necessary, the rule will be adequate when you are able to perform the same workload as a user without any Warning messages showing up in Event Viewer.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0004-locking-down-workstation-applocker/Whitelisting/whitelist-4.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>In the case of this example the following rules are what is required for a user to login in and open Firefox. Feel free to remove the rule that allows all Domain Admins to run anything, it is up to the requirements for the environment.</p>
+<p>Note, in this example any process that ran as SYSTEM was set to Everyone in the rule set.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0004-locking-down-workstation-applocker/Whitelisting/whitelist-5.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+<p>When you are satisfied with the rules created set the Executable rules to Enforce.</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.small.min.svg"
+        data-sizes="auto"
+        data-srcset="/Pictures/0004-locking-down-workstation-applocker/Whitelisting/whitelist-6.png,  1.5x,  2x"
+        data-src=""
+        alt=""
+        title="" /></p>
+</div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>The article was updated on 2019-08-11</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span><a href="javascript:void(0);" title="Share on Twitter" data-sharer="twitter" data-url="https://blog.thinkbox.dev/posts/0004-locking-down-workstation-applocker/" data-title="Locking Down a Workstation with AppLocker" data-hashtags="Windows,Security,Applocker"><i class="fab fa-twitter fa-fw"></i></a><a href="javascript:void(0);" title="Share on Facebook" data-sharer="facebook" data-url="https://blog.thinkbox.dev/posts/0004-locking-down-workstation-applocker/" data-hashtag="Windows"><i class="fab fa-facebook-square fa-fw"></i></a><a href="javascript:void(0);" title="Share on Linkedin" data-sharer="linkedin" data-url="https://blog.thinkbox.dev/posts/0004-locking-down-workstation-applocker/"><i class="fab fa-linkedin fa-fw"></i></a><a href="javascript:void(0);" title="Share on WhatsApp" data-sharer="whatsapp" data-url="https://blog.thinkbox.dev/posts/0004-locking-down-workstation-applocker/" data-title="Locking Down a Workstation with AppLocker" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="javascript:void(0);" title="Share on Hacker News" data-sharer="hackernews" data-url="https://blog.thinkbox.dev/posts/0004-locking-down-workstation-applocker/" data-title="Locking Down a Workstation with AppLocker"><i class="fab fa-hacker-news fa-fw"></i></a><a href="javascript:void(0);" title="Share on Reddit" data-sharer="reddit" data-url="https://blog.thinkbox.dev/posts/0004-locking-down-workstation-applocker/"><i class="fab fa-reddit fa-fw"></i></a><a href="javascript:void(0);" title="Share on VK" data-sharer="vk" data-url="https://blog.thinkbox.dev/posts/0004-locking-down-workstation-applocker/" data-title="Locking Down a Workstation with AppLocker"><i class="fab fa-vk fa-fw"></i></a><a href="javascript:void(0);" title="Share on 微博" data-sharer="weibo" data-url="https://blog.thinkbox.dev/posts/0004-locking-down-workstation-applocker/" data-title="Locking Down a Workstation with AppLocker"><i class="fab fa-weibo fa-fw"></i></a><a href="javascript:void(0);" title="Share on 百度" data-sharer="baidu" data-url="https://blog.thinkbox.dev/posts/0004-locking-down-workstation-applocker/" data-title="Locking Down a Workstation with AppLocker"><i class="loveit it-baidu-fill"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/windows">Windows</a>,&nbsp;<a href="/tags/security">Security</a>,&nbsp;<a href="/tags/applocker">Applocker</a></section>
+        <section>
+            <span><a href="javascript:window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/">Home</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/0003-create-reverse-proxy-with-docker/" class="prev" rel="prev" title="Creating a Reverse Proxy with Docker"><i class="fas fa-angle-left fa-fw"></i>Creating a Reverse Proxy with Docker</a></div>
+</div>
+<div class="comment"><div id="disqus_thread"></div><noscript>
+            Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript></div>
+    </article></div>
+            </main><footer class="footer">
+    <div class="copyright"><div class="copyright-line">Powered by <a href="https://gohugo.io/" target="_blank" rel="external nofollow noopener noreffer">Hugo</a> | Theme - <a href="https://github.com/dillonzq/LoveIt" target="_blank" rel="external nofollow noopener noreffer"><i class="far fa-heart fa-fw"></i> LoveIt</a>
+        </div>
+
+        <div class="copyright-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2019 - 2020</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank">Aleks</a></span></div>
+    </div>
+</footer>
+</div><a href="#" class="dynamic-to-top animated faster" id="dynamic-to-top">
+            <i class="fas fa-chevron-up fa-fw"></i>
+        </a><link rel="stylesheet" href="/lib/iconfont/iconfont.min.css"><script defer src="https://blog-thinkbox-dev.disqus.com/embed.js"></script><script src="/lib/smooth-scroll/smooth-scroll.polyfills.min.js"></script><script src="/lib/sharer/sharer.min.js"></script><script src="/lib/lazysizes/lazysizes.min.js"></script><script src="/js/theme.min.js"></script>
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-161605270-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+</body>
+</html>

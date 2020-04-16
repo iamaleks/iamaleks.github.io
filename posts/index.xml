@@ -6,10 +6,19 @@
     <description>Recent content in Posts on ThinkBox</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Thu, 18 Jul 2019 17:15:47 -0400</lastBuildDate>
+    <lastBuildDate>Sun, 11 Aug 2019 23:23:32 -0400</lastBuildDate>
     
 	<atom:link href="https://blog.thinkbox.dev/posts/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Locking Down a Workstation with AppLocker</title>
+      <link>https://blog.thinkbox.dev/posts/0004-locking-down-workstation-applocker/</link>
+      <pubDate>Sun, 11 Aug 2019 23:23:32 -0400</pubDate>
+      
+      <guid>https://blog.thinkbox.dev/posts/0004-locking-down-workstation-applocker/</guid>
+      <description>Introduction AppLocker is a powerful component of the Windows operating system that allows an administrator to dictate whether a user has permissions to run a file. There are a few different types of files that can be controlled by AppLocker which include executable files (.exe), DLL files (.dll), Windows Installer files (.msi), PowerShell scripts (.ps1), and packaged applications (these include graphical programs such as Settings and the GUI for Defender).</description>
+    </item>
     
     <item>
       <title>Creating a Reverse Proxy with Docker</title>

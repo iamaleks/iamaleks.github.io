@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Windows on ThinkBox</title>
-    <link>https://blog.thinkbox.dev/tags/windows/</link>
-    <description>Recent content in Windows on ThinkBox</description>
+    <title>Applocker on ThinkBox</title>
+    <link>https://blog.thinkbox.dev/tags/applocker/</link>
+    <description>Recent content in Applocker on ThinkBox</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <lastBuildDate>Sun, 11 Aug 2019 23:23:32 -0400</lastBuildDate>
     
-	<atom:link href="https://blog.thinkbox.dev/tags/windows/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://blog.thinkbox.dev/tags/applocker/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -18,16 +18,6 @@
       
       <guid>https://blog.thinkbox.dev/posts/0004-locking-down-workstation-applocker/</guid>
       <description>Introduction AppLocker is a powerful component of the Windows operating system that allows an administrator to dictate whether a user has permissions to run a file. There are a few different types of files that can be controlled by AppLocker which include executable files (.exe), DLL files (.dll), Windows Installer files (.msi), PowerShell scripts (.ps1), and packaged applications (these include graphical programs such as Settings and the GUI for Defender).</description>
-    </item>
-    
-    <item>
-      <title>Setting Up Active Directory Network From Scratch</title>
-      <link>https://blog.thinkbox.dev/posts/0002-setting-up-ad-from-scratch/</link>
-      <pubDate>Wed, 17 Jul 2019 23:48:26 -0400</pubDate>
-      
-      <guid>https://blog.thinkbox.dev/posts/0002-setting-up-ad-from-scratch/</guid>
-      <description>Introduction This blog post will show step by step how to setup a basic Active Directory network. The network will consist of four computers, two servers and two clients. There will be a Domain Controller, a DHCP server, a central management station, and of course a desktop for the clients. This can all be seen in the diagram below.
-The purpose of the central management desktop for the administrator to easily manage multiple servers at once.</description>
     </item>
     
   </channel>
