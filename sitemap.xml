@@ -2,12 +2,17 @@
     xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
     xmlns:xhtml="http://www.w3.org/1999/xhtml"
     ><url>
-            <loc>https://blog.thinkbox.dev/categories/</loc><lastmod>2020-01-21T22:32:25-04:00</lastmod></url><url>
+            <loc>https://blog.thinkbox.dev/categories/</loc><lastmod>2020-05-03T21:16:02-04:00</lastmod></url><url>
+            <loc>https://blog.thinkbox.dev/tags/infrastructure-as-code/</loc><lastmod>2020-05-03T21:16:02-04:00</lastmod></url><url>
+            <loc>https://blog.thinkbox.dev/posts/0015-iac-centos7-webserver-example/</loc><lastmod>2020-05-03T21:16:02-04:00</lastmod></url><url>
+            <loc>https://blog.thinkbox.dev/tags/packer/</loc><lastmod>2020-05-03T21:16:02-04:00</lastmod></url><url>
+            <loc>https://blog.thinkbox.dev/posts/</loc><lastmod>2020-05-03T21:16:02-04:00</lastmod></url><url>
+            <loc>https://blog.thinkbox.dev/tags/</loc><lastmod>2020-05-03T21:16:02-04:00</lastmod></url><url>
+            <loc>https://blog.thinkbox.dev/tags/terraform/</loc><lastmod>2020-05-03T21:16:02-04:00</lastmod></url><url>
+            <loc>https://blog.thinkbox.dev/</loc><lastmod>2020-05-03T21:16:02-04:00</lastmod></url><url>
+            <loc>https://blog.thinkbox.dev/categories/vsphere/</loc><lastmod>2020-05-03T21:16:02-04:00</lastmod></url><url>
             <loc>https://blog.thinkbox.dev/posts/0014-setting-up-wazuh/</loc><lastmod>2020-01-21T22:32:25-04:00</lastmod></url><url>
             <loc>https://blog.thinkbox.dev/categories/information-security/</loc><lastmod>2020-01-21T22:32:25-04:00</lastmod></url><url>
-            <loc>https://blog.thinkbox.dev/posts/</loc><lastmod>2020-01-21T22:32:25-04:00</lastmod></url><url>
-            <loc>https://blog.thinkbox.dev/tags/</loc><lastmod>2020-01-21T22:32:25-04:00</lastmod></url><url>
-            <loc>https://blog.thinkbox.dev/</loc><lastmod>2020-01-21T22:32:25-04:00</lastmod></url><url>
             <loc>https://blog.thinkbox.dev/tags/wazuh/</loc><lastmod>2020-01-21T22:32:25-04:00</lastmod></url><url>
             <loc>https://blog.thinkbox.dev/tags/elk/</loc><lastmod>2020-01-20T22:32:25-04:00</lastmod></url><url>
             <loc>https://blog.thinkbox.dev/posts/0013-monitor-windows-endpoint/</loc><lastmod>2020-01-20T22:32:25-04:00</lastmod></url><url>
@@ -29,7 +34,6 @@
             <loc>https://blog.thinkbox.dev/posts/0007-cred-guard-windows/</loc><lastmod>2019-09-21T17:50:23-04:00</lastmod></url><url>
             <loc>https://blog.thinkbox.dev/tags/esxi/</loc><lastmod>2019-08-16T00:15:03-04:00</lastmod></url><url>
             <loc>https://blog.thinkbox.dev/posts/0006-update-rollback-esxi/</loc><lastmod>2019-08-16T00:15:03-04:00</lastmod></url><url>
-            <loc>https://blog.thinkbox.dev/categories/vsphere/</loc><lastmod>2019-08-16T00:15:03-04:00</lastmod></url><url>
             <loc>https://blog.thinkbox.dev/posts/0005-esxi-save-state/</loc><lastmod>2019-08-15T22:59:00-04:00</lastmod></url><url>
             <loc>https://blog.thinkbox.dev/tags/applocker/</loc><lastmod>2019-08-11T23:23:32-04:00</lastmod></url><url>
             <loc>https://blog.thinkbox.dev/posts/0004-locking-down-workstation-applocker/</loc><lastmod>2019-08-11T23:23:32-04:00</lastmod></url><url>
