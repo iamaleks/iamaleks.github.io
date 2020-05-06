@@ -5,16 +5,16 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="robots" content="noodp" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
-        <title>Introduction to Packer and Terraform with CentOS 7 on vSphere | ThinkBox</title>
-        <meta name="Description" content=""><meta property="og:title" content="Introduction to Packer and Terraform with CentOS 7 on vSphere" />
-<meta property="og:description" content="Introduction Packer and Terraform are both tools created by the company Hashicorp , both of these tools aim to provide automation capabilities. Packer has the goal of creating machine images for multiple different platforms. For example, we can create AMIs for EC2 instances on AWS or VMDK/VMX files for VMware. The whole goal is to automate the ability to create a consistent image that can be used by a specific platform, whether it be AWS or VMware products such as vSphere." />
+        <title>Introduction to Packer and Terraform with Ubuntu on vSphere | ThinkBox</title>
+        <meta name="Description" content=""><meta property="og:title" content="Introduction to Packer and Terraform with Ubuntu on vSphere" />
+<meta property="og:description" content=".intro-pictures img { width: 40%; height: auto; }   Introduction Packer and Terraform are both tools created by the company Hashicorp , both of these tools aim to provide automation capabilities. Packer has the goal of creating machine images for multiple different platforms. For example, we can create AMIs for EC2 instances on AWS or VMDK/VMX files for VMware. The whole goal is to automate the ability to create a consistent image that can be used by a specific platform, whether it be AWS or VMware products such as vSphere." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://blog.thinkbox.dev/posts/0015-iac-centos7-webserver-example/" />
 <meta property="article:published_time" content="2020-05-03T21:16:02-04:00" />
 <meta property="article:modified_time" content="2020-05-03T21:16:02-04:00" />
 <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Introduction to Packer and Terraform with CentOS 7 on vSphere"/>
-<meta name="twitter:description" content="Introduction Packer and Terraform are both tools created by the company Hashicorp , both of these tools aim to provide automation capabilities. Packer has the goal of creating machine images for multiple different platforms. For example, we can create AMIs for EC2 instances on AWS or VMDK/VMX files for VMware. The whole goal is to automate the ability to create a consistent image that can be used by a specific platform, whether it be AWS or VMware products such as vSphere."/>
+<meta name="twitter:title" content="Introduction to Packer and Terraform with Ubuntu on vSphere"/>
+<meta name="twitter:description" content=".intro-pictures img { width: 40%; height: auto; }   Introduction Packer and Terraform are both tools created by the company Hashicorp , both of these tools aim to provide automation capabilities. Packer has the goal of creating machine images for multiple different platforms. For example, we can create AMIs for EC2 instances on AWS or VMDK/VMX files for VMware. The whole goal is to automate the ability to create a consistent image that can be used by a specific platform, whether it be AWS or VMware products such as vSphere."/>
 <meta name="theme-color" content="#ffffff">
 <meta name="msapplication-TileColor" content="#da532c">
 <link rel="canonical" href="https://blog.thinkbox.dev/posts/0015-iac-centos7-webserver-example/" />
@@ -27,12 +27,12 @@
     {
         "@context": "http://schema.org",
         "@type": "BlogPosting",
-        "headline": "Introduction to Packer and Terraform with CentOS 7 on vSphere",
+        "headline": "Introduction to Packer and Terraform with Ubuntu on vSphere",
         "inLanguage": "en",
         "mainEntityOfPage": {
             "@type": "WebPage",
             "@id": "https:\/\/blog.thinkbox.dev\/posts\/0015-iac-centos7-webserver-example\/"
-        },"genre": "posts","keywords": "Infrastructure as Code, Terraform, Packer","wordcount":  2939 ,
+        },"genre": "posts","keywords": "Infrastructure as Code, Terraform, Packer","wordcount":  3462 ,
         "url": "https:\/\/blog.thinkbox.dev\/posts\/0015-iac-centos7-webserver-example\/","datePublished": "2020-05-03","dateModified": "2020-05-03","author": {
                 "@type": "Person",
                 "name": "Aleks"
@@ -75,15 +75,15 @@
     window.mobileHeaderMode = "auto";
 </script>
 <main class="main">
-                <div class="container"><article class="page single"><h1 class="single-title animated flipInX">Introduction to Packer and Terraform with CentOS 7 on vSphere</h1><div class="post-meta">
+                <div class="container"><article class="page single"><h1 class="single-title animated flipInX">Introduction to Packer and Terraform with Ubuntu on vSphere</h1><div class="post-meta">
             <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel="noopener noreffer author" class="author"><i class="fas fa-user-circle fa-fw"></i>Aleks</a>
 </span>&nbsp;
                     <span class="post-category">included in<a href="/categories/vsphere">
                                 <i class="far fa-folder fa-fw"></i>Vsphere
                             </a></span></div>
             <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i><time datetime=2020-05-03>2020-05-03</time>&nbsp;
-                <i class="fas fa-pencil-alt fa-fw"></i>about 2939 words&nbsp;
-                <i class="far fa-clock fa-fw"></i>14 min&nbsp;</div>
+                <i class="fas fa-pencil-alt fa-fw"></i>about 3462 words&nbsp;
+                <i class="far fa-clock fa-fw"></i>17 min&nbsp;</div>
         </div><div class="toc" id="toc-auto">
                 <h2 class="toc-title">Contents</h2>
                 <div class="toc-content" id="toc-content-auto"></div>
@@ -98,326 +98,77 @@
                     </summary>
                     <div class="toc-content" id="toc-content-static"><nav id="TableOfContents">
   <ul>
-    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#introduction">Introduction</a>
+      <ul>
+        <li><a href="#goal">Goal</a></li>
+      </ul>
+    </li>
     <li><a href="#packer">Packer</a>
       <ul>
-        <li><a href="#kickstart-file-kscfg">Kickstart File (ks.cfg)</a></li>
-        <li><a href="#main-packer-configuration-centos-vspherejson">Main Packer Configuration (centos-vsphere.json)</a></li>
-        <li><a href="#demo">Demo</a></li>
+        <li><a href="#configuration-file-rundown">Configuration File Rundown</a></li>
+        <li><a href="#ubuntu-preseed-file">Ubuntu Preseed File</a></li>
+        <li><a href="#required-variables">Required Variables</a></li>
+        <li><a href="#packer-configuration">Packer Configuration</a></li>
+        <li><a href="#extra-scripts">Extra Scripts</a></li>
+        <li><a href="#packer-demonstration">Packer Demonstration</a></li>
       </ul>
     </li>
     <li><a href="#terraform">Terraform</a>
       <ul>
-        <li><a href="#variable-definition-file-variablestf">Variable Definition File (variables.tf)</a></li>
-        <li><a href="#main-terraform-configuration-webserver_vmtf">Main Terraform Configuration (webserver_vm.tf)</a></li>
-        <li><a href="#demo-1">Demo</a></li>
+        <li><a href="#configuration-file-rundown-1">Configuration File Rundown</a></li>
+        <li><a href="#version-file">Version File</a></li>
+        <li><a href="#variables-definitions">Variables Definitions</a></li>
+        <li><a href="#variable-values">Variable Values</a></li>
+        <li><a href="#terraform-core-configuration-webserver_vmtf">Terraform Core Configuration (webserver_vm.tf)</a></li>
+        <li><a href="#terraform-demonstration">Terraform Demonstration</a></li>
       </ul>
     </li>
     <li><a href="#resources">Resources</a></li>
   </ul>
 </nav></div>
                 </details>
-            </div><div class="content" id="content" style="text-align: justify;"><h2 id="introduction">Introduction</h2>
+            </div><div class="content" id="content" style="text-align: justify;"><style>
+  .intro-pictures img {
+    width: 40%;
+    height: auto;
+  }
+</style>
+<div class="intro-pictures">
+  <img src="https://cdn.clipart.email/a8c544f0123238991ca89407fcb1a909_packer-logo-png-transparent-svg-vector-freebie-supply_800-600.png">
+  <img src="https://www.terraform.io/assets/images/og-image-8b3e4f7d.png">
+</div>
+<h2 id="introduction">Introduction</h2>
 <p>Packer and Terraform are both tools created by the company <a href="https://www.hashicorp.com/" target="_blank" rel="noopener noreffer">Hashicorp</a>
 , both of these tools aim to provide automation capabilities. Packer has the goal of creating machine images for multiple different platforms. For example, we can create AMIs for EC2 instances on AWS or VMDK/VMX files for VMware. The whole goal is to automate the ability to create a consistent image that can be used by a specific platform, whether it be AWS or VMware products such as vSphere.</p>
 <p>Terraform focuses on the infrastructure itself. Based on a provided configuration file Terraform will be able to build up an infrastructure, while also allowing for the ability to update what is running. For example, from an AMI image or a template on vSphere we can launch number of instances and configure them in a specific way.</p>
-<p>In this blog post a short example will be given of using Packer and Terraform in combination. The goal will be to create a CentOS 7 template from an ISO on vSphere using Packer, and then launch a customized instance of that template while configuring Apache on the system.</p>
-<p>The sample code used for this post can be found on a <a href="https://github.com/iamaleks/iac-vsphere-webserver-example" target="_blank" rel="noopener noreffer">repository</a>
+<h3 id="goal">Goal</h3>
+<p>In this blog post a short example will be given of using Packer and Terraform in combination. The goal will be to create a Ubuntu template from an ISO on vSphere using Packer, and then launch a customized instance of that template while configuring Apache on the system.</p>
+<p>The sample code used for this post can be found on a <a href="https://github.com/iamaleks/ubuntu-webserver-iac-example" target="_blank" rel="noopener noreffer">repository</a>
  on my Github.</p>
 <h2 id="packer">Packer</h2>
-<p>The first step is to create a template from a <a href="https://mirror.umd.edu/centos/7/isos/x86_64/CentOS-7-x86_64-DVD-2003.iso" target="_blank" rel="noopener noreffer">CentOS 7 ISO</a>
-. The one used in this example had  a SHA256 hashsum of <code>659691c28a0e672558b003d223f83938f254b39875ee7559d1a4a14c79173193</code>.</p>
-<h3 id="kickstart-file-kscfg">Kickstart File (ks.cfg)</h3>
-<p>The main functionality here is an automated installation, which is already possible with CentOS 7 without using Packer. This can be done using a Kickstart file that will tell the CentOS 7 installer what actions to perform. The Kickstart file  seen below of found in <a href="https://github.com/guillermo-musumeci/packer-vsphere-iso-linux" target="_blank" rel="noopener noreffer">another example</a>
- on Github and altered a bit.</p>
-<p>Please also note that the credentials have been set to <code>root:qwe123</code>.</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">  1
-</span><span class="lnt">  2
-</span><span class="lnt">  3
-</span><span class="lnt">  4
-</span><span class="lnt">  5
-</span><span class="lnt">  6
-</span><span class="lnt">  7
-</span><span class="lnt">  8
-</span><span class="lnt">  9
-</span><span class="lnt"> 10
-</span><span class="lnt"> 11
-</span><span class="lnt"> 12
-</span><span class="lnt"> 13
-</span><span class="lnt"> 14
-</span><span class="lnt"> 15
-</span><span class="lnt"> 16
-</span><span class="lnt"> 17
-</span><span class="lnt"> 18
-</span><span class="lnt"> 19
-</span><span class="lnt"> 20
-</span><span class="lnt"> 21
-</span><span class="lnt"> 22
-</span><span class="lnt"> 23
-</span><span class="lnt"> 24
-</span><span class="lnt"> 25
-</span><span class="lnt"> 26
-</span><span class="lnt"> 27
-</span><span class="lnt"> 28
-</span><span class="lnt"> 29
-</span><span class="lnt"> 30
-</span><span class="lnt"> 31
-</span><span class="lnt"> 32
-</span><span class="lnt"> 33
-</span><span class="lnt"> 34
-</span><span class="lnt"> 35
-</span><span class="lnt"> 36
-</span><span class="lnt"> 37
-</span><span class="lnt"> 38
-</span><span class="lnt"> 39
-</span><span class="lnt"> 40
-</span><span class="lnt"> 41
-</span><span class="lnt"> 42
-</span><span class="lnt"> 43
-</span><span class="lnt"> 44
-</span><span class="lnt"> 45
-</span><span class="lnt"> 46
-</span><span class="lnt"> 47
-</span><span class="lnt"> 48
-</span><span class="lnt"> 49
-</span><span class="lnt"> 50
-</span><span class="lnt"> 51
-</span><span class="lnt"> 52
-</span><span class="lnt"> 53
-</span><span class="lnt"> 54
-</span><span class="lnt"> 55
-</span><span class="lnt"> 56
-</span><span class="lnt"> 57
-</span><span class="lnt"> 58
-</span><span class="lnt"> 59
-</span><span class="lnt"> 60
-</span><span class="lnt"> 61
-</span><span class="lnt"> 62
-</span><span class="lnt"> 63
-</span><span class="lnt"> 64
-</span><span class="lnt"> 65
-</span><span class="lnt"> 66
-</span><span class="lnt"> 67
-</span><span class="lnt"> 68
-</span><span class="lnt"> 69
-</span><span class="lnt"> 70
-</span><span class="lnt"> 71
-</span><span class="lnt"> 72
-</span><span class="lnt"> 73
-</span><span class="lnt"> 74
-</span><span class="lnt"> 75
-</span><span class="lnt"> 76
-</span><span class="lnt"> 77
-</span><span class="lnt"> 78
-</span><span class="lnt"> 79
-</span><span class="lnt"> 80
-</span><span class="lnt"> 81
-</span><span class="lnt"> 82
-</span><span class="lnt"> 83
-</span><span class="lnt"> 84
-</span><span class="lnt"> 85
-</span><span class="lnt"> 86
-</span><span class="lnt"> 87
-</span><span class="lnt"> 88
-</span><span class="lnt"> 89
-</span><span class="lnt"> 90
-</span><span class="lnt"> 91
-</span><span class="lnt"> 92
-</span><span class="lnt"> 93
-</span><span class="lnt"> 94
-</span><span class="lnt"> 95
-</span><span class="lnt"> 96
-</span><span class="lnt"> 97
-</span><span class="lnt"> 98
-</span><span class="lnt"> 99
-</span><span class="lnt">100
-</span><span class="lnt">101
-</span><span class="lnt">102
-</span><span class="lnt">103
-</span><span class="lnt">104
-</span><span class="lnt">105
-</span><span class="lnt">106
-</span><span class="lnt">107
-</span><span class="lnt">108
-</span><span class="lnt">109
-</span><span class="lnt">110
-</span><span class="lnt">111
-</span><span class="lnt">112
-</span><span class="lnt">113
-</span><span class="lnt">114
-</span><span class="lnt">115
-</span><span class="lnt">116
-</span><span class="lnt">117
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># Install a fresh new system (optional)</span>
-install
-
-<span class="c1"># Specify installation method to use for installation</span>
-<span class="c1"># To use a different one comment out the &#39;url&#39; one below, update</span>
-<span class="c1"># the selected choice with proper options &amp; un-comment it</span>
-cdrom
-
-<span class="c1"># Set language to use during installation and the default language to use on the installed system (required)</span>
-lang en_US.UTF-8
-
-<span class="c1"># Set system keyboard type / layout (required)</span>
-keyboard es
-
-<span class="c1"># Configure network information for target system and activate network devices in the installer environment (optional)</span>
-<span class="c1"># --onboot	enable device at a boot time</span>
-<span class="c1"># --device	device to be activated and / or configured with the network command</span>
-<span class="c1"># --bootproto	method to obtain networking configuration for device (default dhcp)</span>
-<span class="c1"># --noipv6	disable IPv6 on this device</span>
-<span class="c1"># To use static IP configuration,</span>
-<span class="c1"># network --bootproto=static --ip=10.0.2.15 --netmask=255.255.255.0 --gateway=10.0.2.254 --nameserver 192.168.2.1,192.168.3.1</span>
-network --onboot yes --device ens192 --bootproto dhcp --noipv6 --hostname CentOS7Template
-
-<span class="c1"># Set the system&#39;s root password (required)</span>
-<span class="c1"># Plaintext password is: qwe123</span>
-<span class="c1"># Generate your own using command: openssl passwd -6 -salt root qwe123</span>
-rootpw --iscrypted <span class="nv">$6$root$BfIw6BsQ0oVfdc8rbjCkCe8dh91lNrRQHvxS3NTzntBC2FD</span>/FWTsEkQHtrOVLQQ4FI6Dyf8oDLDRFiRbYHBHV1
-
-<span class="c1"># Configure firewall settings for the system (optional)</span>
-<span class="c1"># --enabled	reject incoming connections that are not in response to outbound requests</span>
-<span class="c1"># --ssh		allow sshd service through the firewall</span>
-<span class="c1"># firewall --enabled --ssh</span>
-firewall --disabled
-
-<span class="c1"># Set up the authentication options for the system (required)</span>
-<span class="c1"># --enableshadow	enable shadowed passwords by default</span>
-<span class="c1"># --passalgo		hash / crypt algorithm for new passwords</span>
-<span class="c1"># See the manual page for authconfig for a complete list of possible options.</span>
-authconfig --enableshadow --passalgo<span class="o">=</span>sha512
-
-<span class="c1"># State of SELinux on the installed system (optional)</span>
-<span class="c1"># Defaults to enforcing</span>
-selinux --permissive
-
-<span class="c1"># Set the system time zone (required)</span>
-timezone --utc Europe/Madrid
-
-<span class="c1"># Specify how the bootloader should be installed (required)</span>
-<span class="c1"># Plaintext password is: password</span>
-bootloader --location<span class="o">=</span>mbr --append<span class="o">=</span><span class="s2">&#34;crashkernel=auto rhgb quiet&#34;</span> --password<span class="o">=</span><span class="nv">$6$rhel6usgcb$kOzIfC4zLbuo3ECp1er99NRYikN419wxYMmons8Vm</span>/37Qtg0T8aB9dKxHwqapz8wWAFuVkuI/UJqQBU92bA5C0
-autopart --type<span class="o">=</span>lvm
-<span class="c1"># Initialize all disks</span>
-
-clearpart --linux --initlabel
-
-<span class="c1"># Packages selection</span>
-%packages --ignoremissing
-Require @Base
-@Base
-@core
-sed
-perl
-less
-dmidecode
-bzip2
-iproute
-iputils
-sysfsutils
-rsync
-nano
-mdadm
-setserial
-man-pages.noarch
-findutils
-tar
-net-tools
-tmpwatch
-lsof
-python
-screen
-lvm2
-curl
-ypbind
-yp-tools
-smartmontools
-openssh-clients
-acpid
-irqbalance
-which
-bind-utils
-ntsysv
-ntp
-man
-<span class="c1">#mysql</span>
-postfix
-chkconfig
-gzip
-%end 
-<span class="c1"># End of %packages section</span>
-
-%post
-<span class="c1">#sudo yum upgrade -y</span>
-sudo yum install open-vm-tools perl -y
-chkconfig ntpd on
-chkconfig sshd on
-chkconfig ypbind on
-chkconfig iptables off
-chkconfig ip6tables off
-chkconfig yum-updatesd off
-chkconfig haldaemon off
-chkconfig mcstrans off
-chkconfig sysstat off
-%end
-
-<span class="c1"># Reboot after the installation is complete (optional)</span>
-<span class="c1"># --eject	attempt to eject CD or DVD media before rebooting</span>
-reboot --eject
-</code></pre></td></tr></table>
-</div>
-</div><p>One of the main changes made in this Kickstart file is towards the bottom where <code>open-vm-tools</code> and <code>perl</code> are installed. Both of these are critical. VMware tools must be installed in order for both Packer and Terraform to be able to figure out what IP address is assigned to the virtual machine, since in this case the machine will be getting a DHCP address. Furthermore, Terraform will be making customizations to the template we are making and one of the requirements is Perl. From testing there where errors when Perl was not installed on the system.</p>
-<h3 id="main-packer-configuration-centos-vspherejson">Main Packer Configuration (centos-vsphere.json)</h3>
-<p>Now we have a way of performing an automated install of CentOS 7, this is the part where Packer comes in and allows us to actually use the Kickstart file. The main configuration file for Packer can be found named <code>centos-vsphere.json</code> <a href="https://github.com/iamaleks/iac-vsphere-webserver-example/blob/master/packer/centos-vsphere.json" target="_blank" rel="noopener noreffer">in my Github repository</a>
-.</p>
-<p>The configuration begins by specifying a set of empty variables, this is done to set the default value of the variables to an empty. The values will be specified by <a href="https://github.com/iamaleks/iac-vsphere-webserver-example/blob/master/packer/vars.json.example" target="_blank" rel="noopener noreffer">another file</a>
- that must be altered if running in your own environment. The most import parts include the domain of vCenter and the user credentials.</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">{</span>
-  <span class="s2">&#34;variables&#34;</span>: <span class="o">{</span>
-    <span class="s2">&#34;vsphere-server&#34;</span>: <span class="s2">&#34;&#34;</span>,       <span class="c1"># Domain of vCenter.</span>
-    <span class="s2">&#34;vsphere-user&#34;</span>: <span class="s2">&#34;&#34;</span>,         <span class="c1"># Username and SSO domain to use for login.</span>
-    <span class="s2">&#34;vsphere-password&#34;</span>: <span class="s2">&#34;&#34;</span>,     <span class="c1"># Password to use for login.</span>
-    
-    <span class="s2">&#34;vsphere-datacenter&#34;</span>: <span class="s2">&#34;&#34;</span>,   <span class="c1"># Datacenter to create virtual machine in.</span>
-    <span class="s2">&#34;vsphere-cluster&#34;</span>: <span class="s2">&#34;&#34;</span>,      <span class="c1"># Cluster in which to run the virtual machine in.</span>
-    <span class="s2">&#34;vsphere-network&#34;</span>: <span class="s2">&#34;&#34;</span>,      <span class="c1"># Portgroup to attack the virtual machine to.</span>
-    <span class="s2">&#34;vsphere-datastore&#34;</span>: <span class="s2">&#34;&#34;</span>,    <span class="c1"># Datastore to keep the files of the virtual machine in.</span>
-    
-    <span class="s2">&#34;vm-name&#34;</span>: <span class="s2">&#34;&#34;</span>,              <span class="c1"># The name that will show up in vCenter.</span>
-    <span class="s2">&#34;vm-cpu-num&#34;</span>: <span class="s2">&#34;&#34;</span>,           <span class="c1"># Number of vCPUs.</span>
-    <span class="s2">&#34;vm-mem-size&#34;</span>: <span class="s2">&#34;&#34;</span>,          <span class="c1"># Amount of Memory.</span>
-    <span class="s2">&#34;vm-disk-size&#34;</span>: <span class="s2">&#34;&#34;</span>,         <span class="c1"># Size of virtual disk.</span>
-    <span class="s2">&#34;iso_url&#34;</span>: <span class="s2">&#34;&#34;</span>               <span class="c1"># Location of ISO (will be path to Datastore)</span>
-  <span class="o">}</span>,
-</code></pre></td></tr></table>
-</div>
-</div><p>Next comes the core instructions for building a template out of an ISO on vSphere. We can see that the <code>type</code> on line 3 is set to <code>vsphere-iso</code> indicating that we are building from an ISO on vSphere. What follows is a set of entries defining how to connect to vSphere, which datastore and ISO image to use, and details about the virtual machine being created. This is key, Packer will first create a virtual machine from the ISO provided. It will then attack the Kickstart file into the Floppy drive, as can be seen in the <code>floopy_files</code> parameter. This will allow for CentOS 7 to be installed unattended. After the whole process is complete the virtual machine will be powered off, a parameter <code>convert_to_template</code> indicates that this virtual machine should be converted into a  template.</p>
+<p>In order to begin we need to have the ability to run a Ubuntu installation unattended, this functionality is already <a href="https://help.ubuntu.com/lts/installation-guide/s390x/apb.html" target="_blank" rel="noopener noreffer">built into</a>
+ Ubuntu. A Preseed configuration file will be provided to Ubuntu within the boot time parameters, through this configuration file and some other boot parameters Ubuntu will know to perform an automated installation.</p>
+<hr>
+<h3 id="configuration-file-rundown">Configuration File Rundown</h3>
+<p>This is just a brief overview of the configuration files present and their general purpose.</p>
+<ul>
+<li><a href="https://github.com/iamaleks/ubuntu-webserver-iac-example/blob/master/Packer/ubuntu-18.json" target="_blank" rel="noopener noreffer">ubuntu-18.json</a>
+: Main Packer configuration file.</li>
+<li><a href="https://github.com/iamaleks/ubuntu-webserver-iac-example/blob/master/Packer/vars.json" target="_blank" rel="noopener noreffer">vars.json</a>
+: File that holds variables and their values, to be used by <code>ubuntu-18.json</code>.</li>
+<li><a href="https://github.com/iamaleks/ubuntu-webserver-iac-example/blob/master/Packer/preseed.cfg" target="_blank" rel="noopener noreffer">preseed.cfg</a>
+: Ubuntu Preseed configuration file that will be used by the operating system for an automated installation.</li>
+<li><a href="https://github.com/iamaleks/ubuntu-webserver-iac-example/blob/master/Packer/scripts/update.sh" target="_blank" rel="noopener noreffer">scripts/update.sh</a>
+: Updates the system.</li>
+<li><a href="https://github.com/iamaleks/ubuntu-webserver-iac-example/blob/master/Packer/scripts/install_perl.sh" target="_blank" rel="noopener noreffer">scripts/install_perl.sh</a>
+: Installs Perl modules, this is required in order to customize a virtual machine with Terraform later on.</li>
+<li><a href="https://github.com/iamaleks/ubuntu-webserver-iac-example/blob/master/Packer/scripts/user_no_password_sudo.sh" target="_blank" rel="noopener noreffer">scripts/user_no_password_sudo.sh</a>
+: Allow user to use sudo without password.</li>
+</ul>
+<hr>
+<h3 id="ubuntu-preseed-file">Ubuntu Preseed File</h3>
+<p>The Preseed configuraiton file used for this example can be seen below. Each section is explained in the comments. It is important to understand this configuration file is specfic to Ubuntu, another Linux distribution will have a different configuration file and potently a different method.</p>
+<p><u><center>Ubuntu Preseed Configuraiton - preseed.cfg </center></u></p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre class="chroma"><code><span class="lnt"> 1
@@ -457,91 +208,358 @@ reboot --eject
 </span><span class="lnt">35
 </span><span class="lnt">36
 </span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
-</span><span class="lnt">40
-</span><span class="lnt">41
-</span><span class="lnt">42
-</span><span class="lnt">43
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell">  <span class="s2">&#34;builders&#34;</span>: <span class="o">[</span>
-    <span class="o">{</span>
-      <span class="s2">&#34;type&#34;</span>: <span class="s2">&#34;vsphere-iso&#34;</span>,    <span class="c1"># Use vSphere API to create virtual machine from ISO.</span>            
-  
-      <span class="s2">&#34;vcenter_server&#34;</span>: <span class="s2">&#34;{{user `vsphere-server`}}&#34;</span>,    <span class="c1"># Domain of vCenter.</span>  
-      <span class="s2">&#34;username&#34;</span>: <span class="s2">&#34;{{user `vsphere-user`}}&#34;</span>,            <span class="c1"># Username and SSO domain to use for login.</span>
-      <span class="s2">&#34;password&#34;</span>: <span class="s2">&#34;{{user `vsphere-password`}}&#34;</span>,        <span class="c1"># Password to use for login.</span>
-      <span class="s2">&#34;insecure_connection&#34;</span>: <span class="s2">&#34;true&#34;</span>,                    <span class="c1"># Whether to allow invalid TLS certificates, such as self singed.</span>
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1">### Base system installation</span>
+d-i base-installer/kernel/override-image string linux-server    <span class="c1"># Specifies to install the Kernel.</span>
 
-      <span class="s2">&#34;datacenter&#34;</span>: <span class="s2">&#34;{{user `vsphere-datacenter`}}&#34;</span>,    <span class="c1"># Datacenter to create virtual machine in.</span>
-      <span class="s2">&#34;cluster&#34;</span>: <span class="s2">&#34;{{user `vsphere-cluster`}}&#34;</span>,          <span class="c1"># Cluster in which to run the virtual machine in.</span>
-      <span class="s2">&#34;network&#34;</span>: <span class="s2">&#34;{{user `vsphere-network`}}&#34;</span>,          <span class="c1"># Portgroup to attack the virtual machine to.</span>
-      <span class="s2">&#34;datastore&#34;</span>: <span class="s2">&#34;{{user `vsphere-datastore`}}&#34;</span>,      <span class="c1"># Datastore to keep the files of the virtual machine in.</span>
+<span class="c1">### Account setup</span>
+d-i passwd/user-fullname string user                            <span class="c1"># Full name of the user to create.</span>
+d-i passwd/username string user                                 <span class="c1"># Username of the user to create.</span>
+d-i passwd/user-password password qwe123                        <span class="c1"># Password of the user to create.</span>
+d-i passwd/user-password-again password qwe123                  <span class="c1"># Repeat password, for the installer.</span>
+d-i user-setup/allow-password-weak boolean <span class="nb">true</span>                 <span class="c1"># Allow weak passwords, this is a test box.</span>
+d-i user-setup/encrypt-home boolean <span class="nb">false</span>                       <span class="c1"># Do not encrypt the users home folder.</span>
 
-      <span class="s2">&#34;vm_name&#34;</span>: <span class="s2">&#34;{{user `vm-name`}}&#34;</span>,                  <span class="c1"># The name that will show up in vCenter.</span>
-      <span class="s2">&#34;notes&#34;</span>: <span class="s2">&#34;Build via Packer&#34;</span>,                      <span class="c1"># Notes to add in the virtual machine.</span>
-      
-      <span class="s2">&#34;boot_wait&#34;</span>: <span class="s2">&#34;10s&#34;</span>,                               <span class="c1"># Time to wait before typing the boot_command, seen on line 38.</span>
-      <span class="s2">&#34;boot_order&#34;</span>: <span class="s2">&#34;disk,cdrom,floppy&#34;</span>,                <span class="c1"># The boot order.</span>
+<span class="c1">### Clock and time zone setup</span>
+d-i clock-setup/utc boolean <span class="nb">true</span>                                <span class="c1"># Set the hardware clock to UTC.</span>                         
+d-i time/zone string UTC                                        <span class="c1"># Set the timezone to UTC.</span>
 
-      <span class="s2">&#34;guest_os_type&#34;</span>: <span class="s2">&#34;centos7_64Guest&#34;</span>,               <span class="c1"># Virtual machine guest OS type.</span>
+<span class="c1">### Partitioning</span>
+d-i partman-auto/method string lvm                              <span class="c1"># Use LVM as partitioning method.</span>
+d-i partman-lvm/confirm_nooverwrite boolean <span class="nb">true</span>                <span class="c1"># Makes partman automatically write to disk without user confirmation.</span>       
+d-i partman-auto-lvm/guided_size string max                     <span class="c1"># Use all of the volume group for the logical volumes created.</span>
+d-i partman/choose_partition <span class="k">select</span> finish                      <span class="c1"># Makes partman automatically write to disk without user confirmation.</span>
+d-i partman/confirm_nooverwrite boolean <span class="nb">true</span>                    <span class="c1"># Makes partman automatically write to disk without user confirmation.</span>
 
-      <span class="s2">&#34;ssh_username&#34;</span>: <span class="s2">&#34;root&#34;</span>,                           <span class="c1"># Username for SSH, this will be used by Packer to connect to SSH.</span>
-      <span class="s2">&#34;ssh_password&#34;</span>: <span class="s2">&#34;qwe123&#34;</span>,                         <span class="c1"># Password for SSH, this will be used by Packer to connect to SSH.</span>
+<span class="c1">### Mirror settings</span>
+<span class="c1">#d-i mirror/country string US</span>
+d-i mirror/http/proxy string                                    <span class="c1"># Optional proxy setting, here it is empty.</span>
 
-      <span class="s2">&#34;CPUs&#34;</span>: <span class="s2">&#34;{{user `vm-cpu-num`}}&#34;</span>,                  <span class="c1"># Number of vCPUs.</span>
-      <span class="s2">&#34;RAM&#34;</span>: <span class="s2">&#34;{{user `vm-mem-size`}}&#34;</span>,                  <span class="c1"># Amount of Memory.</span> 
-      <span class="s2">&#34;RAM_reserve_all&#34;</span>: false,                         <span class="c1"># Do not reserve all the RAM.</span>
-      <span class="s2">&#34;disk_controller_type&#34;</span>: <span class="s2">&#34;pvscsi&#34;</span>,                 <span class="c1"># Type of disk controller.</span>
-      <span class="s2">&#34;disk_size&#34;</span>: <span class="s2">&#34;{{user `vm-disk-size`}}&#34;</span>,           <span class="c1"># Size of virtual disk.</span>
-      <span class="s2">&#34;disk_thin_provisioned&#34;</span>: true,                    <span class="c1"># Make the disk thin provisioned.</span> 
-      <span class="s2">&#34;network_card&#34;</span>: <span class="s2">&#34;vmxnet3&#34;</span>,                        <span class="c1"># Set the virtual network adapter type to VMXNET3.</span>
+<span class="c1">### Package selection</span>
+tasksel tasksel/first multiselect standard                      <span class="c1"># Install the standard set of packages.</span>
+d-i pkgsel/update-policy <span class="k">select</span> none                            <span class="c1"># Do not perform any updates or upgrades.</span>
+d-i pkgsel/include string openssh-server open-vm-tools cloud-init <span class="c1"># Install some required packages for our template.</span>
+d-i pkgsel/install-language-support boolean <span class="nb">false</span>                <span class="c1"># Don&#39;t need any language support.</span>
 
-      <span class="s2">&#34;convert_to_template&#34;</span>: true,                      <span class="c1"># After all actions are performed, convert virtual machine to template.</span>
+<span class="c1">### Boot loader installation</span>
+d-i grub-installer/only_debian boolean <span class="nb">true</span>                      <span class="c1"># Makes GRUB install to MBR if no other OS is detected.</span>
 
-      <span class="s2">&#34;iso_paths&#34;</span>: <span class="o">[</span><span class="s2">&#34;{{user `iso_url`}}&#34;</span><span class="o">]</span>,              <span class="c1"># Location of ISO (will be path to Datastore)</span>
-      <span class="s2">&#34;floppy_files&#34;</span>: <span class="o">[</span><span class="s2">&#34;ks.cfg&#34;</span><span class="o">]</span>,                       <span class="c1"># Add the Kickstart file to Floopy drive.</span>
-      <span class="s2">&#34;boot_command&#34;</span>: <span class="o">[</span>                                 <span class="c1"># The command to run when CentOS 7 is booting.</span>
-        <span class="s2">&#34;&lt;esc&gt;&lt;wait&gt;&#34;</span>,                                  <span class="c1"># This boot command will load</span>
-        <span class="s2">&#34;linux ks=hd:fd0:/ks.cfg&lt;enter&gt;&#34;</span>                <span class="c1"># the Kickstart file.</span>
-      <span class="o">]</span>
-    <span class="o">}</span>
-  <span class="o">]</span>,
+<span class="c1">### Finishing up the installation</span>
+d-i finish-install/reboot_in_progress note                      <span class="c1"># Prevent the message that install has been completed at the end.</span>
 </code></pre></td></tr></table>
 </div>
-</div><p>The last part of the Packer configuration is called the provisioners, it is responsible for connecting to the virtual machine before shutting it down to convert to a template with the goal of performing other actions. This section is not mandatory and is here to show that it is possible to run extra commands on the system from Packer. Note, the connection here will take place over SSH.</p>
+</div><p>In order to use this file with an automated install the following boot parameter will be specified to Ubuntu:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="nv">auto</span><span class="o">=</span><span class="nb">true</span> auto-install/enable<span class="o">=</span><span class="nb">true</span> preseed/url<span class="o">=</span>http://mywebsite.com/mypressed.cfg <span class="nv">vga</span><span class="o">=</span><span class="m">788</span> <span class="nv">initrd</span><span class="o">=</span>/install/initrd.gz <span class="nv">fb</span><span class="o">=</span><span class="nb">false</span> debconf/frontend<span class="o">=</span>noninteractive <span class="nv">hostname</span><span class="o">=</span>UbuntuTemplate debian-installer<span class="o">=</span>en_US auto <span class="nv">locale</span><span class="o">=</span>en_US kbd-chooser/method<span class="o">=</span>us keyboard-configuration/modelcode<span class="o">=</span>SKIP keyboard-configuration/layout<span class="o">=</span>USA keyboard-configuration/variant<span class="o">=</span>USA console-setup/ask_detect<span class="o">=</span><span class="nb">false</span> ---
+</code></pre></td></tr></table>
+</div>
+</div><p>When this boot time parameter is passed Ubuntu will being installing automatically. However, we do not want to type this in manually. This is where Packer comes in. Its job will be to create  virtual machine, boot up the virtual machine, and then execute this boot time parameter in order to complete the installation. There is some other tasks Packer can perform on top of this, read on.</p>
+<p>Now take note, we are pulling the configuration file from a remote location here, specially <code>http://mywebsite.com/mypressed.cfg</code>. Other distributions, such as CentOS 7, provide the ability to attach their configuration files into the virtual floppy disk drive created on the virtual machine. This is a convenient way of passing the configuration file when using Packer. This, however, is not possible because Ubuntu has began <a href="https://github.com/jetbrains-infra/packer-builder-vsphere/issues/176#issuecomment-433705337" target="_blank" rel="noopener noreffer">removing the drivers</a>
+ for floppy disks.</p>
+<h3 id="required-variables">Required Variables</h3>
+<p>Next, we begin looking at the configurations that apply directly to Packer. First, <code>vars.json</code> contain multiple variable definitions. Read the comments to get a feel for what is required.</p>
+<p>Just to be clear, Packer is responsible for connection to vSphere, creating a virtual machine, running an automated installation, and then converting that virtual machine to a template.</p>
+<p><u><center>Variable Values Definitions - vars.json </center></u></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">{</span>
+    <span class="s2">&#34;vcenter_server&#34;</span>:<span class="s2">&#34;vcenter.example.com&#34;</span>,   <span class="c1"># vCenter domain.</span>
+    <span class="s2">&#34;username&#34;</span>:<span class="s2">&#34;administrator@example.com&#34;</span>,   <span class="c1"># Username and SSO domain for vSphere.</span>
+    <span class="s2">&#34;password&#34;</span>:<span class="s2">&#34;VMware1!&#34;</span>,                    <span class="c1"># Password for vSphere.</span>
+    <span class="s2">&#34;datastore&#34;</span>:<span class="s2">&#34;Example-Datastore-Name&#34;</span>,     <span class="c1"># Datastore to store the template on.</span>
+    <span class="s2">&#34;folder&#34;</span>: <span class="s2">&#34;&#34;</span>,                             <span class="c1"># Target path in datastore where template will be created, optional vale.</span>
+    <span class="s2">&#34;host&#34;</span>:<span class="s2">&#34;esxi02.example.com&#34;</span>,              <span class="c1"># ESXi host to use as compute resource.</span>
+    <span class="s2">&#34;cluster&#34;</span>: <span class="s2">&#34;Example Lab Cluster&#34;</span>,         <span class="c1"># The cluster to run the virtual machine in.</span>
+    <span class="s2">&#34;network&#34;</span>: <span class="s2">&#34;VM Network&#34;</span>,                  <span class="c1"># Portgroup to attack to the virtual machine.</span>
+    <span class="s2">&#34;ssh_username&#34;</span>: <span class="s2">&#34;user&#34;</span>,                   <span class="c1"># Username to use for SSH connection.</span>
+    <span class="s2">&#34;ssh_password&#34;</span>: <span class="s2">&#34;qwe123&#34;</span>,                 <span class="c1"># Password to use for SSH connection.</span>
+    <span class="s2">&#34;seed_file_domain&#34;</span>: <span class="s2">&#34;192.168.55.163&#34;</span>,     <span class="c1"># Location of Seedfile configuration.</span>
+    <span class="s2">&#34;seed_filename&#34;</span>: <span class="s2">&#34;preseed.cfg&#34;</span>,           <span class="c1"># Filename of the configuration file.</span>
+    <span class="s2">&#34;cpu_number&#34;</span>: <span class="s2">&#34;2&#34;</span>,                        <span class="c1"># Number of virtual CPU&#39;s to use on virtual machine.</span>
+    <span class="s2">&#34;ram_amount&#34;</span>: <span class="s2">&#34;2048&#34;</span>,                     <span class="c1"># Amount of RAM to use on virtual machine.</span>
+    <span class="s2">&#34;disk_size&#34;</span>: <span class="s2">&#34;8024&#34;</span>,                      <span class="c1"># Amount of hard disk space to use for virtual machine (thin provisioned).</span>
+    <span class="s2">&#34;template_name&#34;</span>: <span class="s2">&#34;template_ubuntu18&#34;</span>      <span class="c1"># Name of the template to be created.</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>These variables can be hard coded in the main configuration, I just find it cleaner to add it in a separate file.</p>
+<h3 id="packer-configuration">Packer Configuration</h3>
+<p>We now move on and look at the core configuration of Packer. The configuration is split into three sections. <code>builders</code> which is responsible for specying parameters needed to build the template,  <code>boot_command</code> which will contain the instructions needed to perform the automated installation, and <code>provisioners</code> which will SSH into the virtual machine and perform any last minute configurations.</p>
+<p>The core Packer configuration beings with the <code>builders</code> section which mainly makes use of the variables that have been defined above. The only real addition of the ISO url, in this case we are fetching the URL from a remote location. This can also be set to a Datastore path within vSphere.</p>
+<p><u><center>Packer Core Configuration - Builders Section - ubuntu-18.json </center></u></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">    <span class="s2">&#34;builders&#34;</span>: <span class="o">[</span>
+      <span class="o">{</span>
+        <span class="s2">&#34;type&#34;</span>: <span class="s2">&#34;vsphere-iso&#34;</span>,                                <span class="c1"># Provider to use, in this case vSphere.</span>
+  
+        <span class="s2">&#34;vcenter_server&#34;</span>:      <span class="s2">&#34;{{user `vcenter_server`}}&#34;</span>,   <span class="c1"># vCenter domain.</span>
+        <span class="s2">&#34;username&#34;</span>:            <span class="s2">&#34;{{user `username`}}&#34;</span>,         <span class="c1"># Username and SSO domain for vSphere.</span>
+        <span class="s2">&#34;password&#34;</span>:            <span class="s2">&#34;{{user `password`}}&#34;</span>,         <span class="c1"># Password for vSphere.</span>
+        <span class="s2">&#34;insecure_connection&#34;</span>: <span class="s2">&#34;true&#34;</span>,                        <span class="c1"># Allow invalid TLS certificates, such as self signed.</span>
+  
+        <span class="s2">&#34;vm_name&#34;</span>: <span class="s2">&#34;{{user `template_name`}}&#34;</span>,                <span class="c1"># Name of the template to be created.</span>
+        <span class="s2">&#34;datastore&#34;</span>: <span class="s2">&#34;{{user `datastore`}}&#34;</span>,                  <span class="c1"># Datastore to store the template on.</span>
+        <span class="s2">&#34;folder&#34;</span>: <span class="s2">&#34;{{user `folder`}}&#34;</span>,                        <span class="c1"># Target path in datastore where template will be created, optional vale.</span>
+        <span class="s2">&#34;host&#34;</span>:     <span class="s2">&#34;{{user `host`}}&#34;</span>,                        <span class="c1"># ESXi host to use as compute resource.</span>
+        <span class="s2">&#34;convert_to_template&#34;</span>: <span class="s2">&#34;true&#34;</span>,                        <span class="c1"># Convert the virtual machine to a template at the end.</span>
+        <span class="s2">&#34;cluster&#34;</span>: <span class="s2">&#34;{{user `cluster`}}&#34;</span>,                      <span class="c1"># The cluster to run the virtual machine in.</span>
+        <span class="s2">&#34;network&#34;</span>: <span class="s2">&#34;{{user `network`}}&#34;</span>,                      <span class="c1"># Portgroup to attack to the virtual machine.</span>
+        <span class="s2">&#34;boot_wait&#34;</span>: <span class="s2">&#34;1s&#34;</span>,                                    <span class="c1"># Wait 1 second before running boot command.</span>
+        <span class="s2">&#34;boot_order&#34;</span>: <span class="s2">&#34;disk,cdrom&#34;</span>,                           <span class="c1"># Set the boot order, dist and then CDROM.</span>
+  
+        <span class="s2">&#34;guest_os_type&#34;</span>: <span class="s2">&#34;ubuntu64Guest&#34;</span>,                     <span class="c1"># Set the guest OS type.</span>
+  
+        <span class="s2">&#34;ssh_username&#34;</span>: <span class="s2">&#34;{{user `ssh_username`}}&#34;</span>,            <span class="c1"># Username to use for SSH connection.</span>
+        <span class="s2">&#34;ssh_password&#34;</span>: <span class="s2">&#34;{{user `ssh_password`}}&#34;</span>,            <span class="c1"># Password to use for SSH connection.</span>
+  
+        <span class="s2">&#34;CPUs&#34;</span>:             <span class="s2">&#34;{{user `cpu_number`}}&#34;</span>,          <span class="c1"># Number of virtual CPU&#39;s to use on virtual machine.</span>
+        <span class="s2">&#34;RAM&#34;</span>:              <span class="s2">&#34;{{user `ram_amount`}}&#34;</span>,          <span class="c1"># Amount of RAM to use on virtual machine.</span>
+        <span class="s2">&#34;RAM_reserve_all&#34;</span>: false,                             <span class="c1"># Do not reserve all the RAM.</span>
+  
+        <span class="s2">&#34;disk_controller_type&#34;</span>:  <span class="s2">&#34;pvscsi&#34;</span>,                    <span class="c1"># Set the disk controller type.</span>
+        <span class="s2">&#34;disk_size&#34;</span>:        <span class="s2">&#34;{{user `disk_size`}}&#34;</span>,           <span class="c1"># Amount of hard disk space to use for virtual machine.</span>
+        <span class="s2">&#34;disk_thin_provisioned&#34;</span>: true,                        <span class="c1"># Set virtual disk to thin provisioned.</span>
+  
+        <span class="s2">&#34;network_card&#34;</span>: <span class="s2">&#34;vmxnet3&#34;</span>,                            <span class="c1"># Use a VMXNET3 network adapter.</span>
+  
+        <span class="s2">&#34;iso_urls&#34;</span>: <span class="s2">&#34;http://cdimage.ubuntu.com/ubuntu/releases/bionic/release/ubuntu-18.04.4-server-amd64.iso&#34;</span>,   <span class="c1"># ISO source URL.</span>
+        <span class="s2">&#34;iso_checksum&#34;</span>: <span class="s2">&#34;e2ecdace33c939527cbc9e8d23576381c493b071107207d2040af72595f8990b&#34;</span>,                       <span class="c1"># Checksum of ISO.</span>
+        <span class="s2">&#34;iso_checksum_type&#34;</span>: <span class="s2">&#34;sha256&#34;</span>,                                                                            <span class="c1"># Hash function for checksum.</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>The more interesting, <code>boot_command</code>, follows the initial <code>builders</code>. Here a boot command is defined, these are the exact keystrokes ti emulate in order to begin the automated installation processes. We begin by entering the Linux boot parameter console, delete everything that is there by default, and write out our own custom boot instructions.</p>
+<p><u><center>Packer Core Configuration - Boot Command - ubuntu-18.json </center></u></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">        <span class="s2">&#34;boot_command&#34;</span>: <span class="o">[</span>
+          <span class="s2">&#34;&lt;wait&gt;&lt;esc&gt;&lt;wait&gt;&lt;f6&gt;&lt;wait&gt;&lt;esc&gt;&lt;wait&gt;&#34;</span>,              <span class="c1"># Sequence to enter the boot command terminal.</span>
+          <span class="s2">&#34;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&#34;</span>,    <span class="c1"># Backspaces.</span>
+          <span class="s2">&#34;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&#34;</span>,    <span class="c1"># Backspaces.</span>
+          <span class="s2">&#34;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&#34;</span>,    <span class="c1"># Backspaces.</span>
+          <span class="s2">&#34;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&#34;</span>,    <span class="c1"># Backspaces.</span>
+          <span class="s2">&#34;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&#34;</span>,    <span class="c1"># Backspaces.</span>
+          <span class="s2">&#34;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&#34;</span>,    <span class="c1"># Backspaces.</span>
+          <span class="s2">&#34;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&lt;bs&gt;&#34;</span>,        <span class="c1"># Backspaces.</span>
+          <span class="s2">&#34;auto=true&#34;</span>,                                           <span class="c1"># An alias for auto-install/enable, see next line. Just here to be safe.</span>
+          <span class="s2">&#34; auto-install/enable=true&#34;</span>,                           <span class="c1"># Delays the locale and keyboard questions until after there has been a chance to preseed them.</span>
+          <span class="s2">&#34; preseed/url=http://{{user `seed_file_domain`}}/{{user `seed_filename`}}&#34;</span>, <span class="c1"># URL of preseed configuration file.</span>
+          <span class="s2">&#34; vga=788&#34;</span>,                                                                 <span class="c1"># Set screen resolution, was a default parameter.</span>
+          <span class="s2">&#34; initrd=/install/initrd.gz&#34;</span>,                                               <span class="c1"># Location of initrd.</span>
+          <span class="s2">&#34; fb=false debconf/frontend=noninteractive&#34;</span>,                                <span class="c1"># Sets frontend to non interactive.</span>
+          <span class="s2">&#34; hostname=UbuntuTemplate&#34;</span>,                                                 <span class="c1"># Hostname of machine.</span>
+          <span class="s2">&#34; debian-installer=en_US auto locale=en_US kbd-chooser/method=us&#34;</span>,          <span class="c1"># Sets locale.</span>
+          <span class="s2">&#34; keyboard-configuration/modelcode=SKIP keyboard-configuration/layout=USA&#34;</span>, <span class="c1"># Sets keyboard settings.</span>
+          <span class="s2">&#34; keyboard-configuration/variant=USA console-setup/ask_detect=false&#34;</span>,       <span class="c1"># Sets other keyboard settings.</span>
+          <span class="s2">&#34; ---&lt;enter&gt;&#34;</span>                                                               <span class="c1"># Add ending &#39;---&#39; string and press enter.</span>
+        <span class="o">]</span>
+      <span class="o">}</span>
+    <span class="o">]</span>,
+</code></pre></td></tr></table>
+</div>
+</div><p>Lastly, the <code>provisioners</code> is defined. This contains instructions to run at the very end before shutting down the virtual machine and converting it to a template.</p>
+<p>Once important part to note is the <code>execute_command</code>, this definition will help with the use of sudo. We cannot use sudo alone because it will prompt for an interactive password. In order to solve this the password is piped in through STDIN. Using this method the scripts will be run with sudo.</p>
+<p><u><center>Packer Core Configuration - Provisioners Section - ubuntu-18.json </center></u></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="s2">&#34;provisioners&#34;</span>: <span class="o">[</span>
+      <span class="o">{</span>
+        <span class="s2">&#34;type&#34;</span>: <span class="s2">&#34;shell&#34;</span>,
+        <span class="s2">&#34;execute_command&#34;</span>: <span class="s2">&#34;echo &#39;{{user `ssh_password`}}&#39;|{{.Vars}} sudo -E -S bash &#39;{{.Path}}&#39;&#34;</span>,  <span class="c1"># How to run all commands, or shell scripts in this case.</span>
+        <span class="s2">&#34;scripts&#34;</span>: <span class="o">[</span>
+          <span class="s2">&#34;scripts/update.sh&#34;</span>,              
+          <span class="s2">&#34;scripts/install_perl.sh&#34;</span>,
+          <span class="s2">&#34;scripts/user_no_password_sudo.sh&#34;</span>
+        <span class="o">]</span>
+      <span class="o">}</span>
+    <span class="o">]</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="extra-scripts">Extra Scripts</h3>
+<p>There are three scripts to run at the end of this process, the first is a simple script to update Ubuntu.</p>
+<p><u><center>Update Script - update.sh </center></u></p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell">  <span class="s2">&#34;provisioners&#34;</span>: <span class="o">[</span>
-    <span class="o">{</span>
-      <span class="s2">&#34;type&#34;</span>: <span class="s2">&#34;shell&#34;</span>,          <span class="c1"># Use the shell directly.</span>
-      <span class="s2">&#34;inline&#34;</span>: <span class="o">[</span>               <span class="c1"># Commands to type in the shell.</span>
-        <span class="s2">&#34;sudo echo \&#34;Done\&#34;&#34;</span>
-      <span class="o">]</span>
-    <span class="o">}</span>
-  <span class="o">]</span>
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="cp">#!/bin/sh
+</span><span class="cp"></span>
+sudo apt-get update <span class="p">;</span> sudo apt-get upgrade -y <span class="p">;</span> sudo apt-get dist-upgrade -y<span class="p">;</span> sudo apt-get autoremove -y <span class="p">;</span> sudo apt-get autoclean -y
 </code></pre></td></tr></table>
 </div>
-</div><h3 id="demo">Demo</h3>
-<p>The following shows a demo of Packer being run with these configration files. You can see in the beginning curl is used on an IP address, this is the address that the webserver will use when it is setup. However, for now we have a timeout becuase it has not been setup yet.</p>
-<p>Please note, you will see that Packer idles on <code>==&gt; vsphere-iso: Waiting for IP...</code> for a few minutes. This is normal. What is happening is CentOS 7 is being installed automaticly in the background, and once it is up and running with VMware Tools Packer will get the DHCP IP address assigned to it via the vSphere API.</p>
-<script id="asciicast-QyyYCwEwhVv1ZhqLyNA4a2hdz" src="https://asciinema.org/a/QyyYCwEwhVv1ZhqLyNA4a2hdz.js" async></script>
+</div><p>The second will install some perl packages. These are extremely important as Terraform uses a component of VMware Tools named deployPKG. This component is responsible for providing the ability to customize the virtual machine, and it is dependent on Perl. Through testing I have determined these are the packages needed in order to use Terraform with customization successfully.</p>
+<p><u><center>Perl Installation - install_perl.sh </center></u></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="cp">#!/bin/sh
+</span><span class="cp"></span>
+sudo apt-get install perl perl-modules perl-cross-config perl-depends -y
+</code></pre></td></tr></table>
+</div>
+</div><p>The last script will allow the new <code>user</code> user to run commands using sudo without a password.</p>
+<p><u><center>Sudo no passowrd script - user_no_password_sudo.sh </center></u></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="cp">#!/bin/sh
+</span><span class="cp"></span>
+sudo <span class="nb">echo</span> <span class="s2">&#34;user    ALL=(ALL) NOPASSWD:ALL&#34;</span> &gt;&gt; /etc/sudoers
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="packer-demonstration">Packer Demonstration</h3>
+<p>Below is a demonstration of Packer running. In the beginning you notice curl is used on an IP address, this is the IP address that the webserver will be on when everything is complete. For the time being it will return a timeout as no webserver has been setup yet.</p>
+<p>Please note, you will notice that Packer idles on <code>==&gt; vsphere-iso: Waiting for IP...</code> for some time. This is because during this time Ubuntu is installing, and once it reboots it will get an IP address from DHCP and Packer will be notified via VMware tools that is installed on the virtual machine.</p>
+<script id="asciicast-xzYn4VO4YREwp6MRnDqESHV01" src="https://asciinema.org/a/xzYn4VO4YREwp6MRnDqESHV01.js" async></script>
 <h2 id="terraform">Terraform</h2>
-<p>Terraform will now be used to provision a virtual machine from the template that was created. Furthermore, the instance will be altered in order to install Apache on it.</p>
-<h3 id="variable-definition-file-variablestf">Variable Definition File (variables.tf)</h3>
-<p>To begin with all the variables that will be used by Terraform are specified in <code>variables.tf</code> file which can be seen <a href="https://github.com/iamaleks/iac-vsphere-webserver-example/blob/master/terraform/variables.tf" target="_blank" rel="noopener noreffer">here</a>
- and below:</p>
+<p>The Terraform configuration spans a few files. Files ending in <code>.tf</code> can all be combined into a single file, however, for readability I like to keep them into different files.</p>
+<hr>
+<h3 id="configuration-file-rundown-1">Configuration File Rundown</h3>
+<p>This is just a brief overview of the configuration files present and their general purpose.</p>
+<ul>
+<li><a href="https://github.com/iamaleks/ubuntu-webserver-iac-example/blob/master/Terraform/webserver_vm.tf" target="_blank" rel="noopener noreffer">webserver_vm.tf</a>
+: Core Terraform configuration script.</li>
+<li><a href="https://github.com/iamaleks/ubuntu-webserver-iac-example/blob/master/Terraform/versions.tf" target="_blank" rel="noopener noreffer">versions.tf</a>
+: Specifies the version of Terraform this module can work with,</li>
+<li><a href="https://github.com/iamaleks/ubuntu-webserver-iac-example/blob/master/Terraform/variables.tf" target="_blank" rel="noopener noreffer">variables.tf</a>
+: Specifies the variables in this module.</li>
+<li><a href="https://github.com/iamaleks/ubuntu-webserver-iac-example/blob/master/Terraform/terraform.tfvars" target="_blank" rel="noopener noreffer">terraform.tfvars</a>
+: Gives the variables values.</li>
+<li><a href="https://github.com/iamaleks/ubuntu-webserver-iac-example/blob/master/Terraform/scripts/install-webserver.sh" target="_blank" rel="noopener noreffer">scripts/install-webserver.sh</a>
+: Installs Apache web server.</li>
+</ul>
+<hr>
+<h3 id="version-file">Version File</h3>
+<p>The <code>versions.tf</code> file contains the minimum version of Terraform that can be used. The <code>required_version</code> is a a good way to pin the Terraform module to a specific version of Terraform.</p>
+<p><u><center>Terraform Version - versions.tf</center></u></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">terraform <span class="o">{</span>
+  <span class="nv">required_version</span> <span class="o">=</span> <span class="s2">&#34;&gt;= 0.12&#34;</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="variables-definitions">Variables Definitions</h3>
+<p>All the variables that will be used are declared in the <code>variables.tf</code> file, they are set to empty values.</p>
+<p><u><center>Terraform Variable Declaration - variables.tf</center></u></p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre class="chroma"><code><span class="lnt"> 1
@@ -562,27 +580,27 @@ reboot --eject
 </span><span class="lnt">16
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell">variable vsphere_user <span class="o">{}</span>                <span class="c1"># Username and SSO domain to use for login.</span>
-variable vsphere_password <span class="o">{}</span>            <span class="c1"># Password to use for login.</span>
-variable vsphere_server <span class="o">{}</span>              <span class="c1"># Domain of vCenter.</span>
-variable vsphere_datacenter_name <span class="o">{}</span>     <span class="c1"># Datacenter to create virtual machine in.</span>
-variable vsphere_resource_pool <span class="o">{}</span>       <span class="c1"># Cluster in which to run the virtual machine in.</span>
-variable vsphere_host <span class="o">{}</span>                <span class="c1"># ESXi host to create virtual machine on.</span>
-variable vsphere_datastore <span class="o">{}</span>           <span class="c1"># Datastore to keep the files of the virtual machine in.</span>
-variable vsphere_network <span class="o">{}</span>             <span class="c1"># Portgroup to attack the virtual machine to.</span>
-variable vm_name <span class="o">{}</span>                     <span class="c1"># The name that will show up in vCenter.</span>
-variable ip_address <span class="o">{}</span>                  <span class="c1"># Static IP address to assign the virtual machine.</span>
-variable netmask <span class="o">{}</span>                     <span class="c1"># Netmask.</span>
-variable def_gw <span class="o">{}</span>                      <span class="c1"># Default gateway.</span>
-variable dns_server <span class="o">{}</span>                  <span class="c1"># DNS server list.</span>
-variable domain <span class="o">{}</span>                      <span class="c1"># DNS search domain.</span>
-variable ssh_username <span class="o">{}</span>                <span class="c1"># Username for SSH, this will be used by Terraform to connect to SSH.</span>
-variable ssh_password <span class="o">{}</span>                <span class="c1"># Password for SSH, this will be used by Terraform to connect to SSH.</span>
+<pre class="chroma"><code class="language-shell" data-lang="shell">variable vsphere_user <span class="o">{}</span>              <span class="c1"># Username and SSO domain for vSphere.</span>
+variable vsphere_password <span class="o">{}</span>          <span class="c1"># Password for vSphere.</span>
+variable vsphere_server <span class="o">{}</span>            <span class="c1"># vCenter domain.</span>
+variable vsphere_datacenter_name <span class="o">{}</span>   <span class="c1"># Name of vSphere datacenter to run virtual machine.</span>
+variable vsphere_resource_pool <span class="o">{}</span>     <span class="c1"># Name of resource pool.</span>
+variable vsphere_host <span class="o">{}</span>              <span class="c1"># ESXi host to use as compute resource.</span>
+variable vsphere_datastore <span class="o">{}</span>         <span class="c1"># Datastore to store the template on.</span>
+variable vsphere_network <span class="o">{}</span>           <span class="c1"># Portgroup to attack to the virtual machine.</span>
+variable vm_name <span class="o">{}</span>                   <span class="c1"># Name of the virtual machine.</span>
+variable ip_address <span class="o">{}</span>                <span class="c1"># Static IP address of the virtual machine.</span>
+variable netmask <span class="o">{}</span>                   <span class="c1"># Network netmask.</span>
+variable def_gw <span class="o">{}</span>                    <span class="c1"># Default gateway.</span>
+variable dns_server <span class="o">{}</span>                <span class="c1"># DNS server list.</span>
+variable domain <span class="o">{}</span>                    <span class="c1"># DNS search domain.</span>
+variable ssh_username <span class="o">{}</span>              <span class="c1"># User with SSH access.</span>
+variable ssh_password <span class="o">{}</span>              <span class="c1"># Password for user with SSH access.</span>
 </code></pre></td></tr></table>
 </div>
-</div><p>These definitions are empty variables just like the beginning of the Packer configuration file. They could have been added into the main Terraform configuration, however, to make it cleaner I added it to another file. Also note, if these variables are not present in the main file Terraform will look for a file named <code>variables.tf</code>. This is not a random name.</p>
-<h3 id="main-terraform-configuration-webserver_vmtf">Main Terraform Configuration (webserver_vm.tf)</h3>
-<p>Below can be seen the core Terraform configuration file. It begins by specifying the usual information required, such as where vCenter is and what datastore to store the virtual machine in.</p>
+</div><h3 id="variable-values">Variable Values</h3>
+<p>The <code>terraform.tfvars</code> contains the values to be assigned to each of the variables.</p>
+<p><u><center>Variable Values - terraform.tfvars</center></u></p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre class="chroma"><code><span class="lnt"> 1
@@ -604,76 +622,32 @@ variable ssh_password <span class="o">{}</span>                <span class="c1">
 </span><span class="lnt">17
 </span><span class="lnt">18
 </span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
-</span><span class="lnt">40
-</span><span class="lnt">41
-</span><span class="lnt">42
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell">provider <span class="s2">&#34;vsphere&#34;</span> <span class="o">{</span>
-  <span class="c1"># If you use a domain set your login like this &#34;MyDomain\\MyUser&#34;</span>
-  <span class="nv">user</span>           <span class="o">=</span> <span class="s2">&#34;</span><span class="si">${</span><span class="nv">var</span><span class="p">.vsphere_user</span><span class="si">}</span><span class="s2">&#34;</span>            <span class="c1"># Username and SSO domain to use for login.</span>
-  <span class="nv">password</span>       <span class="o">=</span> <span class="s2">&#34;</span><span class="si">${</span><span class="nv">var</span><span class="p">.vsphere_password</span><span class="si">}</span><span class="s2">&#34;</span>        <span class="c1"># Password to use for login.</span>
-  <span class="nv">vsphere_server</span> <span class="o">=</span> <span class="s2">&#34;</span><span class="si">${</span><span class="nv">var</span><span class="p">.vsphere_server</span><span class="si">}</span><span class="s2">&#34;</span>          <span class="c1"># Domain of vCenter.</span>
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># vsphere related params</span>
+<span class="nv">vsphere_user</span> <span class="o">=</span> <span class="s2">&#34;administrator@example.com&#34;</span>      <span class="c1"># Username and SSO domain for vSphere.</span>
+<span class="nv">vsphere_password</span> <span class="o">=</span> <span class="s2">&#34;VMware1!&#34;</span>                   <span class="c1"># Password for vSphere.</span>
+<span class="nv">vsphere_server</span> <span class="o">=</span> <span class="s2">&#34;vcenter.example.com&#34;</span>          <span class="c1"># vCenter domain.</span>
+<span class="nv">vsphere_datacenter_name</span> <span class="o">=</span> <span class="s2">&#34;Example Lab Datacenter&#34;</span>  <span class="c1"># Name of vSphere datacenter to run virtual machine.</span>
+<span class="nv">vsphere_resource_pool</span> <span class="o">=</span> <span class="s2">&#34;Example Lab Cluster/Resources&#34;</span> <span class="c1"># If you haven&#39;t resource pool, put &#34;Resources&#34; after cluster name</span>
+<span class="nv">vsphere_host</span> <span class="o">=</span> <span class="s2">&#34;esxi02.example.com&#34;</span>             <span class="c1"># ESXi host to use as compute resource.</span>
+<span class="nv">vsphere_datastore</span> <span class="o">=</span> <span class="s2">&#34;Example-Datastore-Name&#34;</span>    <span class="c1"># Datastore to store the template on.</span>
+<span class="nv">vsphere_network</span> <span class="o">=</span> <span class="s2">&#34;VM Network&#34;</span>                  <span class="c1"># Portgroup to attack to the virtual machine.</span>
 
-  <span class="c1"># if you have a self-signed cert</span>
-  <span class="nv">allow_unverified_ssl</span> <span class="o">=</span> <span class="nb">true</span>                       <span class="c1"># Whether to allow invalid TLS certificates, such as self singed.</span>
-<span class="o">}</span>
-
-data <span class="s2">&#34;vsphere_datacenter&#34;</span> <span class="s2">&#34;dc&#34;</span> <span class="o">{</span>
-  <span class="nv">name</span> <span class="o">=</span> <span class="s2">&#34;</span><span class="si">${</span><span class="nv">var</span><span class="p">.vsphere_datacenter_name</span><span class="si">}</span><span class="s2">&#34;</span>           <span class="c1"># Datacenter to create virtual machine in.</span>
-<span class="o">}</span>
-
-data <span class="s2">&#34;vsphere_resource_pool&#34;</span> <span class="s2">&#34;pool&#34;</span> <span class="o">{</span>
-  <span class="c1"># If you haven&#39;t resource pool, put &#34;Resources&#34; after cluster name</span>
-  <span class="nv">name</span>          <span class="o">=</span> <span class="s2">&#34;</span><span class="si">${</span><span class="nv">var</span><span class="p">.vsphere_resource_pool</span><span class="si">}</span><span class="s2">&#34;</span>    <span class="c1"># Cluster in which to run the virtual machine in.</span>
-  <span class="nv">datacenter_id</span> <span class="o">=</span> data.vsphere_datacenter.dc.id
-<span class="o">}</span>
-
-data <span class="s2">&#34;vsphere_host&#34;</span> <span class="s2">&#34;host&#34;</span> <span class="o">{</span>
-  <span class="nv">name</span>          <span class="o">=</span> <span class="s2">&#34;</span><span class="si">${</span><span class="nv">var</span><span class="p">.vsphere_host</span><span class="si">}</span><span class="s2">&#34;</span>             <span class="c1"># ESXi host to create virtual machine on.</span>
-  <span class="nv">datacenter_id</span> <span class="o">=</span> data.vsphere_datacenter.dc.id
-<span class="o">}</span>
-
-<span class="c1"># Retrieve datastore information on vsphere</span>
-data <span class="s2">&#34;vsphere_datastore&#34;</span> <span class="s2">&#34;datastore&#34;</span> <span class="o">{</span>
-  <span class="nv">name</span>          <span class="o">=</span> <span class="s2">&#34;</span><span class="si">${</span><span class="nv">var</span><span class="p">.vsphere_datastore</span><span class="si">}</span><span class="s2">&#34;</span>        <span class="c1"># Datastore to keep the files of the virtual machine in.</span>
-  <span class="nv">datacenter_id</span> <span class="o">=</span> data.vsphere_datacenter.dc.id
-<span class="o">}</span>
-
-<span class="c1"># Retrieve network information on vsphere</span>
-data <span class="s2">&#34;vsphere_network&#34;</span> <span class="s2">&#34;network&#34;</span> <span class="o">{</span>
-  <span class="nv">name</span>          <span class="o">=</span> <span class="s2">&#34;</span><span class="si">${</span><span class="nv">var</span><span class="p">.vsphere_network</span><span class="si">}</span><span class="s2">&#34;</span>          <span class="c1"># Portgroup to attack the virtual machine to.</span>
-  <span class="nv">datacenter_id</span> <span class="o">=</span> data.vsphere_datacenter.dc.id
-<span class="o">}</span>
-
-<span class="c1"># Retrieve template information on vsphere</span>
-data <span class="s2">&#34;vsphere_virtual_machine&#34;</span> <span class="s2">&#34;template&#34;</span> <span class="o">{</span>
-  <span class="nv">name</span>          <span class="o">=</span> <span class="s2">&#34;CentOS7-Template&#34;</span>                <span class="c1"># The template to use when creating the virtual machine.</span>
-  <span class="nv">datacenter_id</span> <span class="o">=</span> data.vsphere_datacenter.dc.id
-<span class="o">}</span>
+<span class="c1"># VM Setup</span>
+<span class="nv">vm_name</span> <span class="o">=</span> <span class="s2">&#34;Terraform Webserver VM&#34;</span>              <span class="c1"># Name of the virtual machine.</span>
+<span class="nv">ip_address</span> <span class="o">=</span> <span class="s2">&#34;192.168.1.168&#34;</span>                    <span class="c1"># Static IP address of the virtual machine.</span>
+<span class="nv">netmask</span> <span class="o">=</span> <span class="s2">&#34;24&#34;</span>                                  <span class="c1"># Network netmask.</span>
+<span class="nv">def_gw</span> <span class="o">=</span> <span class="s2">&#34;192.168.1.1&#34;</span>                          <span class="c1"># Default gateway.</span>
+<span class="nv">dns_server</span> <span class="o">=</span> <span class="o">[</span><span class="s2">&#34;8.8.8.8&#34;</span><span class="o">]</span>                        <span class="c1"># DNS server list.</span>
+<span class="nv">domain</span> <span class="o">=</span> <span class="s2">&#34;example.com&#34;</span>                          
+<span class="nv">ssh_username</span> <span class="o">=</span> <span class="s2">&#34;user&#34;</span>                           <span class="c1"># User with SSH access.</span>
+<span class="nv">ssh_password</span> <span class="o">=</span> <span class="s2">&#34;qwe123&#34;</span>                         <span class="c1"># Password for user with SSH access.</span>
 </code></pre></td></tr></table>
 </div>
-</div><p>The intresting section comes up towards the end. We can see within the <code>clone</code> section on line 22 we are using a specfic template. The <code>customize</code> section is also responsible for customizing the new instance of the template, including the networking information and hostname. After SSH will be ued to connect to the virtual machine and the Bash script <code>install-webserver.sh</code> will be run.</p>
+</div><h3 id="terraform-core-configuration-webserver_vmtf">Terraform Core Configuration (webserver_vm.tf)</h3>
+<p>The <code>webserver_vm.tf</code> contains the core Terraform configuration logic. It beings by specifying much of what was described in the variables, where to connect to and where to run the virtual machine.</p>
+<p><u><center>Value Definitions - webserver_vm.tf</center></u></p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre class="chroma"><code><span class="lnt"> 1
@@ -723,73 +697,178 @@ data <span class="s2">&#34;vsphere_virtual_machine&#34;</span> <span class="s2">
 </span><span class="lnt">45
 </span><span class="lnt">46
 </span><span class="lnt">47
-</span><span class="lnt">48
-</span><span class="lnt">49
-</span><span class="lnt">50
-</span><span class="lnt">51
-</span><span class="lnt">52
-</span><span class="lnt">53
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell">resource <span class="s2">&#34;vsphere_virtual_machine&#34;</span> <span class="s2">&#34;webserver-vm&#34;</span> <span class="o">{</span>
-  <span class="nv">name</span>             <span class="o">=</span> <span class="s2">&#34;</span><span class="si">${</span><span class="nv">var</span><span class="p">.vm_name</span><span class="si">}</span><span class="s2">&#34;</span>                                   <span class="c1"># The name of the virtual machine.</span>
-  <span class="nv">num_cpus</span>         <span class="o">=</span> <span class="m">2</span>                                                  <span class="c1"># Number of VCPUs.</span>
-  <span class="nv">memory</span>           <span class="o">=</span> <span class="m">4096</span>                                               <span class="c1"># Amount of memory.</span>
-  <span class="nv">datastore_id</span>     <span class="o">=</span> data.vsphere_datastore.datastore.id                <span class="c1"># Datastore to keep virtual machine in.</span>
-  <span class="nv">host_system_id</span>   <span class="o">=</span> data.vsphere_host.host.id                          <span class="c1"># ESXi host to use to run virtual machine.</span>
-  <span class="nv">resource_pool_id</span> <span class="o">=</span> data.vsphere_resource_pool.pool.id                 <span class="c1"># Cluster to run virtual machine in.</span>
-  <span class="nv">guest_id</span>         <span class="o">=</span> data.vsphere_virtual_machine.template.guest_id     <span class="c1"># The operating system of the virtual machine, this is retrived from the template.</span>
-  <span class="nv">scsi_type</span>        <span class="o">=</span> data.vsphere_virtual_machine.template.scsi_type    <span class="c1"># THe SCSI type, this is retrived from the template.</span>
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># Basic configuration withour variables</span>
+
+<span class="c1"># Define authentification configuration</span>
+provider <span class="s2">&#34;vsphere&#34;</span> <span class="o">{</span>
+  <span class="c1"># If you use a domain set your login like this &#34;MyDomain\\MyUser&#34;</span>
+  <span class="nv">user</span>           <span class="o">=</span> var.vsphere_user       <span class="c1"># Username and SSO domain for vSphere.</span>
+  <span class="nv">password</span>       <span class="o">=</span> var.vsphere_password   <span class="c1"># Password for vSphere.</span>
+  <span class="nv">vsphere_server</span> <span class="o">=</span> var.vsphere_server     <span class="c1"># vCenter domain.</span>
+
+  <span class="c1"># if you have a self-signed cert</span>
+  <span class="nv">allow_unverified_ssl</span> <span class="o">=</span> <span class="nb">true</span>             <span class="c1"># Allow invalid certificates, such as self signed.</span>
+<span class="o">}</span>
+
+<span class="c1">#### RETRIEVE DATA INFORMATION ON VCENTER ####</span>
+
+data <span class="s2">&#34;vsphere_datacenter&#34;</span> <span class="s2">&#34;dc&#34;</span> <span class="o">{</span>
+  <span class="nv">name</span> <span class="o">=</span> var.vsphere_datacenter_name      <span class="c1"># Name of vSphere datacenter to run virtual machine.</span>
+<span class="o">}</span>
+
+data <span class="s2">&#34;vsphere_resource_pool&#34;</span> <span class="s2">&#34;pool&#34;</span> <span class="o">{</span>
+  <span class="c1"># If you haven&#39;t resource pool, put &#34;Resources&#34; after cluster name</span>
+  <span class="nv">name</span>          <span class="o">=</span> var.vsphere_resource_pool     <span class="c1"># If you haven&#39;t resource pool, put &#34;Resources&#34; after cluster name</span>
+  <span class="nv">datacenter_id</span> <span class="o">=</span> data.vsphere_datacenter.dc.id
+<span class="o">}</span>
+
+data <span class="s2">&#34;vsphere_host&#34;</span> <span class="s2">&#34;host&#34;</span> <span class="o">{</span>
+  <span class="nv">name</span>          <span class="o">=</span> var.vsphere_host              <span class="c1"># ESXi host to use as compute resource.</span>
+  <span class="nv">datacenter_id</span> <span class="o">=</span> data.vsphere_datacenter.dc.id
+<span class="o">}</span>
+
+<span class="c1"># Retrieve datastore information on vsphere</span>
+data <span class="s2">&#34;vsphere_datastore&#34;</span> <span class="s2">&#34;datastore&#34;</span> <span class="o">{</span>
+  <span class="nv">name</span>          <span class="o">=</span> var.vsphere_datastore         <span class="c1"># Datastore to store the template on.</span>
+  <span class="nv">datacenter_id</span> <span class="o">=</span> data.vsphere_datacenter.dc.id
+<span class="o">}</span>
+
+<span class="c1"># Retrieve network information on vsphere</span>
+data <span class="s2">&#34;vsphere_network&#34;</span> <span class="s2">&#34;network&#34;</span> <span class="o">{</span>
+  <span class="nv">name</span>          <span class="o">=</span> var.vsphere_network           <span class="c1"># Portgroup to attack to the virtual machine.</span>
+  <span class="nv">datacenter_id</span> <span class="o">=</span> data.vsphere_datacenter.dc.id
+<span class="o">}</span>
+
+<span class="c1"># Retrieve template information on vsphere</span>
+data <span class="s2">&#34;vsphere_virtual_machine&#34;</span> <span class="s2">&#34;template&#34;</span> <span class="o">{</span>
+  <span class="nv">name</span>          <span class="o">=</span> <span class="s2">&#34;template_ubuntu18&#34;</span>           <span class="c1"># Name of the template to clone.</span>
+  <span class="nv">datacenter_id</span> <span class="o">=</span> data.vsphere_datacenter.dc.id
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>The second part of <code>webserver_vm.tf</code> describes the resource that will be created, the webserver virtual machine in this case. As can be seen on line 24 we specify a  template that we will clone the virtual machine from. There are a set of paramters after that which will customize the virtual machine, including its hostname and static networking information.</p>
+<p><u><center>Virtual Machine Setup - webserver_vm.tf</center></u></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># Set vm parameters</span>
+resource <span class="s2">&#34;vsphere_virtual_machine&#34;</span> <span class="s2">&#34;webserver-vm&#34;</span> <span class="o">{</span>
+  <span class="nv">name</span>             <span class="o">=</span> var.vm_name    <span class="c1"># Name of the virtual machine.</span>
+  <span class="nv">num_cpus</span>         <span class="o">=</span> <span class="m">2</span>              <span class="c1"># Number of vCPUs.</span>
+  <span class="nv">memory</span>           <span class="o">=</span> <span class="m">4096</span>           <span class="c1"># Amount of RAM.</span>
+  <span class="nv">datastore_id</span>     <span class="o">=</span> data.vsphere_datastore.datastore.id              <span class="c1"># Datastore to store the template on.</span>
+  <span class="nv">host_system_id</span>   <span class="o">=</span> data.vsphere_host.host.id                        <span class="c1"># ESXi host to use as compute resource.</span>
+  <span class="nv">resource_pool_id</span> <span class="o">=</span> data.vsphere_resource_pool.pool.id               <span class="c1"># If you haven&#39;t resource pool, put &#34;Resources&#34; after cluster name</span>
+  <span class="nv">guest_id</span>         <span class="o">=</span> data.vsphere_virtual_machine.template.guest_id   <span class="c1"># ID of the virtual machine taken from template.</span>
+  <span class="nv">scsi_type</span>        <span class="o">=</span> data.vsphere_virtual_machine.template.scsi_type  <span class="c1"># SCSI type taken from template.</span>
 
   <span class="c1"># Set network parameters</span>
   network_interface <span class="o">{</span>
-    <span class="nv">network_id</span> <span class="o">=</span> data.vsphere_network.network.id                        <span class="c1"># Portgroup to attack the virtual machine to.</span>
+    <span class="nv">network_id</span> <span class="o">=</span> data.vsphere_network.network.id    <span class="c1"># Portgroup to attack to the virtual machine.</span>
   <span class="o">}</span>
 
   <span class="c1"># Use a predefined vmware template has main disk</span>
   disk <span class="o">{</span>
-    <span class="nv">name</span> <span class="o">=</span> <span class="s2">&#34;webserver.vmdk&#34;</span>                                             <span class="c1"># Name of the VMDK.</span>
-    <span class="nv">size</span> <span class="o">=</span> <span class="s2">&#34;30&#34;</span>                                                         <span class="c1"># Size of the VMDK.</span>
+    <span class="nv">label</span> <span class="o">=</span> <span class="s2">&#34;webserver.vmdk&#34;</span>    <span class="c1"># Name of the VMDK.</span>
+    <span class="nv">size</span> <span class="o">=</span> <span class="s2">&#34;30&#34;</span>                 <span class="c1"># Size of VMDK.</span>
   <span class="o">}</span>
 
   clone <span class="o">{</span>
-    <span class="nv">template_uuid</span> <span class="o">=</span> data.vsphere_virtual_machine.template.id            <span class="c1"># UUID of the template to use.</span>
+    <span class="nv">template_uuid</span> <span class="o">=</span> data.vsphere_virtual_machine.template.id
 
     customize <span class="o">{</span>
       linux_options <span class="o">{</span>
-        <span class="nv">host_name</span> <span class="o">=</span> <span class="s2">&#34;TerraformWebserver&#34;</span>                                <span class="c1"># Hostname to set on the virtual machine</span>
-        <span class="nv">domain</span>    <span class="o">=</span> <span class="s2">&#34;</span><span class="si">${</span><span class="nv">var</span><span class="p">.domain</span><span class="si">}</span><span class="s2">&#34;</span>                                     <span class="c1"># Domain to set on the virtual machine.</span>
-      <span class="o">}</span>             
-
-      network_interface <span class="o">{</span>
-        <span class="nv">ipv4_address</span>    <span class="o">=</span> <span class="s2">&#34;</span><span class="si">${</span><span class="nv">var</span><span class="p">.ip_address</span><span class="si">}</span><span class="s2">&#34;</span>                           <span class="c1"># Static IP address to set on the virtual machine.</span>
-        <span class="nv">ipv4_netmask</span>    <span class="o">=</span> <span class="s2">&#34;</span><span class="si">${</span><span class="nv">var</span><span class="p">.netmask</span><span class="si">}</span><span class="s2">&#34;</span>                              <span class="c1"># Network netmask.</span>
+        <span class="nv">host_name</span> <span class="o">=</span> <span class="s2">&#34;TerraformWebserver&#34;</span>  <span class="c1"># New hostname of virtua machine.</span>
+        <span class="nv">domain</span>    <span class="o">=</span> var.domain            <span class="c1"># DNS search domain.</span>
       <span class="o">}</span>
 
-      <span class="nv">ipv4_gateway</span> <span class="o">=</span> <span class="s2">&#34;</span><span class="si">${</span><span class="nv">var</span><span class="p">.def_gw</span><span class="si">}</span><span class="s2">&#34;</span>                                    <span class="c1"># Default gateway.</span>
-      <span class="nv">dns_server_list</span> <span class="o">=</span> <span class="s2">&#34;</span><span class="si">${</span><span class="nv">var</span><span class="p">.dns_server</span><span class="si">}</span><span class="s2">&#34;</span>                             <span class="c1"># DNS server list.</span>
+      network_interface <span class="o">{</span>
+        <span class="nv">ipv4_address</span>    <span class="o">=</span> var.ip_address  <span class="c1"># Static IP address.</span>
+        <span class="nv">ipv4_netmask</span>    <span class="o">=</span> var.netmask     <span class="c1"># Netmask.</span>
+      <span class="o">}</span>
+
+      <span class="nv">ipv4_gateway</span> <span class="o">=</span> var.def_gw           <span class="c1"># Default gateway.</span>
+      <span class="nv">dns_server_list</span> <span class="o">=</span> var.dns_server    <span class="c1"># DNS server list.</span>
 
     <span class="o">}</span>
   <span class="o">}</span>
-
-  <span class="c1"># Execute script on remote vm after this creation</span>
-  <span class="c1"># Execute script on remote vm after this creation</span>
-  provisioner <span class="s2">&#34;remote-exec&#34;</span> <span class="o">{</span>                                           <span class="c1"># This section will SSH into the virtual machine</span>
-    <span class="nv">script</span> <span class="o">=</span> <span class="s2">&#34;scripts/install-webserver.sh&#34;</span>                             <span class="c1"># and run the script that has been provided.</span>
-    connection <span class="o">{</span>
-      <span class="nb">type</span>     <span class="o">=</span> <span class="s2">&#34;ssh&#34;</span>
-      <span class="nv">user</span>     <span class="o">=</span> <span class="s2">&#34;</span><span class="si">${</span><span class="nv">var</span><span class="p">.ssh_username</span><span class="si">}</span><span class="s2">&#34;</span>
-      <span class="nv">password</span> <span class="o">=</span> <span class="s2">&#34;</span><span class="si">${</span><span class="nv">var</span><span class="p">.ssh_password</span><span class="si">}</span><span class="s2">&#34;</span>
-      <span class="nv">host</span>     <span class="o">=</span> <span class="s2">&#34;</span><span class="si">${</span><span class="nv">var</span><span class="p">.ip_address</span><span class="si">}</span><span class="s2">&#34;</span>
-    <span class="o">}</span>
-  <span class="o">}</span>
-<span class="o">}</span>
 </code></pre></td></tr></table>
 </div>
-</div><h3 id="demo-1">Demo</h3>
-<p>The followig shows a demo of Terraform being run. Towards the end we can see curl once again being used, however, this time the connection is succesfull because the virtual machine was setup.</p>
-<p>The first command run, <code>terraform init</code>, will initialize Terraform and pull the provider. In this case the provider is vSphere. If we where working with AWS, then the AWS provider would be pulled.</p>
-<script id="asciicast-xERzY2YxzxnmlDpytB6VlsT4J" src="https://asciinema.org/a/xERzY2YxzxnmlDpytB6VlsT4J.js" async></script>
+</div><p>The last part of the configuration has to do with a script that will be run. After networking is setup Terraform will move this scrip to the system and run it using SSH. This is the script that will install Apache.</p>
+<p><u><center>Virtual Machine Customization - webserver_vm.tf</center></u></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">  <span class="c1"># Execute script on remote vm after this creation</span>
+  provisioner <span class="s2">&#34;remote-exec&#34;</span> <span class="o">{</span>
+    <span class="nv">script</span> <span class="o">=</span> <span class="s2">&#34;scripts/install-webserver.sh&#34;</span>
+    connection <span class="o">{</span>
+      <span class="nb">type</span>     <span class="o">=</span> <span class="s2">&#34;ssh&#34;</span>
+      <span class="nv">user</span>     <span class="o">=</span> var.ssh_username
+      <span class="nv">password</span> <span class="o">=</span> var.ssh_password
+      <span class="nv">host</span>     <span class="o">=</span> var.ip_address
+    <span class="o">}</span>
+  <span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="terraform-demonstration">Terraform Demonstration</h3>
+<p>Below you will see a demonstration of Terraform being run, towards the end you can see curl once again being run with a succesfull HTTP response.</p>
+<script id="asciicast-CxuxIgInSF2msAmzz9nDXRbTh" src="https://asciinema.org/a/CxuxIgInSF2msAmzz9nDXRbTh.js" async></script>
 <h2 id="resources">Resources</h2>
 <ul>
 <li><a href="https://everythingshouldbevirtual.com/automation/terraform-vsphere-centos-7-customization-issues" target="_blank" rel="noopener noreffer">Why we need Perl for customizing CentOS 7</a>
@@ -816,7 +895,7 @@ data <span class="s2">&#34;vsphere_virtual_machine&#34;</span> <span class="s2">
         <div class="post-info-line">
             <div class="post-info-md"></div>
             <div class="post-info-share">
-                <span><a href="javascript:void(0);" title="Share on Twitter" data-sharer="twitter" data-url="https://blog.thinkbox.dev/posts/0015-iac-centos7-webserver-example/" data-title="Introduction to Packer and Terraform with CentOS 7 on vSphere" data-hashtags="Infrastructure as Code,Terraform,Packer"><i class="fab fa-twitter fa-fw"></i></a><a href="javascript:void(0);" title="Share on Facebook" data-sharer="facebook" data-url="https://blog.thinkbox.dev/posts/0015-iac-centos7-webserver-example/" data-hashtag="Infrastructure as Code"><i class="fab fa-facebook-square fa-fw"></i></a><a href="javascript:void(0);" title="Share on Linkedin" data-sharer="linkedin" data-url="https://blog.thinkbox.dev/posts/0015-iac-centos7-webserver-example/"><i class="fab fa-linkedin fa-fw"></i></a><a href="javascript:void(0);" title="Share on WhatsApp" data-sharer="whatsapp" data-url="https://blog.thinkbox.dev/posts/0015-iac-centos7-webserver-example/" data-title="Introduction to Packer and Terraform with CentOS 7 on vSphere" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="javascript:void(0);" title="Share on Hacker News" data-sharer="hackernews" data-url="https://blog.thinkbox.dev/posts/0015-iac-centos7-webserver-example/" data-title="Introduction to Packer and Terraform with CentOS 7 on vSphere"><i class="fab fa-hacker-news fa-fw"></i></a><a href="javascript:void(0);" title="Share on Reddit" data-sharer="reddit" data-url="https://blog.thinkbox.dev/posts/0015-iac-centos7-webserver-example/"><i class="fab fa-reddit fa-fw"></i></a><a href="javascript:void(0);" title="Share on VK" data-sharer="vk" data-url="https://blog.thinkbox.dev/posts/0015-iac-centos7-webserver-example/" data-title="Introduction to Packer and Terraform with CentOS 7 on vSphere"><i class="fab fa-vk fa-fw"></i></a><a href="javascript:void(0);" title="Share on 微博" data-sharer="weibo" data-url="https://blog.thinkbox.dev/posts/0015-iac-centos7-webserver-example/" data-title="Introduction to Packer and Terraform with CentOS 7 on vSphere"><i class="fab fa-weibo fa-fw"></i></a><a href="javascript:void(0);" title="Share on 百度" data-sharer="baidu" data-url="https://blog.thinkbox.dev/posts/0015-iac-centos7-webserver-example/" data-title="Introduction to Packer and Terraform with CentOS 7 on vSphere"><i class="loveit it-baidu-fill"></i></a></span>
+                <span><a href="javascript:void(0);" title="Share on Twitter" data-sharer="twitter" data-url="https://blog.thinkbox.dev/posts/0015-iac-centos7-webserver-example/" data-title="Introduction to Packer and Terraform with Ubuntu on vSphere" data-hashtags="Infrastructure as Code,Terraform,Packer"><i class="fab fa-twitter fa-fw"></i></a><a href="javascript:void(0);" title="Share on Facebook" data-sharer="facebook" data-url="https://blog.thinkbox.dev/posts/0015-iac-centos7-webserver-example/" data-hashtag="Infrastructure as Code"><i class="fab fa-facebook-square fa-fw"></i></a><a href="javascript:void(0);" title="Share on Linkedin" data-sharer="linkedin" data-url="https://blog.thinkbox.dev/posts/0015-iac-centos7-webserver-example/"><i class="fab fa-linkedin fa-fw"></i></a><a href="javascript:void(0);" title="Share on WhatsApp" data-sharer="whatsapp" data-url="https://blog.thinkbox.dev/posts/0015-iac-centos7-webserver-example/" data-title="Introduction to Packer and Terraform with Ubuntu on vSphere" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="javascript:void(0);" title="Share on Hacker News" data-sharer="hackernews" data-url="https://blog.thinkbox.dev/posts/0015-iac-centos7-webserver-example/" data-title="Introduction to Packer and Terraform with Ubuntu on vSphere"><i class="fab fa-hacker-news fa-fw"></i></a><a href="javascript:void(0);" title="Share on Reddit" data-sharer="reddit" data-url="https://blog.thinkbox.dev/posts/0015-iac-centos7-webserver-example/"><i class="fab fa-reddit fa-fw"></i></a><a href="javascript:void(0);" title="Share on VK" data-sharer="vk" data-url="https://blog.thinkbox.dev/posts/0015-iac-centos7-webserver-example/" data-title="Introduction to Packer and Terraform with Ubuntu on vSphere"><i class="fab fa-vk fa-fw"></i></a><a href="javascript:void(0);" title="Share on 微博" data-sharer="weibo" data-url="https://blog.thinkbox.dev/posts/0015-iac-centos7-webserver-example/" data-title="Introduction to Packer and Terraform with Ubuntu on vSphere"><i class="fab fa-weibo fa-fw"></i></a><a href="javascript:void(0);" title="Share on 百度" data-sharer="baidu" data-url="https://blog.thinkbox.dev/posts/0015-iac-centos7-webserver-example/" data-title="Introduction to Packer and Terraform with Ubuntu on vSphere"><i class="loveit it-baidu-fill"></i></a></span>
             </div>
         </div>
     </div>
