@@ -6,7 +6,7 @@
     <description>Recent content in Tags on ThinkBox</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Sat, 02 May 2020 21:16:02 -0400</lastBuildDate>
+    <lastBuildDate>Sun, 03 May 2020 21:16:02 -0400</lastBuildDate>
     
 	<atom:link href="https://blog.thinkbox.dev/tags/index.xml" rel="self" type="application/rss+xml" />
     
@@ -14,7 +14,7 @@
     <item>
       <title>Infrastructure as Code</title>
       <link>https://blog.thinkbox.dev/tags/infrastructure-as-code/</link>
-      <pubDate>Sat, 02 May 2020 21:16:02 -0400</pubDate>
+      <pubDate>Sun, 03 May 2020 21:16:02 -0400</pubDate>
       
       <guid>https://blog.thinkbox.dev/tags/infrastructure-as-code/</guid>
       <description></description>
@@ -23,7 +23,7 @@
     <item>
       <title>Packer</title>
       <link>https://blog.thinkbox.dev/tags/packer/</link>
-      <pubDate>Sat, 02 May 2020 21:16:02 -0400</pubDate>
+      <pubDate>Sun, 03 May 2020 21:16:02 -0400</pubDate>
       
       <guid>https://blog.thinkbox.dev/tags/packer/</guid>
       <description></description>
@@ -32,7 +32,7 @@
     <item>
       <title>Terraform</title>
       <link>https://blog.thinkbox.dev/tags/terraform/</link>
-      <pubDate>Sat, 02 May 2020 21:16:02 -0400</pubDate>
+      <pubDate>Sun, 03 May 2020 21:16:02 -0400</pubDate>
       
       <guid>https://blog.thinkbox.dev/tags/terraform/</guid>
       <description></description>

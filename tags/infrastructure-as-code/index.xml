@@ -6,7 +6,7 @@
     <description>Recent content in Infrastructure as Code on ThinkBox</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Sat, 02 May 2020 21:16:02 -0400</lastBuildDate>
+    <lastBuildDate>Sun, 03 May 2020 21:16:02 -0400</lastBuildDate>
     
 	<atom:link href="https://blog.thinkbox.dev/tags/infrastructure-as-code/index.xml" rel="self" type="application/rss+xml" />
     
@@ -14,7 +14,7 @@
     <item>
       <title>Introduction to Packer and Terraform with Ubuntu on vSphere</title>
       <link>https://blog.thinkbox.dev/posts/0015-iac-vsphere-webserver-example/</link>
-      <pubDate>Sat, 02 May 2020 21:16:02 -0400</pubDate>
+      <pubDate>Sun, 03 May 2020 21:16:02 -0400</pubDate>
       
       <guid>https://blog.thinkbox.dev/posts/0015-iac-vsphere-webserver-example/</guid>
       <description>.intro-pictures img { width: 40%; height: auto; }   Introduction Packer and Terraform are both tools created by the company Hashicorp , both of these tools aim to provide automation capabilities. Packer has the goal of creating machine images for multiple different platforms. For example, we can create AMIs for EC2 instances on AWS or VMDK/VMX files for VMware. The whole goal is to automate the ability to create a consistent image that can be used by a specific platform, whether it be AWS or VMware products such as vSphere.</description>
