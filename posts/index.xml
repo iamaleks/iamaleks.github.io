@@ -17,7 +17,7 @@
       <pubDate>Sun, 03 May 2020 21:16:02 -0400</pubDate>
       
       <guid>https://blog.thinkbox.dev/posts/0015-iac-vsphere-webserver-example/</guid>
-      <description>.intro-pictures img { width: 40%; height: auto; }   Introduction Packer and Terraform are both tools created by the company Hashicorp , both of these tools aim to provide automation capabilities. Packer has the goal of creating machine images for multiple different platforms. For example, we can create AMIs for EC2 instances on AWS or VMDK/VMX files for VMware. The whole goal is to automate the ability to create a consistent image that can be used by a specific platform, whether it be AWS or VMware products such as vSphere.</description>
+      <description>Introduction Packer and Terraform are both tools created by the company Hashicorp , both of these tools aim to provide automation capabilities. Packer has the goal of creating machine images for multiple different platforms. For example, we can create AMIs for EC2 instances on AWS or VMDK/VMX files for VMware. The whole goal is to automate the ability to create a consistent image that can be used by a specific platform, whether it be AWS or VMware products such as vSphere.</description>
     </item>
     
     <item>
@@ -56,7 +56,7 @@ If you are interested in reading more about the technical details of how the dif
       <pubDate>Wed, 20 Nov 2019 00:44:07 -0400</pubDate>
       
       <guid>https://blog.thinkbox.dev/posts/0011-pki-with-openssl/</guid>
-      <description>#image-section { text-align: center; margin: 1.0em; } #image-section .image-caption { font-style: italic; font-size: 0.8em; }  Introduction This post will aim to give an overview of TLS and public key infrastructure (PKI). This first part of this post will give a theoretical overview of how it works. The second part of the post will demonstrate how to setup a CA with OpenSSL and create certificates for web servers and code singing purposes.</description>
+      <description>Introduction This post will aim to give an overview of TLS and public key infrastructure (PKI). This first part of this post will give a theoretical overview of how it works. The second part of the post will demonstrate how to setup a CA with OpenSSL and create certificates for web servers and code singing purposes. Furthermore, the code signing certificate will be used to sign a binary on a Windows machine.</description>
     </item>
     
     <item>
