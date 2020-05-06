@@ -7,14 +7,14 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
         <title>Understanding and Implementing PKI with OpenSSL | ThinkBox</title>
         <meta name="Description" content=""><meta property="og:title" content="Understanding and Implementing PKI with OpenSSL" />
-<meta property="og:description" content="Introduction This post will aim to give an overview of TLS and public key infrastructure (PKI). This first part of this post will give a theoretical overview of how it works. The second part of the post will demonstrate how to setup a CA with OpenSSL and create certificates for web servers and code singing purposes. Furthermore, the code signing certificate will be used to sign a binary on a Windows machine." />
+<meta property="og:description" content="#image-section { text-align: center; margin: 1.0em; } #image-section .image-caption { font-style: italic; font-size: 0.8em; }  Introduction This post will aim to give an overview of TLS and public key infrastructure (PKI). This first part of this post will give a theoretical overview of how it works. The second part of the post will demonstrate how to setup a CA with OpenSSL and create certificates for web servers and code singing purposes." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://blog.thinkbox.dev/posts/0011-pki-with-openssl/" />
 <meta property="article:published_time" content="2019-11-20T00:44:07-04:00" />
 <meta property="article:modified_time" content="2019-11-20T00:44:07-04:00" />
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Understanding and Implementing PKI with OpenSSL"/>
-<meta name="twitter:description" content="Introduction This post will aim to give an overview of TLS and public key infrastructure (PKI). This first part of this post will give a theoretical overview of how it works. The second part of the post will demonstrate how to setup a CA with OpenSSL and create certificates for web servers and code singing purposes. Furthermore, the code signing certificate will be used to sign a binary on a Windows machine."/>
+<meta name="twitter:description" content="#image-section { text-align: center; margin: 1.0em; } #image-section .image-caption { font-style: italic; font-size: 0.8em; }  Introduction This post will aim to give an overview of TLS and public key infrastructure (PKI). This first part of this post will give a theoretical overview of how it works. The second part of the post will demonstrate how to setup a CA with OpenSSL and create certificates for web servers and code singing purposes."/>
 <meta name="theme-color" content="#ffffff">
 <meta name="msapplication-TileColor" content="#da532c">
 <link rel="canonical" href="https://blog.thinkbox.dev/posts/0011-pki-with-openssl/" />
@@ -32,7 +32,7 @@
         "mainEntityOfPage": {
             "@type": "WebPage",
             "@id": "https:\/\/blog.thinkbox.dev\/posts\/0011-pki-with-openssl\/"
-        },"genre": "posts","keywords": "PKI, OpenSSL","wordcount":  5516 ,
+        },"genre": "posts","keywords": "PKI, OpenSSL","wordcount":  5559 ,
         "url": "https:\/\/blog.thinkbox.dev\/posts\/0011-pki-with-openssl\/","datePublished": "2019-11-20","dateModified": "2019-11-20","author": {
                 "@type": "Person",
                 "name": "Aleks"
@@ -82,8 +82,8 @@
                                 <i class="far fa-folder fa-fw"></i>Information security
                             </a></span></div>
             <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i><time datetime=2019-11-20>2019-11-20</time>&nbsp;
-                <i class="fas fa-pencil-alt fa-fw"></i>about 5516 words&nbsp;
-                <i class="far fa-clock fa-fw"></i>26 min&nbsp;</div>
+                <i class="fas fa-pencil-alt fa-fw"></i>about 5559 words&nbsp;
+                <i class="far fa-clock fa-fw"></i>27 min&nbsp;</div>
         </div><div class="toc" id="toc-auto">
                 <h2 class="toc-title">Contents</h2>
                 <div class="toc-content" id="toc-content-auto"></div>
@@ -145,65 +145,65 @@
   </ul>
 </nav></div>
                 </details>
-            </div><div class="content" id="content" style="text-align: justify;"><h2 id="introduction">Introduction</h2>
+            </div><div class="content" id="content" style="text-align: justify;"><style>
+
+  #image-section {
+
+    text-align: center;
+    margin: 1.0em;
+  }
+
+  #image-section .image-caption {
+    
+    font-style: italic;
+    font-size: 0.8em;
+  }
+
+</style>
+<h2 id="introduction">Introduction</h2>
 <p>This post will aim to give an overview of TLS and public key infrastructure (PKI). This first part of this post will give a theoretical overview of how it works. The second part of the post will demonstrate how to setup a CA with OpenSSL and create certificates for web servers and code singing purposes. Furthermore, the code signing certificate will be used to sign a binary on a Windows machine. For more detailed information about TLS and PKI I recommend the Bulletproof SSL and TLS book, there are some diagrams in this post that are actually from this book.</p>
 <h2 id="pki-in-theory">PKI in Theory</h2>
 <h3 id="tls">TLS</h3>
 <p>Transport Layer Security (TLS) is a cryptographic protocol that has the goal of securing a line of communication between two parties. There are a few components of TLS, two of the most important are the <strong>authentication</strong> and <strong>encryption</strong> components.</p>
 <p>Usually when checking the cipher suite of a website using TLS you may see a string such as the following:
 Cipher Suite Construction (Bulletproof SSL and TLS Book)</p>
-<p><img
-        class="lazyload"
-        src="/svg/loading.small.min.svg"
-        data-sizes="auto"
-        data-srcset="/Pictures/0011-pki-with-openssl/pki_cipher_suite_construction.png,  1.5x,  2x"
-        data-src=""
-        alt=""
-        title="" /></p>
-<p><em>Cipher Suite Construction <a href="https://www.amazon.com/Bulletproof-SSL-TLS-Understanding-Applications/dp/1907117040/ref=sr_1_1?keywords=Bulletproof&#43;ssl&amp;qid=1574287549&amp;sr=8-1" target="_blank" rel="noopener noreffer">(Bulletproof SSL and TLS Book)</a>
-</em></p>
+<div id="image-section">
+  <img src="/Pictures/0011-pki-with-openssl/pki_cipher_suite_construction.png">
+  <p class="image-caption">
+  Cipher Suite Construction <a href="https://www.amazon.com/Bulletproof-SSL-TLS-Understanding-Applications/dp/1907117040/ref=sr_1_1?keywords=Bulletproof+ssl&qid=1574287549&sr=8-1">(Bulletproof SSL and TLS Book)</a>
+  </p>
+</div>
 <p>From this cipher suite we can figure out which cryptographic primitives are being used for what task. RSA is being used for <strong>authentication</strong>, there are some websites that use ECDSA for this task. The authentication mechanism relies on public key cryptography. During the beginning stages of the TLS handshake the client will send the server a message encrypted with the servers public key. The only way the server can read the message is by having in its possession the private key, this will prove to the user the identity of the server. If the server is unsuccessful at decrypting the message the TLS connection cannot move forward to the next phase.</p>
 <p>The second important component is <strong>encryption</strong>, this is handled by the symmetric cipher AES with a key size of 128 bits using the GCM mode. Its important to understand that AES will take a preshared secret that both parties must be in possession of, this is where the key exchange phase comes into play. Diffie Hellmen (DHE), or in this case Elliptic-Curve Diffie Hellman (ECDHE), is used to create a shared secret between two parties communicating over an unsecure medium. Once this shared secret is created it can be fed into AES which will encrypt the data. After a set time the key exchange process will renegotiate a new shared secret.</p>
 <p>Now, there is a very important concept called Perfect Forward Secrecy. What this allows us to achieve is the separation between the key used by the server for authentication and the key used for encryption. This extremely important as the key used for authentication is stored on the web servers disk, if it is compromised it is impossible to decrypt any intercepted TLS traffic as that is not the key used for encryption. The key used for encryption was generated using the DHE algorithm and is considered ephemeral, which means it only exists for a specific period of time during a TLS session.</p>
 <p>In TLS 1.2 a user has the ability to pick the cipher suite, one of the options is to use the RSA key for authentication as the encryption key. This will not provide any Perfect Forward Secrecy, a shared secret will be generated and encrypted with the RSA key which will be used for encryption by both parties. This will allow an attacker in possession of the RSA private key to decrypt TLS traffic on the fly, this can be dangerous if in the hands of an attacker but at the same time useful if used by a company to inspect TLS traffic for signs of malicious intent. One interesting thing to note is that ECDHE is made mandatory in TLS 1.3, this means that it will not be possible to intercept TLS traffic using this method.</p>
 <h3 id="certificates">Certificates</h3>
 <p>People connect to websites every day using TLS, as stated in the previous section on important component is authentication. A user has to know if the website they are connecting to is legitimate or an imposter website. This is done by checking the websites certificate using the X.509 certificate provided by the website and the public key. Below can be seen an outline of the contents of a X.509 certificate:</p>
-<p><img
-        class="lazyload"
-        src="/svg/loading.small.min.svg"
-        data-sizes="auto"
-        data-srcset="/Pictures/0011-pki-with-openssl/x509certificateversions.png,  1.5x,  2x"
-        data-src=""
-        alt=""
-        title="" /></p>
-<p><em><a href="https://docs.microsoft.com/en-us/windows/win32/seccertenroll/about-x-509-public-key-certificates" target="_blank" rel="noopener noreffer">X.509 Public Key Certificates</a>
-</em></p>
+<div id="image-section">
+  <img src="/Pictures/0011-pki-with-openssl/x509certificateversions.png">
+  <p class="image-caption">
+  X.509 Public Key Certificates <a href="https://docs.microsoft.com/en-us/windows/win32/seccertenroll/about-x-509-public-key-certificates">(Microsoft Docs)</a>
+  </p>
+</div>
 <p>The X.509 certificate contains important information about the entity, such as a website or user. It may contain information such as the domain of a website, when the certificate expires, and who issued the certificate. This certificate also contains the public key of the entity, which is used during the TLS negotiation phase.</p>
 <p>One interesting problem revolves around how a user can confirm that a certificate is a legitimate certificate associated with a specific entity. For example, how can you know that the certificate provided by your banks website is actually from the bank and not from a attacker siting in a coffee shop. This issue is solved by using certificate authorities, which are discussed in the next section. For this section the most important thing to understand is that entities, such as websites or users, can be represented using certificates.</p>
 <h3 id="certificate-authority">Certificate Authority</h3>
 <p>A certificate authority (CA) is used as a central root of trust that users inherently trust. Now lets go back to the problem at hand, how can we know if a certificate is trust worthy? We can confirm the legitimacy of a certificate by checking if it is singed by a valid CA. Lets look at the example below of the certificate hierarchy for this website:</p>
-<p><img
-        class="lazyload"
-        src="/svg/loading.small.min.svg"
-        data-sizes="auto"
-        data-srcset="/Pictures/0011-pki-with-openssl/thinkbox_certificate_hierarchy.png,  1.5x,  2x"
-        data-src=""
-        alt=""
-        title="" /></p>
-<p><em>Certificate Hierarchy</em></p>
+<div id="image-section">
+  <img src="/Pictures/0011-pki-with-openssl/thinkbox_certificate_hierarchy.png">
+  <p class="image-caption">
+  Certificate Hierarchy
+  </p>
+</div>
 <p>We can see that there are three entities, <strong>DST Root CA</strong>, <strong>Let’s Encrypt Authority</strong>, and <strong>thinkbox.dev</strong>. Lets start from the bottom. When you initially connect to this website you will receive a certificate from the webserver, this is the certificate that identifies the <strong>thinkbox.dev</strong> entity. In order to confirm this is a legitimate certificate you check that it is singed by the <strong>Let’s Encrypt Authority</strong> intermediate CA. After a check will be performed on the <strong>Let’s Encrypt Authority</strong> intermediate CA certificate to confirm that it is singed by <strong>DST Root CA</strong>. If all these checks pass we know that thinkbox.dev is a legitimate certificate.</p>
 <p><strong>DST Root CA</strong> is the Root CA, it is self singed. This CA’s certificate is stored on a machine and is not transferred over the network. The root of trust lies with the Root CA. Lets Encrypt Authority is considered an intermediate CA as it is used to sign certificates for websites. The Root CA key is considered important and is stored offline most of the time.</p>
 <p>Through this mechanism we now have a method of verifying the identity of an entity before establishing a secure connection. Just to clarify quickly take a look at the diagram below:</p>
-<p><img
-        class="lazyload"
-        src="/svg/loading.small.min.svg"
-        data-sizes="auto"
-        data-srcset="/Pictures/0011-pki-with-openssl/certificate_chains_r2r23.png,  1.5x,  2x"
-        data-src=""
-        alt=""
-        title="" /></p>
-<p><em>Certificate Chain <a href="https://www.amazon.com/Bulletproof-SSL-TLS-Understanding-Applications/dp/1907117040/ref=sr_1_1?keywords=Bulletproof&#43;ssl&amp;qid=1574287549&amp;sr=8-1" target="_blank" rel="noopener noreffer">(Bulletproof SSL and TLS Book)</a>
-</em></p>
+<div id="image-section">
+  <img src="/Pictures/0011-pki-with-openssl/certificate_chains_r2r23.png">
+  <p class="image-caption">
+  Certificate Chain <a href="https://www.amazon.com/Bulletproof-SSL-TLS-Understanding-Applications/dp/1907117040/ref=sr_1_1?keywords=Bulletproof+ssl&qid=1574287549&sr=8-1">Bulletproof SSL and TLS Book</a>
+  </p>
+</div>
 <p>The Root CA is stored on the system, either with the operating system or the browser. It is never transferred over the network. The intermediate CA and the end entity certificate are bundled together, for example the <strong>thinkbox.dev</strong> and <strong>Lets Encrypt Authority</strong> CA certificates are bundled into a single file referred to as the certificate chain. There is no real reason to hold the intermediate CA certificate on a system as its identity can also be verified through the Root CA. Furthermore, the validity time of the intermediate certificate is usually much less that the Root CA and will need to be changed more often over a long period of time.</p>
 <h2 id="security-features">Security Features</h2>
 <h3 id="hsts">HSTS</h3>
@@ -234,14 +234,12 @@ Cipher Suite Construction (Bulletproof SSL and TLS Book)</p>
 <h2 id="pki-in-practice">PKI in Practice</h2>
 <h3 id="overview">Overview</h3>
 <p>This section will aim to create a set of CA’s and certificates for some services using OpenSSL. The following diagram shows the PKI layout overview:</p>
-<p><img
-        class="lazyload"
-        src="/svg/loading.small.min.svg"
-        data-sizes="auto"
-        data-srcset="/Pictures/0011-pki-with-openssl/pki_diagram_openssl.png,  1.5x,  2x"
-        data-src=""
-        alt=""
-        title="" /></p>
+<div id="image-section">
+  <img src="/Pictures/0011-pki-with-openssl/pki_diagram_openssl.png">
+  <p class="image-caption">
+    PKI Diagram
+  </p>
+</div>
 <p>We will be generating a RootCA first. Next we will create two intermediate CA’s for web services and code singing. Lastly, we will create a certificate for two web services and sign them with the Sub CA.</p>
 <p>The first web service will be a simple static web page. The second will be a OCSP responder, this needs a certificate because it works over HTTP in plain text and needs to be singed to prevent tampering.</p>
 <p>Lets begin by setting up a directory structure as seen below in the code snippet. We are going to have 5 folders for all the entities we want to represent.</p>
@@ -495,23 +493,19 @@ drwxr-xr-x. <span class="m">2</span> user user <span class="m">6</span> Nov <spa
 <p>This section will aim to demonstrate the PKI in action by showing it working within the browser on a website, and signing Windows applications with the Code Signing CA.</p>
 <h3 id="using-website-certificate">Using Website Certificate</h3>
 <p>A web server was configured along with DNS for the webserver.test.net domain. On a Windows machine the Root CA was imported into the root CA store. As can be seen below Firefox tells us we have a secure connection to the web server.</p>
-<p><img
-        class="lazyload"
-        src="/svg/loading.small.min.svg"
-        data-sizes="auto"
-        data-srcset="/Pictures/0011-pki-with-openssl/website-secured.png,  1.5x,  2x"
-        data-src=""
-        alt=""
-        title="" /></p>
+<div id="image-section">
+  <img src="/Pictures/0011-pki-with-openssl/website-secured.png">
+  <p class="image-caption">
+    Website Secured with TLS
+  </p>
+</div>
 <p>Upon further inspection we can see a familiar certificates hierarchy. We have the Root CA on the system and received the Sub CA and web server certificate from the web server. The certificates all validates and Firefox tells us we have a secure connection.</p>
-<p><img
-        class="lazyload"
-        src="/svg/loading.small.min.svg"
-        data-sizes="auto"
-        data-srcset="/Pictures/0011-pki-with-openssl/website-certpath.png,  1.5x,  2x"
-        data-src=""
-        alt=""
-        title="" /></p>
+<div id="image-section">
+  <img src="/Pictures/0011-pki-with-openssl/website-certpath.png">
+  <p class="image-caption">
+    Certificate Hierarchy
+  </p>
+</div>
 <h3 id="revoking-website-certificate">Revoking Website Certificate</h3>
 <p>Since we connected succesfully to the web server we will now revboke the certificate. Below is the command used to revoke the certificate.</p>
 <div class="highlight"><div class="chroma">
@@ -533,33 +527,27 @@ drwxr-xr-x. <span class="m">2</span> user user <span class="m">6</span> Nov <spa
 </div>
 </div><p>Now before connecting one thing should be pointed out. OCSP is by default set to soft fail, this means even if the certificate is invalid the connection will be allowed. A hard fail can cause issues if the OCSP responder cannot be reached, for example if the CA’s infrastructure goes down. In order to set it to hard fail in Firefox set the security.OCSP.require option to true in the about:config settings.</p>
 <p>After this is done browsing to the website greets us with an error preventing us from getting access.</p>
-<p><img
-        class="lazyload"
-        src="/svg/loading.small.min.svg"
-        data-sizes="auto"
-        data-srcset="/Pictures/0011-pki-with-openssl/ocsp_browser_error-1-1024x512.png,  1.5x,  2x"
-        data-src=""
-        alt=""
-        title="" /></p>
+<div id="image-section">
+  <img src="/Pictures/0011-pki-with-openssl/ocsp_browser_error-1-1024x512.png">
+  <p class="image-caption">
+    OCSP Browser Error
+  </p>
+</div>
 <p>Looking in Wireshark we can see a request was sent, in the reply within the red rectangle we can see that the OCSP responder notifes us that the certificate is revoked.</p>
-<p><img
-        class="lazyload"
-        src="/svg/loading.small.min.svg"
-        data-sizes="auto"
-        data-srcset="/Pictures/0011-pki-with-openssl/ocsp_wireshark.png,  1.5x,  2x"
-        data-src=""
-        alt=""
-        title="" /></p>
+<div id="image-section">
+  <img src="/Pictures/0011-pki-with-openssl/ocsp_wireshark.png">
+  <p class="image-caption">
+    OCSP Wireshark Traffic
+  </p>
+</div>
 <h3 id="signing-an-windows-applications">Signing an Windows Applications</h3>
 <p>In order to sign Windows applications a Windows machine is needed, I used Windows Server 2019 for this task. In order to sign applications the signtool program is needed, this can be downloaded thought he Windows SDK kit. As seen below you only need to select the “Windows SDK Signing Tools for Desktop Apps”.</p>
-<p><img
-        class="lazyload"
-        src="/svg/loading.small.min.svg"
-        data-sizes="auto"
-        data-srcset="/Pictures/0011-pki-with-openssl/signtools_from_sdk.png,  1.5x,  2x"
-        data-src=""
-        alt=""
-        title="" /></p>
+<div id="image-section">
+  <img src="/Pictures/0011-pki-with-openssl/signtools_from_sdk.png">
+  <p class="image-caption">
+    Installing Windows SDK Signing Tools
+  </p>
+</div>
 <p>Transfer the Code Sign CA PKCS12 format file created onto the Windows machine. Below is a command shown which will sign a executable file. We need to specfy the PKCS12, the password, and a timestamp server. The timestamp server is used to allow <a href="https://docs.microsoft.com/en-us/windows/win32/seccrypto/time-stamping-authenticode-signatures" target="_blank" rel="noopener noreffer">‘signatures to be verifiable even after the certificates used for signature have expired‘</a>
 .</p>
 <div class="highlight"><div class="chroma">
@@ -588,32 +576,26 @@ C:<span class="se">\P</span>rogram Files <span class="o">(</span>x86<span class=
 </code></pre></td></tr></table>
 </div>
 </div><p>Now we can see that the executable file has a signature.</p>
-<p><img
-        class="lazyload"
-        src="/svg/loading.small.min.svg"
-        data-sizes="auto"
-        data-srcset="/Pictures/0011-pki-with-openssl/singed-main_binary.png,  1.5x,  2x"
-        data-src=""
-        alt=""
-        title="" /></p>
+<div id="image-section">
+  <img src="/Pictures/0011-pki-with-openssl/singed-main_binary.png">
+  <p class="image-caption">
+    Signed Binary
+  </p>
+</div>
 <p>The PowerShell script also has a signature.</p>
-<p><img
-        class="lazyload"
-        src="/svg/loading.small.min.svg"
-        data-sizes="auto"
-        data-srcset="/Pictures/0011-pki-with-openssl/singed-powershell-script.png,  1.5x,  2x"
-        data-src=""
-        alt=""
-        title="" /></p>
+<div id="image-section">
+  <img src="/Pictures/0011-pki-with-openssl/singed-powershell-script.png">
+  <p class="image-caption">
+    Signed PowerShell Script
+  </p>
+</div>
 <p>Looking at the certificate path we can see these files have been signed with the Code Sign CA, which has been verified by the Root CA.</p>
-<p><img
-        class="lazyload"
-        src="/svg/loading.small.min.svg"
-        data-sizes="auto"
-        data-srcset="/Pictures/0011-pki-with-openssl/signed-certificate-path.png,  1.5x,  2x"
-        data-src=""
-        alt=""
-        title="" /></p>
+<div id="image-section">
+  <img src="/Pictures/0011-pki-with-openssl/signed-certificate-path.png">
+  <p class="image-caption">
+    Certificate Path
+  </p>
+</div>
 <h2 id="references">References</h2>
 <ul>
 <li><a href="http://blog.dornea.nu/2015/10/02/manage-pki-using-openssl/" target="_blank" rel="noopener noreffer">Manage PKI Using OpenSSL</a>
