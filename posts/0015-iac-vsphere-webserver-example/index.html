@@ -32,7 +32,7 @@
         "mainEntityOfPage": {
             "@type": "WebPage",
             "@id": "https:\/\/blog.thinkbox.dev\/posts\/0015-iac-vsphere-webserver-example\/"
-        },"genre": "posts","keywords": "Infrastructure as Code, Terraform, Packer","wordcount":  3461 ,
+        },"genre": "posts","keywords": "Infrastructure as Code, Terraform, Packer","wordcount":  3450 ,
         "url": "https:\/\/blog.thinkbox.dev\/posts\/0015-iac-vsphere-webserver-example\/","datePublished": "2020-05-03","dateModified": "2020-05-03","author": {
                 "@type": "Person",
                 "name": "Aleks"
@@ -82,7 +82,7 @@
                                 <i class="far fa-folder fa-fw"></i>Vsphere
                             </a></span></div>
             <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i><time datetime=2020-05-03>2020-05-03</time>&nbsp;
-                <i class="fas fa-pencil-alt fa-fw"></i>about 3461 words&nbsp;
+                <i class="fas fa-pencil-alt fa-fw"></i>about 3450 words&nbsp;
                 <i class="far fa-clock fa-fw"></i>17 min&nbsp;</div>
         </div><div class="toc" id="toc-auto">
                 <h2 class="toc-title">Contents</h2>
@@ -134,13 +134,13 @@
 <h2 id="introduction">Introduction</h2>
 <p>Packer and Terraform are both tools created by the company <a href="https://www.hashicorp.com/" target="_blank" rel="noopener noreffer">Hashicorp</a>
 , both of these tools aim to provide automation capabilities. Packer has the goal of creating machine images for multiple different platforms. For example, we can create AMIs for EC2 instances on AWS or VMDK/VMX files for VMware. The whole goal is to automate the ability to create a consistent image that can be used by a specific platform, whether it be AWS or VMware products such as vSphere.</p>
-<p>Terraform focuses on the infrastructure itself. Based on a provided configuration file Terraform will be able to build up an infrastructure, while also allowing for the ability to update what is running. For example, from an AMI image or a template on vSphere we can launch number of instances and configure them in a specific way.</p>
+<p>Terraform focuses on the infrastructure itself. Based on a provided configuration file Terraform will be able to build up infrastructure, while also allowing for the ability to update what is running. For example, from an AMI image or a template on vSphere we can launch several of instances and configure them in a specific way.</p>
 <h3 id="goal">Goal</h3>
-<p>In this blog post a short example will be given of using Packer and Terraform in combination. The goal will be to create a Ubuntu template from an ISO on vSphere using Packer, and then launch a customized instance of that template while configuring Apache on the system.</p>
+<p>In this blog, post a short example will be given of using Packer and Terraform in combination. The goal will be to create a Ubuntu template from an ISO on vSphere using Packer, and then launch a customized instance of that template while configuring Apache on the system.</p>
 <p>The sample code used for this post can be found on a <a href="https://github.com/iamaleks/ubuntu-webserver-iac-example" target="_blank" rel="noopener noreffer">repository</a>
  on my Github.</p>
 <h2 id="packer">Packer</h2>
-<p>In order to begin we need to have the ability to run a Ubuntu installation unattended, this functionality is already <a href="https://help.ubuntu.com/lts/installation-guide/s390x/apb.html" target="_blank" rel="noopener noreffer">built into</a>
+<p>To begin, we need to have the ability to run a Ubuntu installation unattended, this functionality is already <a href="https://help.ubuntu.com/lts/installation-guide/s390x/apb.html" target="_blank" rel="noopener noreffer">built into</a>
  Ubuntu. A Preseed configuration file will be provided to Ubuntu within the boot time parameters, through this configuration file and some other boot parameters Ubuntu will know to perform an automated installation.</p>
 <hr>
 <h3 id="configuration-file-rundown">Configuration File Rundown</h3>
@@ -161,8 +161,8 @@
 </ul>
 <hr>
 <h3 id="ubuntu-preseed-file">Ubuntu Preseed File</h3>
-<p>The Preseed configuraiton file used for this example can be seen below. Each section is explained in the comments. It is important to understand this configuration file is specfic to Ubuntu, another Linux distribution will have a different configuration file and potently a different method.</p>
-<p><u><center>Ubuntu Preseed Configuraiton - preseed.cfg </center></u></p>
+<p>The Preseed configuration file used for this example can be seen below. Each section is explained in the comments. It is important to understand this configuration file is specific to Ubuntu, another Linux distribution will have a different configuration file and potently a different method.</p>
+<p><u><center>Ubuntu Preseed Configuration - preseed.cfg </center></u></p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre class="chroma"><code><span class="lnt"> 1
@@ -252,12 +252,12 @@ d-i finish-install/reboot_in_progress note                      <span class="c1"
 <pre class="chroma"><code class="language-shell" data-lang="shell"><span class="nv">auto</span><span class="o">=</span><span class="nb">true</span> auto-install/enable<span class="o">=</span><span class="nb">true</span> preseed/url<span class="o">=</span>http://mywebsite.com/mypressed.cfg <span class="nv">vga</span><span class="o">=</span><span class="m">788</span> <span class="nv">initrd</span><span class="o">=</span>/install/initrd.gz <span class="nv">fb</span><span class="o">=</span><span class="nb">false</span> debconf/frontend<span class="o">=</span>noninteractive <span class="nv">hostname</span><span class="o">=</span>UbuntuTemplate debian-installer<span class="o">=</span>en_US auto <span class="nv">locale</span><span class="o">=</span>en_US kbd-chooser/method<span class="o">=</span>us keyboard-configuration/modelcode<span class="o">=</span>SKIP keyboard-configuration/layout<span class="o">=</span>USA keyboard-configuration/variant<span class="o">=</span>USA console-setup/ask_detect<span class="o">=</span><span class="nb">false</span> ---
 </code></pre></td></tr></table>
 </div>
-</div><p>When this boot time parameter is passed Ubuntu will being installing automatically. However, we do not want to type this in manually. This is where Packer comes in. Its job will be to create  virtual machine, boot up the virtual machine, and then execute this boot time parameter in order to complete the installation. There is some other tasks Packer can perform on top of this, read on.</p>
-<p>Now take note, we are pulling the configuration file from a remote location here, specially <code>http://mywebsite.com/mypressed.cfg</code>. Other distributions, such as CentOS 7, provide the ability to attach their configuration files into the virtual floppy disk drive created on the virtual machine. This is a convenient way of passing the configuration file when using Packer. This, however, is not possible because Ubuntu has began <a href="https://github.com/jetbrains-infra/packer-builder-vsphere/issues/176#issuecomment-433705337" target="_blank" rel="noopener noreffer">removing the drivers</a>
+</div><p>When this boot-time parameter is passed Ubuntu will being installing automatically. However, we do not want to type this in manually. This is where Packer comes in. Its job will be to create a virtual machine, boot up the virtual machine, and then execute this boot-time parameter to complete the installation. There are some other tasks Packer can perform on top of this, read on.</p>
+<p>Now take note, we are pulling the configuration file from a remote location here, specially <code>http://mywebsite.com/mypressed.cfg</code>. Other distributions, such as CentOS 7, provide the ability to attach their configuration files into the virtual floppy disk drive created on the virtual machine. This is a convenient way of passing the configuration file when using Packer. This, however, is not possible because Ubuntu has begun <a href="https://github.com/jetbrains-infra/packer-builder-vsphere/issues/176#issuecomment-433705337" target="_blank" rel="noopener noreffer">removing the drivers</a>
  for floppy disks.</p>
 <h3 id="required-variables">Required Variables</h3>
 <p>Next, we begin looking at the configurations that apply directly to Packer. First, <code>vars.json</code> contain multiple variable definitions. Read the comments to get a feel for what is required.</p>
-<p>Just to be clear, Packer is responsible for connection to vSphere, creating a virtual machine, running an automated installation, and then converting that virtual machine to a template.</p>
+<p>Just to be clear, Packer is responsible for the connection to vSphere, creating a virtual machine, running an automated installation, and then converting that virtual machine to a template.</p>
 <p><u><center>Variable Values Definitions - vars.json </center></u></p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -301,10 +301,10 @@ d-i finish-install/reboot_in_progress note                      <span class="c1"
 <span class="o">}</span>
 </code></pre></td></tr></table>
 </div>
-</div><p>These variables can be hard coded in the main configuration, I just find it cleaner to add it in a separate file.</p>
+</div><p>These variables can be hardcoded in the main configuration, I just find it cleaner to add it in a separate file.</p>
 <h3 id="packer-configuration">Packer Configuration</h3>
-<p>We now move on and look at the core configuration of Packer. The configuration is split into three sections. <code>builders</code> which is responsible for specying parameters needed to build the template,  <code>boot_command</code> which will contain the instructions needed to perform the automated installation, and <code>provisioners</code> which will SSH into the virtual machine and perform any last minute configurations.</p>
-<p>The core Packer configuration beings with the <code>builders</code> section which mainly makes use of the variables that have been defined above. The only real addition of the ISO url, in this case we are fetching the URL from a remote location. This can also be set to a Datastore path within vSphere.</p>
+<p>We now move on and look at the core configuration of Packer. The configuration is split into three sections. <code>builders</code> which are responsible for specifying parameters needed to build the template,  <code>boot_command</code> which will contain the instructions needed to perform the automated installation, and <code>provisioners</code> which will SSH into the virtual machine and perform any last-minute configurations.</p>
+<p>The core Packer configuration beings with the <code>builders</code> section which mainly makes use of the variables that have been defined above. The only real addition of the ISO URL, in this case, we are fetching the URL from a remote location. This can also be set to a Datastore path within vSphere.</p>
 <p><u><center>Packer Core Configuration - Builders Section - ubuntu-18.json </center></u></p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -386,7 +386,7 @@ d-i finish-install/reboot_in_progress note                      <span class="c1"
         <span class="s2">&#34;iso_checksum_type&#34;</span>: <span class="s2">&#34;sha256&#34;</span>,                                                                            <span class="c1"># Hash function for checksum.</span>
 </code></pre></td></tr></table>
 </div>
-</div><p>The more interesting, <code>boot_command</code>, follows the initial <code>builders</code>. Here a boot command is defined, these are the exact keystrokes ti emulate in order to begin the automated installation processes. We begin by entering the Linux boot parameter console, delete everything that is there by default, and write out our own custom boot instructions.</p>
+</div><p>The more interesting, <code>boot_command</code>, follows the initial <code>builders</code>. Here a boot command is defined, these are the exact keystrokes to emulate to begin the automated installation processes. We begin by entering the Linux boot parameter console, delete everything that is there by default, and write out our custom boot instructions.</p>
 <p><u><center>Packer Core Configuration - Boot Command - ubuntu-18.json </center></u></p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -441,7 +441,7 @@ d-i finish-install/reboot_in_progress note                      <span class="c1"
 </code></pre></td></tr></table>
 </div>
 </div><p>Lastly, the <code>provisioners</code> is defined. This contains instructions to run at the very end before shutting down the virtual machine and converting it to a template.</p>
-<p>Once important part to note is the <code>execute_command</code>, this definition will help with the use of sudo. We cannot use sudo alone because it will prompt for an interactive password. In order to solve this the password is piped in through STDIN. Using this method the scripts will be run with sudo.</p>
+<p>One important part to note is the <code>execute_command</code>, this definition will help with the use of sudo. We cannot use sudo alone because it will prompt for an interactive password. To solve this the password is piped in through STDIN. Using this method the scripts will be run with sudo.</p>
 <p><u><center>Packer Core Configuration - Provisioners Section - ubuntu-18.json </center></u></p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -486,7 +486,7 @@ d-i finish-install/reboot_in_progress note                      <span class="c1"
 sudo apt-get update <span class="p">;</span> sudo apt-get upgrade -y <span class="p">;</span> sudo apt-get dist-upgrade -y<span class="p">;</span> sudo apt-get autoremove -y <span class="p">;</span> sudo apt-get autoclean -y
 </code></pre></td></tr></table>
 </div>
-</div><p>The second will install some perl packages. These are extremely important as Terraform uses a component of VMware Tools named deployPKG. This component is responsible for providing the ability to customize the virtual machine, and it is dependent on Perl. Through testing I have determined these are the packages needed in order to use Terraform with customization successfully.</p>
+</div><p>The second will install some Perl packages. These are extremely important as Terraform uses a component of VMware Tools named deployPKG. This component is responsible for providing the ability to customize the virtual machine, and it is dependent on Perl. Through testing, I have determined these are the packages needed to use Terraform with customization successfully.</p>
 <p><u><center>Perl Installation - install_perl.sh </center></u></p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -515,8 +515,8 @@ sudo <span class="nb">echo</span> <span class="s2">&#34;user    ALL=(ALL) NOPASS
 </code></pre></td></tr></table>
 </div>
 </div><h3 id="packer-demonstration">Packer Demonstration</h3>
-<p>Below is a demonstration of Packer running. In the beginning you notice curl is used on an IP address, this is the IP address that the webserver will be on when everything is complete. For the time being it will return a timeout as no webserver has been setup yet.</p>
-<p>Please note, you will notice that Packer idles on <code>==&gt; vsphere-iso: Waiting for IP...</code> for some time. This is because during this time Ubuntu is installing, and once it reboots it will get an IP address from DHCP and Packer will be notified via VMware tools that is installed on the virtual machine.</p>
+<p>Below is a demonstration of Packer running. In the beginning, you notice curl is used on an IP address, this is the IP address that the web server will be on when everything is complete. For the time being it will return a timeout as no web server has been set up yet.</p>
+<p>Please note, you will notice that Packer idles on <code>==&gt; vsphere-iso: Waiting for IP...</code> for some time. This is because during this time Ubuntu is installing, and once it reboots it will get an IP address from DHCP, and Packer will be notified via VMware tools that are installed on the virtual machine.</p>
 <script id="asciicast-xzYn4VO4YREwp6MRnDqESHV01" src="https://asciinema.org/a/xzYn4VO4YREwp6MRnDqESHV01.js" async></script>
 <h2 id="terraform">Terraform</h2>
 <p>The Terraform configuration spans a few files. Files ending in <code>.tf</code> can all be combined into a single file, however, for readability I like to keep them into different files.</p>
@@ -537,7 +537,7 @@ sudo <span class="nb">echo</span> <span class="s2">&#34;user    ALL=(ALL) NOPASS
 </ul>
 <hr>
 <h3 id="version-file">Version File</h3>
-<p>The <code>versions.tf</code> file contains the minimum version of Terraform that can be used. The <code>required_version</code> is a a good way to pin the Terraform module to a specific version of Terraform.</p>
+<p>The <code>versions.tf</code> file contains the minimum version of Terraform that can be used. The <code>required_version</code> is a good way to pin the Terraform module to a specific version of Terraform.</p>
 <p><u><center>Terraform Version - versions.tf</center></u></p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -640,7 +640,7 @@ variable ssh_password <span class="o">{}</span>              <span class="c1"># 
 </code></pre></td></tr></table>
 </div>
 </div><h3 id="terraform-core-configuration">Terraform Core Configuration</h3>
-<p>The <code>webserver_vm.tf</code> contains the core Terraform configuration logic. It beings by specifying much of what was described in the variables, where to connect to and where to run the virtual machine.</p>
+<p>The <code>webserver_vm.tf</code> contains the core Terraform configuration logic. It beings by specifying much of what was described in the variables, where to connect to, and where to run the virtual machine.</p>
 <p><u><center>Value Definitions - webserver_vm.tf</center></u></p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -742,7 +742,7 @@ data <span class="s2">&#34;vsphere_virtual_machine&#34;</span> <span class="s2">
 <span class="o">}</span>
 </code></pre></td></tr></table>
 </div>
-</div><p>The second part of <code>webserver_vm.tf</code> describes the resource that will be created, the webserver virtual machine in this case. As can be seen on line 24 we specify a  template that we will clone the virtual machine from. There are a set of paramters after that which will customize the virtual machine, including its hostname and static networking information.</p>
+</div><p>The second part of <code>webserver_vm.tf</code> describes the resource that will be created, the web server virtual machine in this case. As can be seen on line 24 we specify a  template that we will clone the virtual machine from. There is a set of parameters after that which will customize the virtual machine, including its hostname and static networking information.</p>
 <p><u><center>Virtual Machine Setup - webserver_vm.tf</center></u></p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -861,7 +861,7 @@ resource <span class="s2">&#34;vsphere_virtual_machine&#34;</span> <span class="
 </code></pre></td></tr></table>
 </div>
 </div><h3 id="terraform-demonstration">Terraform Demonstration</h3>
-<p>Below you will see a demonstration of Terraform being run, towards the end you can see curl once again being run with a succesfull HTTP response.</p>
+<p>Below you will see a demonstration of Terraform being run, towards the end you can see curl once again being run with a successful HTTP response.</p>
 <script id="asciicast-CxuxIgInSF2msAmzz9nDXRbTh" src="https://asciinema.org/a/CxuxIgInSF2msAmzz9nDXRbTh.js" async></script>
 <h2 id="resources">Resources</h2>
 <ul>
